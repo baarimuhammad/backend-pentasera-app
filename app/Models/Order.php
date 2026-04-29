@@ -10,6 +10,21 @@ class Order extends Model
         'user_id',
         'tanggal_order',
         'total_harga',
-        'status_order'
+        'status_order',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function detailOrders()
+    {
+        return $this->hasMany(DetailOrder::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
 }

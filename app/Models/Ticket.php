@@ -11,6 +11,16 @@ class Ticket extends Model
         'kategori',
         'harga',
         'kuota',
-        'sisa_kuota'
+        'sisa_kuota',
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
+
+    public function detailOrders()
+    {
+        return $this->hasMany(DetailOrder::class);
+    }
 }

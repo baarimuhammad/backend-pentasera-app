@@ -1,0 +1,254 @@
+@extends('layouts.app')
+@section('title', 'Kebijakan Privasi | Pentasara')
+
+@section('custom-nav')
+<!-- Navbar (matching original style-support.css .navbar) -->
+<nav class="navbar">
+    <div class="logo">Pentasara</div>
+    <ul class="nav-links">
+        <li><a href="{{ url('/') }}">Eksplorasi</a></li>
+        <li><a href="{{ url('/events') }}">Kalender</a></li>
+        <li><a href="{{ url('/events') }}">Arsip Seni</a></li>
+        <li><a href="{{ url('/tentang-kami') }}">Tentang Kami</a></li>
+    </ul>
+    <div class="nav-btns">
+        <!-- Logged Out View -->
+        <div class="logged-out-only"></div>
+
+        <!-- Logged In View -->
+        <div class="logged-in-only" style="display: flex; align-items: center; gap: 15px;">
+            <!-- Profile Dropdown -->
+            <div class="profile-container">
+                <div class="profile-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" alt="User Profile">
+                </div>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header" onclick="toggleRole()">
+                        <div class="switch-icon">
+                            <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="dropdown-header-text">
+                            <div class="dropdown-header-title" style="font-family: 'Inter', sans-serif;">Beralih ke akun</div>
+                            <div class="dropdown-header-role" id="dropdown-role-label" style="font-family: 'Inter', sans-serif;">Penyelenggara</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-list" style="font-family: 'Inter', sans-serif;">
+                        <a href="{{ url('/dashboard') }}" class="dropdown-item creator-only">
+                            <i data-lucide="layout-dashboard"></i> Dashboard
+                        </a>
+                        <a href="{{ url('/my-events') }}" class="dropdown-item creator-only">
+                            <i data-lucide="calendar"></i> Event Saya
+                        </a>
+                        <a href="{{ url('/profile') }}" class="dropdown-item">
+                            <i data-lucide="user"></i> Informasi Dasar
+                        </a>
+                        <a href="{{ url('/settings') }}" class="dropdown-item">
+                            <i data-lucide="settings"></i> Pengaturan
+                        </a>
+                        <a href="#" onclick="logout(); return false;" class="dropdown-item logout">
+                            <i data-lucide="log-out"></i> Keluar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+@endsection
+
+@section('content')
+<!-- Header Section -->
+<header class="hero-section" style="padding-bottom: 40px;">
+    <p class="subtitle">LEGALITAS & TRANSPARANSI</p>
+    <h1 style="font-style: italic; font-weight: 400;">Kebijakan Privasi</h1>
+    <p class="hero-desc">Bagaimana kami mengkurasi dan menjaga data Anda dengan rasa hormat layaknya menjaga warisan budaya.</p>
+</header>
+
+<!-- Main Layout Container -->
+<div class="legal-container">
+
+    <!-- Sidebar Kolom Kiri -->
+    <aside class="legal-sidebar">
+        <div class="nav-doc-card">
+            <h4>Navigasi Dokumen</h4>
+            <ul>
+                <li><a href="#pengumpulan" class="active-link">&rarr; Pengumpulan Data</a></li>
+                <li><a href="#penggunaan">Penggunaan Informasi</a></li>
+                <li><a href="#keamanan">Keamanan Digital</a></li>
+                <li><a href="#hak">Hak Pemilik Data</a></li>
+                <li><a href="#hubungi">Hubungi Kami</a></li>
+            </ul>
+        </div>
+        <div class="update-card">
+            <p>Terakhir diperbarui:<br><strong>12 November 2023</strong></p>
+        </div>
+    </aside>
+
+    <!-- Konten Utama Kolom Kanan -->
+    <main class="legal-main-card">
+
+        <!-- Section 1 -->
+        <section id="pengumpulan" class="content-section">
+            <div class="section-header">
+                <span class="icon-circle"><i data-lucide="database"></i></span>
+                <h3>Pengumpulan Informasi</h3>
+            </div>
+            <p>Dalam upaya menyajikan pengalaman manajemen event yang personal, kami mengumpulkan informasi yang Anda berikan secara langsung saat mendaftar di Pentasara. Ini termasuk namun tidak terbatas pada:</p>
+            <ol class="roman-list">
+                <li data-num="I">Identitas Pribadi (Nama lengkap, alamat email, dan nomor telepon).</li>
+                <li data-num="II">Informasi Event (Detail pertunjukan, lokasi, dan preferensi budaya).</li>
+                <li data-num="III">Data Transaksi (Detail pembayaran melalui gerbang pembayaran pihak ketiga yang aman).</li>
+            </ol>
+
+            <div class="placeholder-banner">
+                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800" alt="Banner Policy" style="border-radius: 15px; margin-top: 20px;">
+            </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section id="penggunaan" class="content-section">
+            <div class="section-header">
+                <span class="icon-circle"><i data-lucide="eye"></i></span>
+                <h3>Bagaimana Kami Menggunakan Data</h3>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h5 style="font-family: 'Playfair Display'; font-style: italic; margin-bottom: 10px;">Operasional Layanan</h5>
+                    <p>Memproses pendaftaran event, mengirimkan tiket elektronik, dan memberikan notifikasi perubahan jadwal secara real-time.</p>
+                </div>
+                <div class="feature-card">
+                    <h5 style="font-family: 'Playfair Display'; font-style: italic; margin-bottom: 10px;">Personalisasi Budaya</h5>
+                    <p>Merekomendasikan arsip seni dan pertunjukan mendatang yang relevan dengan minat historis yang Anda tunjukkan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section id="keamanan" class="content-section">
+            <div class="section-header">
+                <span class="icon-circle"><i data-lucide="shield-check"></i></span>
+                <h3>Keamanan Digital</h3>
+            </div>
+            <p>Keamanan data Anda adalah prioritas utama kami. Kami menerapkan enkripsi tingkat tinggi (AES-256) untuk melindungi setiap bit informasi yang mengalir melalui sistem kami. Akses ke data sensitif dibatasi hanya kepada personil yang berwenang dengan protokol otentikasi ganda.</p>
+            <blockquote class="policy-quote">
+                "Kami tidak akan pernah menjual atau menyewakan informasi pribadi Anda kepada pihak ketiga untuk tujuan pemasaran tanpa persetujuan eksplisit dari Anda."
+            </blockquote>
+        </section>
+
+        <!-- Section 4 -->
+        <section id="hak" class="content-section">
+            <div class="section-header">
+                <span class="icon-circle"><i data-lucide="user-cog"></i></span>
+                <h3>Hak Sebagai Pemilik Data</h3>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Hak untuk Mengakses dan Memperbaiki <span>⌄</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Anda memiliki hak penuh untuk melihat data apa saja yang kami simpan dan melakukan koreksi jika terdapat kekeliruan informasi melalui menu profil Anda.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Hak untuk Dilupakan (Penghapusan) <span>⌄</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Anda dapat mengajukan penghapusan akun dan seluruh data terkait secara permanen dari server kami selama tidak ada kewajiban hukum yang menghalangi.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5 -->
+        <section id="hubungi" class="content-section" style="border-top: 1px solid #e8e0d5; padding-top: 40px;">
+            <h3 style="font-family: 'Playfair Display'; font-style: italic;">Pertanyaan Lebih Lanjut?</h3>
+            <p style="margin-bottom: 25px;">Tim kurasi data kami siap membantu Anda memahami lebih lanjut mengenai privasi Anda.</p>
+            <a href="{{ url('/hubungi-kami') }}" class="btn-dark-round" style="display: flex; align-items: center; gap: 10px; width: fit-content; border-radius: 12px;">
+                <i data-lucide="mail"></i> Hubungi Petugas Data
+            </a>
+        </section>
+
+    </main>
+</div>
+@endsection
+
+@section('custom-footer')
+<!-- Footer with Bantuan, Kebijakan Privasi, Syarat & Ketentuan, Hubungi Kami -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <div class="footer-brand-title">Pentasara</div>
+            <p class="footer-copy">© 2024 Pentasara. Menjaga Tradisi dalam Modernitas.</p>
+            <div class="footer-social-wrap">
+                <p class="social-label">Hubungi Kurator:</p>
+                <div class="social-icons">
+                    <a href="https://instagram.com" target="_blank" class="social-icon" title="Instagram">
+                        <i data-lucide="instagram"></i>
+                    </a>
+                    <a href="https://wa.me" target="_blank" class="social-icon" title="WhatsApp Chat">
+                        <i data-lucide="message-circle"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url('/pusat-bantuan') }}">Bantuan</a>
+            <a href="{{ url('/kebijakan-privasi') }}">Kebijakan Privasi</a>
+            <a href="{{ url('/syarat-ketentuan') }}">Syarat & Ketentuan</a>
+            <a href="{{ url('/hubungi-kami') }}">Hubungi Kami</a>
+        </div>
+    </div>
+</footer>
+@endsection
+
+@push('scripts')
+<script>
+    // Sidebar active link switching logic
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                document.querySelectorAll('.legal-sidebar a').forEach(link => {
+                    link.classList.remove('active-link');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active-link');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.content-section').forEach(section => {
+        observer.observe(section);
+    });
+
+    // FAQ Accordion Toggle (for Hak Pemilik Data section)
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.faq-question').forEach(function(question) {
+            question.addEventListener('click', function() {
+                const faqItem = this.closest('.faq-item');
+                const isActive = faqItem.classList.contains('active');
+                
+                // Close all FAQ items in the same section
+                const section = faqItem.closest('.help-cat-section') || faqItem.closest('.content-section') || faqItem.parentElement;
+                section.querySelectorAll('.faq-item').forEach(function(item) {
+                    item.classList.remove('active');
+                });
+
+                // Toggle the clicked one (open if it was closed)
+                if (!isActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+@endpush

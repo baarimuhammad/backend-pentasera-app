@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Event - Pentasara</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-logo">
+                <div class="w-10 h-10 bg-rust rounded-xl flex items-center justify-center text-white">
+                    <i data-lucide="ticket" class="w-6 h-6"></i>
+                </div>
+                <span class="logo-text font-bold tracking-wider">PENTASARA</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <div class="nav-label">Main Menu</div>
+                    <a href="dashboard.html" class="nav-item">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="my-events.html" class="nav-item active">
+                        <i data-lucide="calendar"></i>
+                        <span>Event Saya</span>
+                    </a>
+                    <a href="manage-access.html" class="nav-item">
+                        <i data-lucide="users"></i>
+                        <span>Kelola Akses</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-label">Account</div>
+                    <a href="profile.html" class="nav-item">
+                        <i data-lucide="user-circle"></i>
+                        <span>Informasi Dasar</span>
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i data-lucide="settings"></i>
+                        <span>Pengaturan</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button onclick="toggleRoleAndRedirect()" class="switch-mode-btn cursor-pointer">
+                    <i data-lucide="arrow-left-right"></i>
+                    <span>Beralih ke Pembeli</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div class="breadcrumb">
+                    <a href="my-events.html" class="flex items-center gap-2 text-gray-400 hover:text-rust transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        Kembali ke Event Saya
+                    </a>
+                </div>
+                <div class="header-actions">
+                    <a href="create-event.html" class="bg-rust text-white px-8 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Buat Event
+                    </a>
+                </div>
+            </header>
+
+            <!-- Event Header Info -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full">AKTIF</span>
+                        <span class="text-gray-400 text-xs">ID Event: #EVT-2026-001</span>
+                    </div>
+                    <h1 class="font-display text-3xl text-ink mb-2">Tarian Kecak Uluwatu</h1>
+                    <p class="text-gray-500 text-sm flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        Pura Uluwatu, Bali
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="saveEventChanges()" class="bg-rust text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-label">
+                            <i data-lucide="ticket"></i>
+                            Tiket Terjual
+                        </div>
+                    </div>
+                    <div class="stat-value" id="stat-tickets-sold">0 / 0</div>
+                    <div class="stat-unit" id="stat-tickets-percent">0% Terisi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-label">
+                            <i data-lucide="trending-up"></i>
+                            Total Penjualan
+                        </div>
+                    </div>
+                    <div class="stat-value" id="stat-total-sales">Rp 0</div>
+                    <div class="stat-unit">IDR</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-label">
+                            <i data-lucide="shopping-cart"></i>
+                            Total Transaksi
+                        </div>
+                    </div>
+                    <div class="stat-value" id="stat-total-transactions">0</div>
+                    <div class="stat-unit">Transaksi Berhasil</div>
+                </div>
+            </div>
+
+            <!-- Management Tabs -->
+            <div class="event-tabs">
+                <div class="event-tab active" onclick="switchManageTab('info')">Informasi Event</div>
+                <div class="event-tab" onclick="switchManageTab('tiket')">Tiket & Harga</div>
+                <div class="event-tab" onclick="switchManageTab('penjualan')">Laporan Penjualan</div>
+            </div>
+
+            <!-- Tab Content: Info -->
+            <div id="manage-info" class="event-tab-content active">
+                <div class="profile-section">
+                    <div class="banner-upload">
+                        <img src="assets/kecak.png" alt="Banner" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <button class="bg-white text-ink px-4 py-2 rounded-lg font-bold text-xs">Ganti Banner</button>
+                        </div>
+                    </div>
+                    <div class="profile-content-padding">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Judul Event</label>
+                                <input type="text" class="form-input" value="Tarian Kecak Uluwatu">
+                            </div>
+                            <div class="form-group">
+                                <label>Kategori</label>
+                                <select class="form-input">
+                                    <option selected>Seni Tari</option>
+                                    <option>Musik Tradisional</option>
+                                    <option>Pertunjukan</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal & Waktu</label>
+                                <input type="datetime-local" class="form-input" value="2026-04-11T18:00">
+                            </div>
+                            <div class="form-group full">
+                                <label>Lokasi</label>
+                                <input type="text" class="form-input" value="Pura Uluwatu, Pecatu, Kuta Selatan, Bali">
+                            </div>
+                            <div class="form-group full">
+                                <label>Deskripsi Event</label>
+                                <textarea class="form-input form-textarea h-40">Nikmati pertunjukan tari Kecak yang spektakuler dengan latar belakang matahari terbenam di Pura Uluwatu. Pertunjukan ini menceritakan kisah Ramayana dengan iringan paduan suara puluhan penari pria yang menciptakan harmoni suara 'cak-cak-cak' yang magis.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Tiket -->
+            <div id="manage-tiket" class="event-tab-content">
+                <div class="space-y-8 pb-16">
+                    <!-- Ticket Table Container -->
+                    <div class="bg-white rounded-[1.5rem] border border-gray-100 shadow-xl shadow-gray-200/20 overflow-hidden">
+                        <div class="px-10 py-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/20">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-rust rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rust/20">
+                                    <i data-lucide="ticket" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-ink text-lg uppercase tracking-wider">Kategori Tiket</h3>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Daftar tiket yang tersedia untuk event ini</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="bg-white border-b border-gray-50">
+                                        <th class="px-10 py-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Nama Tiket</th>
+                                        <th class="px-10 py-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Harga</th>
+                                        <th class="px-10 py-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Kapasitas</th>
+                                        <th class="px-10 py-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Terjual</th>
+                                        <th class="px-10 py-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Sisa</th>
+                                        <th class="px-10 py-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Status</th>
+                                        <th class="px-10 py-6"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50">
+                                    <tr class="hover:bg-rust/[0.02] transition-colors">
+                                        <td class="px-10 py-7 font-bold text-ink text-sm">Reguler (Domestik)</td>
+                                        <td class="px-10 py-7 text-sm font-medium">Rp 150.000</td>
+                                        <td class="px-10 py-7 text-sm text-gray-400">400</td>
+                                        <td class="px-10 py-7 text-sm font-bold text-rust">280</td>
+                                        <td class="px-10 py-7 text-sm text-gray-400 font-medium">120</td>
+                                        <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
+                                        <td class="px-10 py-7 text-right">
+                                            <button onclick="handleTicketAction('edit', 'paid')" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
+                                                <i data-lucide="edit-3" class="w-5 h-5"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-rust/[0.02] transition-colors">
+                                        <td class="px-10 py-7 font-bold text-ink text-sm">VIP Front Row</td>
+                                        <td class="px-10 py-7 text-sm font-medium">Rp 300.000</td>
+                                        <td class="px-10 py-7 text-sm text-gray-400">100</td>
+                                        <td class="px-10 py-7 text-sm font-bold text-rust">62</td>
+                                        <td class="px-10 py-7 text-sm text-gray-400 font-medium">38</td>
+                                        <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
+                                        <td class="px-10 py-7 text-right">
+                                            <button onclick="handleTicketAction('edit', 'paid')" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
+                                                <i data-lucide="edit-3" class="w-5 h-5"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Add Ticket Button -->
+                        <div class="px-10 py-10 bg-gray-50/10 border-t border-gray-50">
+                            <button onclick="handleTicketAction('add')" class="w-full py-8 border-2 border-dashed border-gray-200 rounded-[2rem] flex items-center justify-center gap-4 text-gray-400 hover:border-rust hover:text-rust hover:bg-rust/[0.02] transition-all group cursor-pointer">
+                                <div class="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center group-hover:bg-rust group-hover:text-white group-hover:border-rust transition-all shadow-sm">
+                                    <i data-lucide="plus" class="w-6 h-6"></i>
+                                </div>
+                                <span class="font-bold text-[10px] uppercase tracking-[0.2em]">Tambah Kategori Tiket</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Edit/Add Form Section -->
+                    <div id="ticket-action-section" class="hidden animate-fade-in-up mt-8">
+                        <div class="bg-white rounded-[1.5rem] p-6 mb-4 border border-gray-100 shadow-2xl shadow-gray-200/20">
+                            <!-- Category Header -->
+                            <div class="mb-10">
+                                <h3 id="action-title" class="font-bold text-ink text-lg pt-6 mb-6 tracking-tight">Tambah Kategori Tiket</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Paid Ticket Option -->
+                                    <div onclick="setTicketCategory('paid')" id="card-category-paid" class="relative border-2 rounded-[1.5rem] min-h-[56px] px-5 py-6 flex items-center justify-between transition-all cursor-pointer group overflow-hidden border-rust bg-rust/5 shadow-2xl shadow-rust/10">
+                                        <!-- Visual Badge -->
+                                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 border-r-4 border-dotted border-rust/30 h-12"></div>
+                                        <div class="flex items-center gap-5 ml-4">
+                                            <div class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-rust">
+                                                <i data-lucide="banknote" class="w-6 h-6"></i>
+                                            </div>
+                                            <div>
+                                                <p id="label-tag-paid" class="text-[9px] font-bold text-rust uppercase tracking-[0.2em] mb-1">Pilih</p>
+                                                <p class="text-lg font-bold text-ink tracking-tight">Berbayar</p>
+                                            </div>
+                                        </div>
+                                        <div id="status-icon-paid" class="w-12 h-12 rounded-full bg-rust text-white flex items-center justify-center shadow-lg shadow-rust/40">
+                                            <i data-lucide="check" class="w-6 h-6"></i>
+                                        </div>
+                                    </div>
+                                    <!-- Free Ticket Option -->
+                                    <div onclick="setTicketCategory('free')" id="card-category-free" class="relative border-2 border-transparent bg-gray-50/50 rounded-[1.5rem] min-h-[56px] px-5 py-6 flex items-center justify-between transition-all cursor-pointer group overflow-hidden hover:bg-white hover:border-rust/20">
+                                        <!-- Visual Badge -->
+                                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 border-r-4 border-dotted border-gray-200 h-12"></div>
+                                        <div class="flex items-center gap-5 ml-4">
+                                            <div class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-gray-300">
+                                                <i data-lucide="gift" class="w-6 h-6"></i>
+                                            </div>
+                                            <div>
+                                                <p id="label-tag-free" class="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">Opsi Lain</p>
+                                                <p class="text-lg font-bold text-ink tracking-tight text-gray-300">Gratis</p>
+                                            </div>
+                                        </div>
+                                        <div id="status-icon-free" class="w-12 h-12 rounded-full border-2 border-gray-100 flex items-center justify-center text-gray-300 group-hover:border-rust group-hover:text-rust transition-all">
+                                            <i data-lucide="plus" class="w-6 h-6"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Save/Create Button -->
+                            <div class="flex justify-end mt-4 mr-6 mb-12">
+                                <button onclick="openModal('modal-tiket', currentCategory)" class="group active:scale-95 bg-rust text-white px-6 py-2.5 rounded-lg font-bold text-[9px] shadow-2xl shadow-rust/40 hover:bg-rust-deep transition-all flex items-center gap-3">
+                                    <span id="btn-action-text" class="uppercase tracking-widest">Lanjut Atur Detail Tiket</span>
+                                    <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                                        <i data-lucide="arrow-right" class="w-2.5 h-2.5 text-white"></i>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Combined Info Kontak and Additional Settings -->
+                    <div class="bg-white rounded-[1.5rem] p-12 pb-16 border border-gray-100 shadow-xl shadow-gray-200/20">
+                        <!-- Informasi Kontak -->
+                        <div class="mb-32">
+                            <h3 class="font-bold text-ink text-2xl pt-4 mb-20 tracking-tight flex items-center gap-3">
+                                Informasi Kontak
+                                <span class="w-2 h-2 bg-rust rounded-full"></span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-28 mb-8">
+                                <div class="space-y-6">
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Nama Narahubung*</label>
+                                    <input type="text" placeholder="Nama Penyelenggara" value="Andi Wijaya" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                </div>
+                                <div class="space-y-6">
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Email*</label>
+                                    <input type="email" placeholder="contact@event.com" value="andi@mail.com" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                </div>
+                                <div class="space-y-6">
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">No. Ponsel*</label>
+                                    <input type="tel" placeholder="08123456789" value="08123456789" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="border-t border-gray-100 mt-40 mb-40"></div>
+
+                        <!-- Pengaturan Tambahan -->
+                        <div class="mt-0">
+                            <h3 class="font-bold text-ink text-base mb-20 tracking-tight flex items-center gap-3">
+                                Pengaturan Tambahan
+                                <span class="w-2 h-2 bg-rust rounded-full"></span>
+                            </h3>
+                             <div class="grid grid-cols-1 xl:grid-cols-2 gap-20">
+                                <!-- Left: Max Ticket -->
+                                <div class="flex items-center justify-between bg-gray-50/50 px-6 py-6 rounded-[2rem] border border-gray-100 group hover:bg-white hover:border-rust/20 transition-all h-auto">
+                                    <div>
+                                        <p class="text-base font-bold text-ink mb-1">Jumlah maks. tiket per transaksi</p>
+                                        <p class="text-xs text-gray-400">Batasi jumlah tiket yang dapat dibeli sekali checkout</p>
+                                    </div>
+                                    <div class="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
+                                        <input type="number" value="5" min="1" max="5" class="w-20 py-3 text-center text-xl font-black text-rust outline-none">
+                                    </div>
+                                </div>
+                                <!-- Right: Toggles -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-10">
+                                    <div class="flex items-center justify-between px-6 py-6 bg-gray-50/50 rounded-[2rem] border border-gray-100 h-auto">
+                                        <div>
+                                            <p class="text-[11px] font-black text-ink mb-2 uppercase tracking-tight">1 akun email – 1 kali transaksi</p>
+                                            <p class="text-[10px] text-gray-400">Mencegah pembelian berulang</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="sr-only peer">
+                                            <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rust shadow-inner"></div>
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center justify-between px-6 py-6 bg-gray-50/50 rounded-[2rem] border border-gray-100 h-auto">
+                                        <div>
+                                            <p class="text-[11px] font-black text-ink mb-2 uppercase tracking-tight">1 tiket – 1 data pemesan</p>
+                                            <p class="text-[10px] text-gray-400">Identitas berbeda per tiket</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" checked class="sr-only peer">
+                                            <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rust shadow-inner"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Penjualan -->
+            <div id="manage-penjualan" class="event-tab-content p-12 pb-32">
+                <!-- Dashboard Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                    <div>
+                        <h2 class="text-2xl font-black text-ink mb-3 tracking-tight">Statistik Penjualan</h2>
+                        <p class="text-base text-gray-400 font-medium">Ringkasan performa finansial Pentasara Anda.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button class="bg-white border border-gray-100 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-ink flex items-center gap-3 hover:bg-gray-50 transition-all group shadow-sm">
+                            Bulan Ini
+                            <i data-lucide="calendar" class="w-4 h-4 text-gray-400 group-hover:text-rust transition-colors"></i>
+                        </button>
+                        <button class="bg-rust text-white px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3 shadow-2xl shadow-rust/30 hover:bg-rust-deep hover:-translate-y-0.5 transition-all">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Export Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards Row (Aligned with main Dashboard) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+                    <!-- Stat Card: Total Pendapatan -->
+                    <div class="stat-card !border-none !shadow-2xl !shadow-gray-200/20 !p-10 transform hover:scale-[1.02] transition-all">
+                        <div class="stat-header !mb-8">
+                            <div class="stat-label !text-[10px] !font-black !tracking-[0.2em]">
+                                <i data-lucide="trending-up" class="w-5 h-5 !text-green-500"></i>
+                                Total Pendapatan
+                            </div>
+                            <span class="text-[10px] font-black text-green-500 bg-green-50 px-3 py-1 rounded-full">+12.5%</span>
+                        </div>
+                        <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2">Rp 128.450.000</div>
+                        <div class="stat-unit !font-bold">IDR (Rupiah)</div>
+                    </div>
+
+                    <!-- Stat Card: Tiket Terjual -->
+                    <div class="stat-card !border-none !shadow-2xl !shadow-gray-200/20 !p-10 transform hover:scale-[1.02] transition-all">
+                        <div class="stat-header !mb-8">
+                            <div class="stat-label !text-[10px] !font-black !tracking-[0.2em]">
+                                <i data-lucide="ticket" class="w-5 h-5 !text-rust"></i>
+                                Tiket Terjual
+                            </div>
+                            <span class="text-[10px] font-black text-blue-500 bg-blue-50 px-3 py-1 rounded-full">+8.2%</span>
+                        </div>
+                        <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2">4,281</div>
+                        <div class="stat-unit !font-bold">Tiket Dipesan</div>
+                    </div>
+
+                    <!-- Stat Card: Rata-rata Penjualan -->
+                    <div class="stat-card !border-none !shadow-2xl !shadow-gray-200/20 !p-10 transform hover:scale-[1.02] transition-all">
+                        <div class="stat-header !mb-8">
+                            <div class="stat-label !text-[10px] !font-black !tracking-[0.2em]">
+                                <i data-lucide="bar-chart-3" class="w-5 h-5 !text-amber-500"></i>
+                                Rata-rata Harian
+                            </div>
+                            <span class="text-[10px] font-black text-gray-400 bg-gray-50 px-3 py-1 rounded-full whitespace-nowrap">STABIL</span>
+                        </div>
+                        <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2">Rp 4.280.000</div>
+                        <div class="stat-unit !font-bold">Penjualan / Hari</div>
+                    </div>
+                </div>
+
+                <!-- Chart & Distribution Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-24">
+                    <!-- Analytics Chart -->
+                    <div class="lg:col-span-2 bg-white p-12 rounded-[2rem] border border-gray-100 shadow-2xl shadow-gray-200/10 relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-20 px-10 py-4">
+                            <div>
+                                <h3 class="text-xl font-black text-ink mb-2 tracking-tight">Grafik Penjualan</h3>
+                                <p class="text-base text-gray-400 font-medium">Tren transaksi 30 hari terakhir</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="w-4 h-4 bg-rust rounded-full shadow-lg shadow-rust/40"></span>
+                                <span class="text-[13px] font-black text-ink uppercase tracking-[0.2em]">Penjualan</span>
+                            </div>
+                        </div>
+                        <div class="h-80 w-full relative">
+                            <div id="chart-container" class="absolute inset-0 w-full h-full"></div>
+                        </div>
+                        <div class="flex justify-between items-center mt-10 text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">
+                            <span>01 JAN</span>
+                            <span>07 JAN</span>
+                            <span>14 JAN</span>
+                            <span>21 JAN</span>
+                            <span>28 JAN</span>
+                            <span>30 JAN</span>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Distribution -->
+                    <div class="bg-[#F6F5F2] p-12 rounded-[2rem] border border-gray-100 shadow-2xl shadow-gray-200/10 flex flex-col">
+                        <h3 class="text-2xl font-black text-ink mb-16 tracking-tight px-6">Distribusi Tiket</h3>
+                        <div class="space-y-16 flex-1 px-6">
+                            <div class="group">
+                                <div class="flex justify-between items-center mb-6">
+                                    <span class="text-sm font-black text-ink uppercase tracking-wider">VIP - Gamelan Night</span>
+                                    <span class="text-lg font-black text-rust">45%</span>
+                                </div>
+                                <div class="w-full bg-ink/5 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-rust h-full rounded-full w-[45%] shadow-xl shadow-rust/30 transition-all group-hover:scale-x-105 origin-left"></div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="flex justify-between items-center mb-6">
+                                    <span class="text-sm font-black text-ink uppercase tracking-wider">Festival - Tari Kecak</span>
+                                    <span class="text-lg font-black text-ink/40">32%</span>
+                                </div>
+                                <div class="w-full bg-ink/5 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-rust/60 h-full rounded-full w-[32%] transition-all group-hover:scale-x-105 origin-left"></div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="flex justify-between items-center mb-6">
+                                    <span class="text-sm font-black text-ink uppercase tracking-wider">Early Bird - Wayang</span>
+                                    <span class="text-lg font-black text-ink/20">23%</span>
+                                </div>
+                                <div class="w-full bg-ink/5 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-ink/20 h-full rounded-full w-[23%] transition-all group-hover:scale-x-105 origin-left"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions Dash Version -->
+                <div class="bg-white rounded-[2rem] border border-gray-100 shadow-2xl shadow-gray-200/10 overflow-hidden">
+                    <div class="px-24 py-16 border-b border-gray-50 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-black text-ink mb-2 tracking-tight">Transaksi Terbaru</h3>
+                            <p class="text-base text-gray-400 font-medium">Daftar transaksi masuk real-time</p>
+                        </div>
+                        <button onclick="openModal('modal-transaksi')" class="text-rust font-black text-[13px] uppercase tracking-[0.2em] hover:translate-x-3 transition-transform inline-flex items-center gap-4 py-2 px-4 rounded-xl hover:bg-rust/5">
+                            Lihat Semua
+                            <i data-lucide="arrow-right" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="dash-transaction-table" class="w-full text-left">
+                            <thead>
+                                <tr class="bg-gray-50/50">
+                                    <th class="px-24 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Nama Pembeli</th>
+                                    <th class="px-24 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Tipe Tiket</th>
+                                    <th class="px-24 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
+                                    <th class="px-24 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Jumlah</th>
+                                    <th class="px-24 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Waktu</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50/50">
+                                <tr class="hover:bg-gray-50/50 transition-colors group">
+                                    <td class="px-24 py-8">
+                                        <div class="flex items-center gap-5">
+                                            <div class="w-12 h-12 rounded-full bg-rust/10 text-rust font-black text-xs flex items-center justify-center border-2 border-white shadow-lg">BK</div>
+                                            <div>
+                                                <div class="text-sm font-black text-ink">Bagus Kurniawan</div>
+                                                <div class="text-[11px] text-gray-400 font-medium">bagus.k@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-24 py-8">
+                                        <span class="px-4 py-1.5 bg-rust/10 text-rust text-[9px] font-black rounded-lg uppercase tracking-widest border border-rust/10">VIP GOLD</span>
+                                    </td>
+                                    <td class="px-24 py-8">
+                                        <div class="flex items-center gap-3 text-green-600 text-[11px] font-black uppercase tracking-wider">
+                                            <div class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_12px_rgba(34,197,94,0.4)]"></div>
+                                            Berhasil
+                                        </div>
+                                    </td>
+                                    <td class="px-24 py-8 text-sm font-black text-ink">Rp 1.500.000</td>
+                                    <td class="px-24 py-8 text-[11px] text-gray-400 font-bold uppercase tracking-widest">10 menit lalu</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50/50 transition-colors group">
+                                    <td class="px-24 py-8">
+                                        <div class="flex items-center gap-5">
+                                            <div class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 font-black text-xs flex items-center justify-center border-2 border-white shadow-lg">SR</div>
+                                            <div>
+                                                <div class="text-sm font-black text-ink">Siti Rahayu</div>
+                                                <div class="text-[11px] text-gray-400 font-medium">siti.r@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-24 py-8">
+                                        <span class="px-4 py-1.5 bg-gray-100 text-gray-500 text-[9px] font-black rounded-lg uppercase tracking-widest border border-gray-200">FESTIVAL</span>
+                                    </td>
+                                    <td class="px-24 py-8">
+                                        <div class="flex items-center gap-3 text-green-600 text-[11px] font-black uppercase tracking-wider">
+                                            <div class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_12px_rgba(34,197,94,0.4)]"></div>
+                                            Berhasil
+                                        </div>
+                                    </td>
+                                    <td class="px-24 py-8 text-sm font-black text-ink">Rp 350.000</td>
+                                    <td class="px-24 py-8 text-[11px] text-gray-400 font-bold uppercase tracking-widest">24 menit lalu</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50/50 transition-colors group">
+                                    <td class="px-24 py-8">
+                                        <div class="flex items-center gap-5">
+                                            <div class="w-12 h-12 rounded-full bg-rust/5 text-rust/40 font-black text-xs flex items-center justify-center border-2 border-white shadow-lg">DW</div>
+                                            <div>
+                                                <div class="text-sm font-black text-ink">Dedi Wijaya</div>
+                                                <div class="text-[11px] text-gray-400 font-medium">dedi.w@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-24 py-8">
+                                        <span class="px-4 py-1.5 bg-rust/10 text-rust text-[9px] font-black rounded-lg uppercase tracking-widest border border-rust/10">VIP GOLD</span>
+                                    </td>
+                                    <td class="px-24 py-8">
+                                        <div class="flex items-center gap-3 text-rust text-[11px] font-black uppercase tracking-wider animate-pulse">
+                                            <div class="w-2 h-2 bg-rust rounded-full shadow-[0_0_12px_rgba(184,76,43,0.4)]"></div>
+                                            Pending
+                                        </div>
+                                    </td>
+                                    <td class="px-24 py-8 text-sm font-black text-ink">Rp 1.500.000</td>
+                                    <td class="px-24 py-8 text-[11px] text-gray-400 font-bold uppercase tracking-widest">42 menit lalu</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Removed Tab Content: Semua Transaksi -->
+        </main>
+    </div>
+
+    <!-- Modal: Semua Transaksi -->
+    <div id="modal-transaksi" class="modal-overlay">
+        <div class="modal-container !max-w-5xl">
+            <div class="modal-header !p-8 border-b border-gray-100">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-rust/10 rounded-2xl flex items-center justify-center text-rust">
+                        <i data-lucide="receipt-text" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-ink text-xl">Riwayat Transaksi</h3>
+                        <p class="text-xs text-gray-400">Kelola dan pantau semua penjualan tiket Anda</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-transaksi')" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-ink transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="modal-body !p-0">
+                <div class="p-8 bg-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <div class="search-input-wrapper !w-full md:!w-80">
+                            <i data-lucide="search"></i>
+                            <input type="text" class="search-input" placeholder="Cari nama, email, atau ID...">
+                        </div>
+                        <select class="bg-white border border-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold text-ink outline-none focus:border-rust transition-colors">
+                            <option>Semua Status</option>
+                            <option>Berhasil</option>
+                            <option>Pending</option>
+                            <option>Gagal</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <button class="flex-1 md:flex-none bg-white border border-gray-200 px-6 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+                            <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+                            Filter
+                        </button>
+                        <button class="flex-1 md:flex-none bg-ink text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-lg shadow-ink/10">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="max-h-[55vh] overflow-y-auto px-8 pb-8">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-white z-10">
+                            <tr class="border-b border-gray-100">
+                                <th class="py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID Transaksi</th>
+                                <th class="py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pembeli</th>
+                                <th class="py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kategori</th>
+                                <th class="py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Qty</th>
+                                <th class="py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Bayar</th>
+                                <th class="py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Waktu</th>
+                                <th class="py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="py-4 text-[10px] font-mono text-gray-400">#TRX-99210</td>
+                                <td class="py-4">
+                                    <div class="text-xs font-bold text-ink">Andi Wijaya</div>
+                                    <div class="text-[10px] text-gray-400">andi@mail.com</div>
+                                </td>
+                                <td class="py-4">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 bg-gray-100 rounded text-gray-600">REGULER</span>
+                                </td>
+                                <td class="py-4 text-xs text-center font-bold text-ink">2</td>
+                                <td class="py-4 text-xs font-bold text-ink">Rp 300.000</td>
+                                <td class="py-4">
+                                    <div class="text-[10px] text-ink font-medium">08 Apr 2026</div>
+                                    <div class="text-[10px] text-gray-400">09:15 WIB</div>
+                                </td>
+                                <td class="py-4"><span class="status-badge active">BERHASIL</span></td>
+                            </tr>
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="py-4 text-[10px] font-mono text-gray-400">#TRX-99209</td>
+                                <td class="py-4">
+                                    <div class="text-xs font-bold text-ink">Siti Aminah</div>
+                                    <div class="text-[10px] text-gray-400">siti@mail.com</div>
+                                </td>
+                                <td class="py-4">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 bg-gold/10 rounded text-gold-deep">VIP</span>
+                                </td>
+                                <td class="py-4 text-xs text-center font-bold text-ink">1</td>
+                                <td class="py-4 text-xs font-bold text-ink">Rp 300.000</td>
+                                <td class="py-4">
+                                    <div class="text-[10px] text-ink font-medium">08 Apr 2026</div>
+                                    <div class="text-[10px] text-gray-400">09:02 WIB</div>
+                                </td>
+                                <td class="py-4"><span class="status-badge active">BERHASIL</span></td>
+                            </tr>
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="py-4 text-[10px] font-mono text-gray-400">#TRX-99208</td>
+                                <td class="py-4">
+                                    <div class="text-xs font-bold text-ink">Budi Santoso</div>
+                                    <div class="text-[10px] text-gray-400">budi@mail.com</div>
+                                </td>
+                                <td class="py-4">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 bg-gray-100 rounded text-gray-600">REGULER</span>
+                                </td>
+                                <td class="py-4 text-xs text-center font-bold text-ink">4</td>
+                                <td class="py-4 text-xs font-bold text-ink">Rp 600.000</td>
+                                <td class="py-4">
+                                    <div class="text-[10px] text-ink font-medium">08 Apr 2026</div>
+                                    <div class="text-[10px] text-gray-400">08:15 WIB</div>
+                                </td>
+                                <td class="py-4"><span class="status-badge active">BERHASIL</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer !p-8 border-t border-gray-100">
+                <div class="flex items-center justify-between w-full">
+                    <p class="text-[10px] text-gray-400">Menampilkan 3 dari 342 transaksi</p>
+                    <button onclick="closeModal('modal-transaksi')" class="bg-gray-100 text-ink px-8 py-3 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Tambah/Edit Tiket -->
+    <div id="modal-tiket" class="modal-overlay">
+        <div class="modal-container !max-w-2xl !p-0 overflow-hidden flex flex-col max-h-[90vh] !rounded-[2.5rem]">
+            <div class="flex items-center justify-between p-6 border-b border-gray-50 bg-white shrink-0">
+                <div class="flex-1 flex gap-8 px-4">
+                    <button onclick="switchModalTab('detail')" id="modal-tab-detail" class="py-4 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-rust text-rust transition-all">Detail Tiket</button>
+                    <button onclick="switchModalTab('sales')" id="modal-tab-sales" class="py-4 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-transparent text-gray-400 transition-all">Tanggal Penjualan</button>
+                </div>
+                <button onclick="closeModal('modal-tiket')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 rounded-full text-gray-400 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 custom-scrollbar bg-white">
+                <!-- Modal Content: Detail -->
+                <div id="modal-content-detail" class="p-10">
+                    <div class="space-y-8">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Tiket <span class="text-rust">*</span></label>
+                            <div class="relative group">
+                                <input type="text" placeholder="Contoh: Early Bird" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-base focus:border-rust outline-none transition-all font-bold text-ink placeholder:text-gray-300 placeholder:font-normal">
+                                <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Jumlah Tiket <span class="text-rust">*</span></label>
+                            <div class="relative group">
+                                <input type="number" value="0" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-base focus:border-rust outline-none transition-all font-bold text-ink">
+                                <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
+                            </div>
+                            <div class="flex justify-end mt-1">
+                                <span class="text-[10px] text-gray-400 font-medium">0/100 <i data-lucide="info" class="inline w-3 h-3 ml-1"></i></span>
+                            </div>
+                        </div>
+                        <div id="price-field" class="space-y-2">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Harga <span class="text-rust">*</span></label>
+                            <div class="relative group">
+                                <input type="text" value="Rp" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-base focus:border-rust outline-none transition-all font-bold text-ink">
+                                <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Deskripsi Tiket</label>
+                            <div class="relative group">
+                                <textarea placeholder="Berikan info tambahan tentang tiket ini..." class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink h-24 resize-none placeholder:text-gray-300 placeholder:font-normal"></textarea>
+                                <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
+                            </div>
+                            <div class="flex justify-end mt-1">
+                                <span class="text-[10px] text-gray-400 font-medium">0/140</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="switchModalTab('sales')" class="w-full bg-rust text-white font-bold py-4 rounded-lg mt-8 hover:bg-rust-deep transition-all uppercase tracking-wider text-sm opacity-50 cursor-not-allowed" disabled>Selanjutnya</button>
+                </div>
+
+                <!-- Modal Content: Sales Date -->
+                <div id="modal-content-sales" class="p-10 hidden">
+                    <div class="space-y-10">
+                        <div class="space-y-4">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tanggal Mulai <span class="text-rust">*</span></label>
+                            <div class="flex gap-4">
+                                <div class="flex-1 relative group">
+                                    <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                                    <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
+                                </div>
+                                <div class="w-40 relative group/select">
+                                    <div class="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-4 py-3.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
+                                            <span>09:00</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-300 group-hover/select:text-rust transition-colors"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tanggal Berakhir <span class="text-rust">*</span></label>
+                            <div class="flex gap-4">
+                                <div class="flex-1 relative group">
+                                    <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                                    <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
+                                </div>
+                                <div class="w-40 relative group/select">
+                                    <div class="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-4 py-3.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
+                                            <span>18:00</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-300 group-hover/select:text-rust transition-colors"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-5 bg-rust/5 rounded-[1.5rem] border border-rust/10 mt-6">
+                            <i data-lucide="info" class="w-5 h-5 text-rust shrink-0 mt-0.5"></i>
+                            <p class="text-[11px] leading-relaxed text-rust/70 font-medium tracking-tight">Tanggal maksimal penjualan tiket bergantung pada tanggal berakhirnya event yang telah diatur sebelumnya. Pastikan jadwal penjualan selaras dengan waktu pelaksanaan event.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 mt-12">
+                        <button onclick="switchModalTab('detail')" class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-rust hover:text-white transition-all shrink-0">
+                            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                        </button>
+                        <button id="btn-create-ticket" class="flex-1 bg-rust text-white font-black py-4 rounded-[1.25rem] transition-all uppercase tracking-[0.2em] text-xs shadow-xl shadow-rust/40">Simpan Tiket</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Function to calculate and update dashboard stats
+        function updateDashboardStats() {
+            // 1. Calculate from Ticket Table
+            const ticketRows = document.querySelectorAll('#manage-tiket tbody tr');
+            let totalSold = 0;
+            let totalCapacity = 0;
+            let totalRevenue = 0;
+
+            ticketRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 5) {
+                    const priceText = cells[1].textContent.replace(/[^0-9]/g, '');
+                    const capacityText = cells[2].textContent.replace(/[^0-9]/g, '');
+                    const soldText = cells[3].textContent.replace(/[^0-9]/g, '');
+
+                    const price = parseInt(priceText) || 0;
+                    const capacity = parseInt(capacityText) || 0;
+                    const sold = parseInt(soldText) || 0;
+
+                    totalSold += sold;
+                    totalCapacity += capacity;
+                    totalRevenue += (sold * price);
+                }
+            });
+
+            // 2. Calculate from Transaction Table
+            const transactionRows = document.querySelectorAll('#manage-penjualan tbody tr');
+            const totalTransactions = transactionRows.length;
+
+            // 3. Update UI
+            document.getElementById('stat-tickets-sold').textContent = `${totalSold.toLocaleString('id-ID')} / ${totalCapacity.toLocaleString('id-ID')}`;
+            const percent = totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0;
+            document.getElementById('stat-tickets-percent').textContent = `${percent}% Terisi`;
+            document.getElementById('stat-total-sales').textContent = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
+            document.getElementById('stat-total-transactions').textContent = totalTransactions.toLocaleString('id-ID');
+
+            // Update Revenue Summary Card if it exists
+            const revenueDisplay = document.querySelector('h2.text-3xl.font-display.text-ink');
+            if (revenueDisplay) {
+                revenueDisplay.textContent = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
+            }
+            
+            const grossRevenue = document.querySelector('.lg\\:col-span-2 .font-bold.text-ink.text-sm:not(.text-3xl)');
+            // Find the gross revenue value specifically
+            const grossValue = document.querySelector('span.text-xs.font-bold.text-ink:nth-child(2)');
+            // This is a bit brittle, let's just update the main one for now as requested.
+        }
+
+        // Initialize stats on load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateDashboardStats();
+        });
+
+        function renderSalesChart() {
+            const container = document.getElementById('chart-container');
+            if (!container) return;
+
+            // Clear previous
+            container.innerHTML = '';
+
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const padding = 20;
+
+            const svg = d3.select('#chart-container')
+                .append('svg')
+                .attr('width', '100%')
+                .attr('height', '100%')
+                .attr('viewBox', `0 0 ${width} ${height}`)
+                .attr('preserveAspectRatio', 'none');
+
+            // Sample data for 30 days
+            const data = [
+                15, 28, 25, 35, 30, 45, 40, 55, 50, 48, 60, 65, 75, 70, 85, 80, 78, 90, 95, 110, 105, 120, 115, 130, 125, 145, 140, 155, 150, 148
+            ];
+
+            const xScale = d3.scaleLinear()
+                .domain([0, data.length - 1])
+                .range([padding, width - padding]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(data)])
+                .range([height - padding, padding]);
+
+            const line = d3.line()
+                .x((d, i) => xScale(i))
+                .y(d => yScale(d))
+                .curve(d3.curveMonotoneX);
+
+            const area = d3.area()
+                .x((d, i) => xScale(i))
+                .y0(height)
+                .y1(d => yScale(d))
+                .curve(d3.curveMonotoneX);
+
+            // Add Gradient
+            const gradient = svg.append('defs')
+                .append('linearGradient')
+                .attr('id', 'chart-gradient')
+                .attr('x1', '0%')
+                .attr('y1', '0%')
+                .attr('x2', '0%')
+                .attr('y2', '100%');
+
+            gradient.append('stop')
+                .attr('offset', '0%')
+                .attr('stop-color', '#BD3B2E')
+                .attr('stop-opacity', 0.1);
+
+            gradient.append('stop')
+                .attr('offset', '100%')
+                .attr('stop-color', '#BD3B2E')
+                .attr('stop-opacity', 0);
+
+            // Draw Area
+            svg.append('path')
+                .datum(data)
+                .attr('fill', 'url(#chart-gradient)')
+                .attr('d', area);
+
+            // Draw Line
+            svg.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', '#BD3B2E')
+                .attr('stroke-width', 3)
+                .attr('d', line);
+
+            // Add Points
+            const pointsToShow = [0, 7, 14, 21, 28, 29];
+            svg.selectAll('.dot')
+                .data(data.filter((d, i) => pointsToShow.includes(i)))
+                .enter()
+                .append('circle')
+                .attr('class', 'dot')
+                .attr('cx', (d, i) => xScale(pointsToShow[i]))
+                .attr('cy', d => yScale(d))
+                .attr('r', 4)
+                .attr('fill', 'white')
+                .attr('stroke', '#BD3B2E')
+                .attr('stroke-width', 2);
+        }
+
+        function switchManageTab(tabId) {
+            // Update tab buttons
+            const tabs = document.querySelectorAll('.event-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                const tabText = tab.innerText.toLowerCase();
+                if (
+                    (tabId === 'info' && tabText.includes('informasi')) ||
+                    (tabId === 'tiket' && tabText.includes('tiket')) ||
+                    (tabId === 'penjualan' && tabText.includes('laporan'))
+                ) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Update content visibility
+            const contents = document.querySelectorAll('.event-tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('manage-' + tabId).classList.add('active');
+
+            // Render chart if on sales tab
+            if (tabId === 'penjualan') {
+                setTimeout(() => {
+                    renderSalesChart();
+                    if (window.lucide) {
+                        window.lucide.createIcons();
+                    }
+                }, 100);
+            }
+        }
+
+        // Initialize chart if tab is already active
+        window.addEventListener('resize', () => {
+            if (document.getElementById('manage-penjualan').classList.contains('active')) {
+                renderSalesChart();
+            }
+        });
+
+        function openModal(id, type) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                if (id === 'modal-tiket') {
+                    const priceField = document.getElementById('price-field');
+                    const btnCreate = document.getElementById('btn-create-ticket');
+                    
+                    if (type === 'free') {
+                        if (priceField) priceField.classList.add('hidden');
+                        if (btnCreate) btnCreate.textContent = 'Simpan Tiket Gratis';
+                    } else {
+                        if (priceField) priceField.classList.remove('hidden');
+                        if (btnCreate) btnCreate.textContent = 'Simpan Tiket Berbayar';
+                    }
+                    
+                    switchModalTab('detail');
+                    validateTicketForm();
+                }
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function switchModalTab(tab) {
+            if (tab === 'sales') {
+                const priceField = document.getElementById('price-field');
+                const modal = document.getElementById('modal-tiket');
+                const nameInput = modal.querySelector('input[placeholder*="Nama"], input[placeholder*="Maksimal"]');
+                const qtyInput = modal.querySelector('input[type="number"]');
+                const priceInput = priceField ? priceField.querySelector('input') : null;
+                const isFree = priceField && priceField.classList.contains('hidden');
+                
+                const isValid = (nameInput && nameInput.value.trim().length > 0) && 
+                                (qtyInput && parseInt(qtyInput.value) > 0) && 
+                                (isFree || (priceInput && priceInput.value.replace(/[^0-9]/g, '').length > 0));
+                
+                if (!isValid) return;
+            }
+
+            const detailTab = document.getElementById('modal-tab-detail');
+            const salesTab = document.getElementById('modal-tab-sales');
+            const detailContent = document.getElementById('modal-content-detail');
+            const salesContent = document.getElementById('modal-content-sales');
+
+            if (!detailTab || !salesTab || !detailContent || !salesContent) return;
+
+            if (tab === 'detail') {
+                detailTab.classList.add('border-rust', 'text-rust');
+                detailTab.classList.remove('border-transparent', 'text-gray-400');
+                salesTab.classList.remove('border-rust', 'text-rust');
+                salesTab.classList.add('border-transparent', 'text-gray-400');
+                detailContent.classList.remove('hidden');
+                salesContent.classList.add('hidden');
+            } else {
+                salesTab.classList.add('border-rust', 'text-rust');
+                salesTab.classList.remove('border-transparent', 'text-gray-400');
+                detailTab.classList.remove('border-rust', 'text-rust');
+                detailTab.classList.add('border-transparent', 'text-gray-400');
+                salesContent.classList.remove('hidden');
+                detailContent.classList.add('hidden');
+            }
+        }
+
+        let currentCategory = 'paid';
+        let currentAction = 'add';
+
+        function handleTicketAction(action, category = 'paid') {
+            currentAction = action;
+            currentCategory = category;
+            
+            const section = document.getElementById('ticket-action-section');
+            const title = document.getElementById('action-title');
+            const btnText = document.getElementById('btn-action-text');
+            
+            section.classList.remove('hidden');
+            
+            if (action === 'edit') {
+                title.textContent = 'Ubah Kategori Tiket';
+                btnText.textContent = 'Lanjut Ubah Detail Tiket';
+            } else {
+                title.textContent = 'Tambah Kategori Tiket';
+                btnText.textContent = 'Lanjut Atur Detail Tiket';
+            }
+            
+            setTicketCategory(category);
+            
+            // Scroll to section
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function setTicketCategory(category) {
+            currentCategory = category;
+            const paidCard = document.getElementById('card-category-paid');
+            const freeCard = document.getElementById('card-category-free');
+            const paidIcon = document.getElementById('status-icon-paid');
+            const freeIcon = document.getElementById('status-icon-free');
+            const paidLabel = document.getElementById('label-tag-paid');
+            const freeLabel = document.getElementById('label-tag-free');
+
+            if (category === 'paid') {
+                paidCard.className = 'relative border-2 rounded-[2.5rem] min-h-[56px] px-5 py-8 flex items-center justify-between transition-all cursor-pointer group overflow-hidden border-rust bg-rust/5 shadow-2xl shadow-rust/10';
+                freeCard.className = 'relative border-2 border-transparent bg-gray-50/50 rounded-[2.5rem] min-h-[56px] px-5 py-8 flex items-center justify-between transition-all cursor-pointer group overflow-hidden hover:bg-white hover:border-rust/20';
+                
+                paidIcon.innerHTML = '<i data-lucide="check" class="w-6 h-6"></i>';
+                paidIcon.className = 'w-12 h-12 rounded-full bg-rust text-white flex items-center justify-center shadow-lg shadow-rust/40';
+                
+                freeIcon.innerHTML = '<i data-lucide="plus" class="w-6 h-6"></i>';
+                freeIcon.className = 'w-12 h-12 rounded-full border-2 border-gray-100 flex items-center justify-center text-gray-300 group-hover:border-rust group-hover:text-rust transition-all';
+                
+                paidLabel.textContent = currentAction === 'edit' ? 'Current' : 'Pilih';
+                paidLabel.className = 'text-[10px] font-bold text-rust uppercase tracking-[0.2em] mb-2';
+                
+                freeLabel.textContent = 'Opsi Lain';
+                freeLabel.className = 'text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2';
+                
+                // Update text colors
+                paidCard.querySelector('.text-ink').classList.remove('text-gray-300');
+                freeCard.querySelector('.text-ink').classList.add('text-gray-300');
+            } else {
+                freeCard.className = 'relative border-2 rounded-[2.5rem] min-h-[56px] px-5 py-8 flex items-center justify-between transition-all cursor-pointer group overflow-hidden border-rust bg-rust/5 shadow-2xl shadow-rust/10';
+                paidCard.className = 'relative border-2 border-transparent bg-gray-50/50 rounded-[2.5rem] min-h-[56px] px-5 py-8 flex items-center justify-between transition-all cursor-pointer group overflow-hidden hover:bg-white hover:border-rust/20';
+                
+                freeIcon.innerHTML = '<i data-lucide="check" class="w-6 h-6"></i>';
+                freeIcon.className = 'w-12 h-12 rounded-full bg-rust text-white flex items-center justify-center shadow-lg shadow-rust/40';
+                
+                paidIcon.innerHTML = '<i data-lucide="plus" class="w-6 h-6"></i>';
+                paidIcon.className = 'w-12 h-12 rounded-full border-2 border-gray-100 flex items-center justify-center text-gray-300 group-hover:border-rust group-hover:text-rust transition-all';
+                
+                freeLabel.textContent = currentAction === 'edit' ? 'Current' : 'Pilih';
+                freeLabel.className = 'text-[10px] font-bold text-rust uppercase tracking-[0.2em] mb-2';
+                
+                paidLabel.textContent = 'Opsi Lain';
+                paidLabel.className = 'text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2';
+
+                // Update text colors
+                freeCard.querySelector('.text-ink').classList.remove('text-gray-300');
+                paidCard.querySelector('.text-ink').classList.add('text-gray-300');
+            }
+            lucide.createIcons();
+        }
+
+        function validateTicketForm() {
+            const modal = document.getElementById('modal-tiket');
+            if (!modal) return;
+
+            const nameInput = modal.querySelector('input[placeholder*="Nama"], input[placeholder*="Maksimal"]');
+            const qtyInput = modal.querySelector('input[type="number"]');
+            const priceField = document.getElementById('price-field');
+            const priceInput = priceField ? priceField.querySelector('input') : null;
+            const btnNext = modal.querySelector('button[onclick*="switchModalTab(\'sales\')"]');
+            const btnCreate = document.getElementById('btn-create-ticket');
+
+            const isFree = priceField && priceField.classList.contains('hidden');
+            
+            const isNameValid = nameInput && nameInput.value.trim().length > 0;
+            const isQtyValid = qtyInput && parseInt(qtyInput.value) > 0;
+            const isPriceValid = isFree || (priceInput && priceInput.value.replace(/[^0-9]/g, '').length > 0);
+
+            const isValid = isNameValid && isQtyValid && isPriceValid;
+
+            if (btnNext) {
+                if (isValid) {
+                    btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnNext.disabled = false;
+                } else {
+                    btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnNext.disabled = true;
+                }
+            }
+
+            if (btnCreate) {
+                if (isValid) {
+                    btnCreate.classList.remove('bg-rust/20', 'cursor-not-allowed');
+                    btnCreate.classList.add('bg-rust');
+                    btnCreate.disabled = false;
+                } else {
+                    btnCreate.classList.add('bg-rust/20', 'cursor-not-allowed');
+                    btnCreate.classList.remove('bg-rust');
+                    btnCreate.disabled = true;
+                }
+            }
+        }
+
+        // Add event listeners for validation
+        window.addEventListener('load', () => {
+            const modal = document.getElementById('modal-tiket');
+            if (modal) {
+                const inputs = modal.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('input', validateTicketForm);
+                });
+            }
+        });
+
+        function saveEventChanges() {
+            alert('Perubahan event berhasil disimpan!');
+        }
+    </script>
+</body>
+</html>

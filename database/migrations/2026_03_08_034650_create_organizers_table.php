@@ -11,10 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('organizers', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        // Skipped — organizers table is already created by 2026_03_06_081527 migration
     }
 
     /**
