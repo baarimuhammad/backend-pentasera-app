@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pentasara | Tradisi dalam Genggaman</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Cinzel', 'serif'],
+                    },
+                    colors: {
+                        gold: '#C8922A',
+                        'gold-light': '#E5B96A',
+                        rust: '#B84C2B',
+                        'rust-deep': '#8B2E12',
+                        cream: '#F5EDE0',
+                        dark: '#1A0F0A',
+                        ink: '#2C1A0E',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream/20 text-ink font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Announcement Bar -->
+    <div class="announcement">
+        Buat event cuma 3 langkah. <a href="#">Buat Event sekarang</a>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="main-nav sticky top-0 z-50">
+        <a href="index.html" class="logo flex items-center gap-2">
+            <img src="assets/logo pentasera.png" alt="Pentasara Logo" class="logo-img">
+            <span class="logo-text">PENTASARA</span>
+        </a>
+        <div class="search-bar">
+            <input type="text" placeholder="Cari nama event....">
+            <button class="search-btn">
+                <i data-lucide="search" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <ul class="nav-links hidden lg:flex">
+            <li><a href="tentang-kami.html">About Us</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="hubungi-kami.html">Contact</a></li>
+        </ul>
+        <div class="nav-btns">
+            <!-- Logged Out View -->
+            <div class="logged-out-only flex gap-3">
+                <button class="btn-daftar" onclick="location.href='auth.html?tab=signup'">Daftar</button>
+                <button class="btn-masuk" onclick="location.href='auth.html'">Masuk</button>
+            </div>
+
+            <!-- Logged In View -->
+            <div class="logged-in-only flex items-center gap-4">
+                <!-- User Mode Button -->
+                <button class="btn-ticket user-only" onclick="location.href='auth.html?from=tiket'">
+                    <i data-lucide="ticket" class="w-4 h-4"></i> Tiket Saya
+                </button>
+                <!-- Creator Mode Button -->
+                <button class="btn-ticket creator-only" onclick="location.href='create-event.html'">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Buat Event
+                </button>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-container">
+                    <div class="profile-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" alt="User Profile">
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-header" onclick="toggleRole()">
+                            <div class="switch-icon">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </div>
+                            <div class="dropdown-header-text">
+                                <div class="dropdown-header-title">Beralih ke akun</div>
+                                <div class="dropdown-header-role" id="dropdown-role-label">Penyelenggara</div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                        </div>
+                        <div class="dropdown-list">
+                            <!-- Creator Only Items -->
+                            <a href="dashboard.html" class="dropdown-item creator-only">
+                                <i data-lucide="layout-dashboard"></i> Dashboard
+                            </a>
+                            <a href="my-events.html" class="dropdown-item creator-only">
+                                <i data-lucide="calendar"></i> Event Saya
+                            </a>
+                            <a href="manage-access.html" class="dropdown-item creator-only">
+                                <i data-lucide="users"></i> Kelola Akses
+                            </a>
+                            
+                            <!-- Common Items -->
+                            <a href="profile.html" class="dropdown-item">
+                                <i data-lucide="user"></i> Informasi Dasar
+                            </a>
+                            <a href="settings.html" class="dropdown-item">
+                                <i data-lucide="settings"></i> Pengaturan
+                            </a>
+                            <a href="#" onclick="logout(); return false;" class="dropdown-item logout">
+                                <i data-lucide="log-out"></i> Keluar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="app" class="flex-1">
+        <div class="flex-1 max-w-7xl mx-auto w-full">
+            <!-- Hero Section -->
+            <div class="hero">
+                <img src="https://images.unsplash.com/photo-1583994038879-66d5e6a6dcc4?w=1200&h=400&fit=crop" alt="Traditional Dance Performance">
+                <div class="hero-overlay">
+                    <div class="hero-brand">
+                        <div class="flex items-center justify-center gap-3 mb-4">
+                            <img src="assets/logo pentasera.png" alt="Pentasara Logo" class="hero-logo-img">
+                            <span class="logo-text text-white text-4xl">PENTASARA</span>
+                        </div>
+                        <div class="hero-tagline">Experience the Magic of Traditional Performances!</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events Section -->
+            <div class="section">
+                <div class="section-title">Event Terdekat</div>
+                <div class="carousel-wrapper">
+                    <button class="carousel-btn prev" onclick="scrollCarousel(this, -1)">&#8249;</button>
+                    <div class="events-grid" id="carousel-terdekat">
+                        <!-- Event Card 1 -->
+                        <div onclick="location.href='order.html?id=1'" class="event-card">
+                            <img class="event-card-img" src="assets/kecak.png" alt="Witness the Fire of Uluwatu">
+                            <div class="event-card-body">
+                                <div class="event-name">Witness the Fire of Uluwatu</div>
+                                <div class="event-date">03 Apr 2026</div>
+                                <div class="event-venue">Pura Luhur Uluwatu, Bali</div>
+                                <div class="event-price">Rp150.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 2 -->
+                        <div onclick="location.href='order.html?id=2'" class="event-card">
+                            <img class="event-card-img" src="assets/wayang.png" alt="Stories Carved in Tradition">
+                            <div class="event-card-body">
+                                <div class="event-name">Stories Carved in Tradition</div>
+                                <div class="event-date">08 Apr 2026</div>
+                                <div class="event-venue">Keraton Yogyakarta</div>
+                                <div class="event-price">Rp50.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 3 -->
+                        <div onclick="location.href='order.html?id=3'" class="event-card">
+                            <img class="event-card-img" src="assets/taripiring.png" alt="Feel the Rhythm of Minangkabau">
+                            <div class="event-card-body">
+                                <div class="event-name">Feel the Rhythm of Minangkabau</div>
+                                <div class="event-date">11 Apr 2026</div>
+                                <div class="event-venue">Padang Cultural Center</div>
+                                <div class="event-price">Rp80.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 4 -->
+                        <div onclick="location.href='order.html?id=4'" class="event-card">
+                            <img class="event-card-img" src="assets/gamelan.png" alt="Harmony of Javanese Heritage">
+                            <div class="event-card-body">
+                                <div class="event-name">Harmony of Javanese Heritage</div>
+                                <div class="event-date">12 Apr 2026</div>
+                                <div class="event-venue">Jatim Expo Surabaya</div>
+                                <div class="event-price">Rp100.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 5 -->
+                        <div onclick="location.href='order.html?id=5'" class="event-card">
+                            <img class="event-card-img" src="assets/TariBarong.png" alt="Experience the Magic of Bali">
+                            <div class="event-card-body">
+                                <div class="event-name">Experience the Magic of Bali</div>
+                                <div class="event-date">15 Apr 2026</div>
+                                <div class="event-venue">GWK Cultural Park, Bali</div>
+                                <div class="event-price">Rp125.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 6 -->
+                        <div onclick="location.href='order.html?id=6'" class="event-card">
+                            <img class="event-card-img" src="assets/tarisaman.png" alt="Rhythm in Perfect Harmony">
+                            <div class="event-card-body">
+                                <div class="event-name">Rhythm in Perfect Harmony</div>
+                                <div class="event-date">20 Apr 2026</div>
+                                <div class="event-venue">Istora Senayan, Jakarta</div>
+                                <div class="event-price">Rp200.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 7 -->
+                        <div onclick="location.href='order.html?id=7'" class="event-card">
+                            <img class="event-card-img" src="assets/jaipong.png" alt="Grace in Every Movement">
+                            <div class="event-card-body">
+                                <div class="event-name">Grace in Every Movement</div>
+                                <div class="event-date">25 Apr 2026</div>
+                                <div class="event-venue">Saung Angklung Udjo, Bandung</div>
+                                <div class="event-price">Rp75.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 8 -->
+                        <div onclick="location.href='order.html?id=8'" class="event-card">
+                            <img class="event-card-img" src="assets/tortor.png" alt="The Spirit of Batak Heritage">
+                            <div class="event-card-body">
+                                <div class="event-name">The Spirit of Batak Heritage</div>
+                                <div class="event-date">30 Apr 2026</div>
+                                <div class="event-venue">Danau Toba, Sumatera Utara</div>
+                                <div class="event-price">Rp50.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 9 -->
+                        <div onclick="location.href='order.html?id=9'" class="event-card">
+                            <img class="event-card-img" src="assets/legong.png" alt="Elegance of the Royal Court">
+                            <div class="event-card-body">
+                                <div class="event-name">Elegance of the Royal Court</div>
+                                <div class="event-date">05 Mei 2026</div>
+                                <div class="event-venue">Puri Saren Agung, Ubud</div>
+                                <div class="event-price">Rp120.000</div>
+                            </div>
+                        </div>
+                        <!-- Event Card 10 -->
+                        <div onclick="location.href='order.html?id=10'" class="event-card">
+                            <img class="event-card-img" src="assets/wayanggolek.png" alt="Stories Carved in Tradition">
+                            <div class="event-card-body">
+                                <div class="event-name">Stories Carved in Tradition II</div>
+                                <div class="event-date">10 Mei 2026</div>
+                                <div class="event-venue">Gedung Kesenian Jakarta</div>
+                                <div class="event-price">Rp90.000</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next" onclick="scrollCarousel(this, 1)">&#8250;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Events Section (Full Width) -->
+        <div class="top-event-section">
+            <div class="max-w-7xl mx-auto px-10">
+                <div class="section-title">TOP EVENT</div>
+                <div class="top-event-grid">
+                    <div onclick="location.href='order.html?id=1'" class="top-event-item">
+                        <span class="top-rank">1</span>
+                        <div class="top-event-card">
+                            <img class="top-event-img" src="assets/kecak.png" alt="Event 1">
+                            <div class="top-event-overlay">
+                                <span class="top-event-tag">Featured Event</span>
+                                <h3 class="top-event-name">Witness the Fire...</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div onclick="location.href='order.html?id=2'" class="top-event-item">
+                        <span class="top-rank">2</span>
+                        <div class="top-event-card">
+                            <img class="top-event-img" src="assets/wayang.png" alt="Event 2">
+                            <div class="top-event-overlay">
+                                <span class="top-event-tag">Featured Event</span>
+                                <h3 class="top-event-name">Stories Carved in...</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div onclick="location.href='order.html?id=3'" class="top-event-item">
+                        <span class="top-rank">3</span>
+                        <div class="top-event-card">
+                            <img class="top-event-img" src="assets/taripiring.png" alt="Event 3">
+                            <div class="top-event-overlay">
+                                <span class="top-event-tag">Featured Event</span>
+                                <h3 class="top-event-name">Feel the Rhythm...</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 max-w-7xl mx-auto w-full">
+            <!-- Ended Events Section -->
+            <div class="section">
+                <div class="section-title">Event Berakhir</div>
+                <div class="carousel-wrapper">
+                    <button class="carousel-btn prev" onclick="scrollCarousel(this, -1)">&#8249;</button>
+                    <div class="events-grid" id="carousel-berakhir">
+                        <div class="event-card">
+                            <div class="ended-badge-wrap">
+                                <img class="event-card-img" src="https://images.unsplash.com/photo-1604714628312-d10e6a6e1a00?w=800&h=400&fit=crop" alt="Reog">
+                                <div class="ended-badge">Berakhir</div>
+                            </div>
+                            <div class="event-card-body">
+                                <div class="event-name">Reog Ponorogo Festival</div>
+                                <div class="event-date">18 Mar 2026</div>
+                                <div class="event-venue">Alun-Alun Ponorogo</div>
+                                <div class="event-price">Rp25.000</div>
+                            </div>
+                        </div>
+                        <div class="event-card">
+                            <div class="ended-badge-wrap">
+                                <img class="event-card-img" src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=400&fit=crop" alt="Tari Pendet">
+                                <div class="ended-badge">Berakhir</div>
+                            </div>
+                            <div class="event-card-body">
+                                <div class="event-name">Tari Pendet Massal</div>
+                                <div class="event-date">10 Mar 2026</div>
+                                <div class="event-venue">Ubud Palace, Bali</div>
+                                <div class="event-price">Rp100.000</div>
+                            </div>
+                        </div>
+                        <div class="event-card">
+                            <div class="ended-badge-wrap">
+                                <img class="event-card-img" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&h=400&fit=crop" alt="Sasando">
+                                <div class="ended-badge">Berakhir</div>
+                            </div>
+                            <div class="event-card-body">
+                                <div class="event-name">Sasando Music Night</div>
+                                <div class="event-date">05 Mar 2026</div>
+                                <div class="event-venue">Kupang Arts Center, NTT</div>
+                                <div class="event-price">Rp60.000</div>
+                            </div>
+                        </div>
+                        <div class="event-card">
+                            <div class="ended-badge-wrap">
+                                <img class="event-card-img" src="https://images.unsplash.com/photo-1590059431737-083651139481?w=800&h=400&fit=crop" alt="Tari Piring">
+                                <div class="ended-badge">Berakhir</div>
+                            </div>
+                            <div class="event-card-body">
+                                <div class="event-name">Minang Arts Festival</div>
+                                <div class="event-date">01 Mar 2026</div>
+                                <div class="event-venue">Bukittinggi, Sumbar</div>
+                                <div class="event-price">Rp40.000</div>
+                            </div>
+                        </div>
+                        <div class="event-card">
+                            <div class="ended-badge-wrap">
+                                <img class="event-card-img" src="https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=800&h=400&fit=crop" alt="Gamelan">
+                                <div class="ended-badge">Berakhir</div>
+                            </div>
+                            <div class="event-card-body">
+                                <div class="event-name">Gamelan Heritage Night</div>
+                                <div class="event-date">25 Feb 2026</div>
+                                <div class="event-venue">Solo, Jawa Tengah</div>
+                                <div class="event-price">Rp30.000</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next" onclick="scrollCarousel(this, 1)">&#8250;</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo flex items-center gap-2 mb-4">
+                    <img src="assets/logo pentasera.png" alt="Pentasara Logo" class="footer-logo-img">
+                    <span class="logo-text">PENTASARA</span>
+                </div>
+                <div class="footer-tagline">Melestarikan Budaya, Menghubungkan Jiwa.</div>
+                <div class="footer-social-wrap mt-6">
+                    <p class="social-label">Hubungi Kurator Kami:</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com" target="_blank" class="social-icon" title="Instagram">
+                            <i data-lucide="instagram"></i>
+                        </a>
+                        <a href="https://wa.me" target="_blank" class="social-icon" title="WhatsApp Chat">
+                            <i data-lucide="message-circle"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="events.html">Cari Event</a></li>
+                    <li><a href="tentang-kami.html">Tentang Kami</a></li>
+                    <li><a href="pusat-bantuan.html">Bantuan</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contact">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+                    <li><a href="syarat-ketentuan.html">Syarat & Ketentuan</a></li>
+                    <li><a href="hubungi-kami.html">Hubungi Kami</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2024 Pentasera Cultural Curator. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>

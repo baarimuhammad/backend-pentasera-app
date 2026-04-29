@@ -12,6 +12,18 @@ class Event extends Model
         'deskripsi',
         'lokasi',
         'event_datetime',
-        'event_status'
+        'event_status',
+        'image_url',
+        'kategori_event',
     ];
+
+    public function organizer()
+    {
+        return $this->belongsTo(Organizer::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
 }
