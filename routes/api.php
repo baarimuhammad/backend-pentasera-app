@@ -18,6 +18,7 @@ use App\Http\Controllers\CheckinController;
 # ───────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
+Route::patch('/users/{id}', [UserController::class, 'update']);
 
 # Events & tickets publik (bisa dilihat tanpa login)
 Route::get('/events',       [EventController::class, 'index']);
