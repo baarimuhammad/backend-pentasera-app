@@ -20,13 +20,13 @@
         <nav class="sidebar-nav">
             <div class="nav-group">
                 <p class="nav-label">Main Menu</p>
-                <a href="{{ url('/dashboard') }}" class="nav-item">
+                <a href="{{ url('/dashboard') }}" class="nav-item creator-only">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
                 </a>
-                <a href="{{ url('/my-events') }}" class="nav-item">
+                <a href="{{ url('/my-events') }}" class="nav-item creator-only">
                     <i data-lucide="calendar" class="w-5 h-5"></i> Event Saya
                 </a>
-                <a href="{{ url('/manage-access') }}" class="nav-item">
+                <a href="{{ url('/manage-access') }}" class="nav-item creator-only">
                     <i data-lucide="users" class="w-5 h-5"></i> Kelola Akses
                 </a>
                 <a href="{{ url('/my-tickets') }}" class="nav-item user-only">
@@ -63,7 +63,7 @@
                 <span>Pengaturan</span>
             </div>
             <div class="header-actions">
-                <a href="{{ url('/create-event') }}" class="bg-rust text-white px-8 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
+                <a href="{{ url('/create-event') }}" class="bg-rust text-white px-8 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all creator-only">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Buat Event
                 </a>

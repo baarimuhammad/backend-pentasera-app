@@ -1,11 +1,19 @@
 // my-events.js — Client-side logic for my-events page
 
-function switchTab(tabId) {
+/**
+ * Switch between Aktif / Draft / Lalu tabs.
+ * We intentionally use a unique name to avoid collisions with the
+ * global `switchTab()` defined in app.js (used by create-event).
+ */
+function switchMyEventTab(tabId) {
     // Update tab buttons
     const tabs = document.querySelectorAll('.event-tab');
     tabs.forEach(tab => {
         tab.classList.remove('active');
-        if (tab.innerText.toLowerCase().includes(tabId)) {
+        const text = tab.innerText.toLowerCase();
+        if ((tabId === 'aktif' && text.includes('aktif')) ||
+            (tabId === 'draft' && text.includes('draft')) ||
+            (tabId === 'lalu'  && text.includes('lalu'))) {
             tab.classList.add('active');
         }
     });
@@ -15,12 +23,9 @@ function switchTab(tabId) {
     contents.forEach(content => {
         content.classList.remove('active');
     });
-    document.getElementById('tab-' + tabId).classList.add('active');
+    const target = document.getElementById('tab-' + tabId);
+    if (target) target.classList.add('active');
 }
 
-function toggleRoleAndRedirect() {
-    const currentRole = localStorage.getItem('pentasara_role') || 'creator';
-    const newRole = currentRole === 'creator' ? 'user' : 'creator';
-    localStorage.setItem('pentasara_role', newRole);
-    window.location.href = '/';
-}
+// Expose globally so onclick attributes work
+window.switchMyEventTab = switchMyEventTab;

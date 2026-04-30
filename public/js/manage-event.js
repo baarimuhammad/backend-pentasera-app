@@ -9,6 +9,10 @@ let currentCategory = 'paid';
 let currentAction = 'add';
 
 // ── Dashboard Stats ──
+// Reads ticket data from the Kategori Tiket table and updates:
+//  1. Quick Stats cards (top of manage-event page)
+//  2. Laporan Penjualan summary cards
+// This ensures all numbers stay in sync across the page.
 function updateDashboardStats() {
     const ticketRows = document.querySelectorAll('#manage-tiket tbody tr');
     let totalSold = 0;
@@ -30,9 +34,21 @@ function updateDashboardStats() {
         }
     });
 
+    // Count transactions from the transaction table
     const transactionRows = document.querySelectorAll('#dash-transaction-table tbody tr');
     const totalTransactions = transactionRows.length;
 
+    // Calculate transaction revenue from the transaction table
+    let txRevenue = 0;
+    transactionRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 4) {
+            const amountText = cells[3].textContent.replace(/[^0-9]/g, '');
+            txRevenue += parseInt(amountText) || 0;
+        }
+    });
+
+    // ── 1. Quick Stats Cards (top of page) ──
     const elSold = document.getElementById('stat-tickets-sold');
     const elPercent = document.getElementById('stat-tickets-percent');
     const elSales = document.getElementById('stat-total-sales');
@@ -43,6 +59,17 @@ function updateDashboardStats() {
     if (elPercent) elPercent.textContent = `${percent}% Terisi`;
     if (elSales) elSales.textContent = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
     if (elTx) elTx.textContent = totalTransactions.toLocaleString('id-ID');
+
+    // ── 2. Laporan Penjualan Summary Cards ──
+    const reportRevenue = document.getElementById('report-total-revenue');
+    const reportTickets = document.getElementById('report-total-tickets');
+    const reportDaily = document.getElementById('report-daily-avg');
+
+    if (reportRevenue) reportRevenue.textContent = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
+    if (reportTickets) reportTickets.textContent = totalSold.toLocaleString('id-ID');
+    // Daily average (assume 30-day period for demo)
+    const dailyAvg = totalRevenue > 0 ? Math.round(totalRevenue / 30) : 0;
+    if (reportDaily) reportDaily.textContent = `Rp ${dailyAvg.toLocaleString('id-ID')}`;
 }
 
 // ── D3 Sales Chart ──
@@ -103,6 +130,8 @@ function switchManageTab(tabId) {
     if (el) el.classList.add('active');
 
     if (tabId === 'penjualan') {
+        // Recalculate stats when switching to sales report
+        updateDashboardStats();
         setTimeout(() => {
             renderSalesChart();
             if (window.lucide) window.lucide.createIcons();
@@ -120,6 +149,26 @@ function openModal(id, type) {
     if (id === 'modal-tiket') {
         const priceField = document.getElementById('price-field');
         const btnCreate = document.getElementById('btn-create-ticket');
+
+        // Reset all input fields inside the modal
+        modal.querySelectorAll('input').forEach(input => {
+            if (input.type === 'number') {
+                input.value = '0';
+            } else if (input.type === 'date') {
+                input.value = '';
+            } else if (input.type === 'text') {
+                // Check if it's the price field
+                if (input.closest('#price-field')) {
+                    input.value = 'Rp';
+                } else {
+                    input.value = '';
+                }
+            } else {
+                input.value = '';
+            }
+        });
+        modal.querySelectorAll('textarea').forEach(ta => ta.value = '');
+
         if (type === 'free') {
             if (priceField) priceField.classList.add('hidden');
             if (btnCreate) btnCreate.textContent = 'Simpan Tiket Gratis';
@@ -127,7 +176,23 @@ function openModal(id, type) {
             if (priceField) priceField.classList.remove('hidden');
             if (btnCreate) btnCreate.textContent = 'Simpan Tiket Berbayar';
         }
+
+        // Reset to detail tab
         switchModalTab('detail');
+
+        // Reset button states
+        const btnNext = document.getElementById('btn-next-tab');
+        if (btnNext) {
+            btnNext.disabled = true;
+            btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (btnCreate) {
+            btnCreate.disabled = true;
+            btnCreate.style.opacity = '0.3';
+            btnCreate.style.cursor = 'not-allowed';
+        }
+
+        // Run initial validation
         validateTicketForm();
     }
 }
@@ -141,17 +206,21 @@ function closeModal(id) {
 
 function switchModalTab(tab) {
     if (tab === 'sales') {
-        const priceField = document.getElementById('price-field');
+        // Validate detail fields before allowing switch to sales tab
         const modal = document.getElementById('modal-tiket');
         if (!modal) return;
-        const nameInput = modal.querySelector('input[placeholder*="Contoh"]');
-        const qtyInput = modal.querySelector('input[type="number"]');
+
+        const nameInput = modal.querySelector('#modal-content-detail input[type="text"]');
+        const qtyInput = modal.querySelector('#modal-content-detail input[type="number"]');
+        const priceField = document.getElementById('price-field');
         const priceInput = priceField ? priceField.querySelector('input') : null;
         const isFree = priceField && priceField.classList.contains('hidden');
-        const isValid = (nameInput && nameInput.value.trim().length > 0) &&
-                        (qtyInput && parseInt(qtyInput.value) > 0) &&
-                        (isFree || (priceInput && priceInput.value.replace(/[^0-9]/g, '').length > 0));
-        if (!isValid) return;
+
+        const isNameValid = nameInput && nameInput.value.trim().length > 0;
+        const isQtyValid = qtyInput && parseInt(qtyInput.value) > 0;
+        const isPriceValid = isFree || (priceInput && parseInt(priceInput.value.replace(/[^0-9]/g, '')) > 0);
+
+        if (!(isNameValid && isQtyValid && isPriceValid)) return;
     }
 
     const detailTab = document.getElementById('modal-tab-detail');
@@ -241,26 +310,55 @@ function validateTicketForm() {
     const modal = document.getElementById('modal-tiket');
     if (!modal) return;
 
-    const nameInput = modal.querySelector('input[placeholder*="Contoh"]');
-    const qtyInput = modal.querySelector('input[type="number"]');
+    // Find inputs specifically within the detail content area
+    const detailContent = document.getElementById('modal-content-detail');
+    if (!detailContent) return;
+
+    const nameInput = detailContent.querySelector('input[placeholder*="Contoh"]');
+    const qtyInput = detailContent.querySelector('input[type="number"]');
     const priceField = document.getElementById('price-field');
     const priceInput = priceField ? priceField.querySelector('input') : null;
-    const btnNext = modal.querySelector('button[onclick*="switchModalTab"]');
+
+    // Use specific IDs instead of generic selectors
+    const btnNext = document.getElementById('btn-next-tab');
     const btnCreate = document.getElementById('btn-create-ticket');
 
     const isFree = priceField && priceField.classList.contains('hidden');
     const isNameValid = nameInput && nameInput.value.trim().length > 0;
     const isQtyValid = qtyInput && parseInt(qtyInput.value) > 0;
-    const isPriceValid = isFree || (priceInput && priceInput.value.replace(/[^0-9]/g, '').length > 0);
-    const isValid = isNameValid && isQtyValid && isPriceValid;
+    const isPriceValid = isFree || (priceInput && parseInt(priceInput.value.replace(/[^0-9]/g, '')) > 0);
+    const isDetailValid = isNameValid && isQtyValid && isPriceValid;
 
+    // "Selanjutnya" button — enable/disable based on detail fields
     if (btnNext) {
-        if (isValid) { btnNext.classList.remove('opacity-50','cursor-not-allowed'); btnNext.disabled = false; }
-        else { btnNext.classList.add('opacity-50','cursor-not-allowed'); btnNext.disabled = true; }
+        if (isDetailValid) {
+            btnNext.disabled = false;
+            btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            btnNext.disabled = true;
+            btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+        }
     }
+
+    // "Simpan Tiket" button — enable/disable based on all fields including dates
     if (btnCreate) {
-        if (isValid) { btnCreate.classList.remove('bg-rust/20','cursor-not-allowed'); btnCreate.classList.add('bg-rust'); btnCreate.disabled = false; }
-        else { btnCreate.classList.add('bg-rust/20','cursor-not-allowed'); btnCreate.classList.remove('bg-rust'); btnCreate.disabled = true; }
+        const salesContent = document.getElementById('modal-content-sales');
+        const dateInputs = salesContent ? salesContent.querySelectorAll('input[type="date"]') : [];
+        const startDate = dateInputs[0] ? dateInputs[0].value : '';
+        const endDate = dateInputs[1] ? dateInputs[1].value : '';
+        const isAllValid = isDetailValid && startDate && endDate;
+
+        if (isAllValid) {
+            btnCreate.disabled = false;
+            btnCreate.style.opacity = '1';
+            btnCreate.style.cursor = 'pointer';
+            btnCreate.classList.add('hover:bg-rust-deep');
+        } else {
+            btnCreate.disabled = true;
+            btnCreate.style.opacity = '0.3';
+            btnCreate.style.cursor = 'not-allowed';
+            btnCreate.classList.remove('hover:bg-rust-deep');
+        }
     }
 }
 
@@ -274,13 +372,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const modal = document.getElementById('modal-tiket');
     if (modal) {
-        modal.querySelectorAll('input, textarea').forEach(input => {
-            input.addEventListener('input', validateTicketForm);
+        // Use event delegation for all input/textarea events inside the modal
+        modal.addEventListener('input', function(e) {
+            if (e.target.matches('input, textarea')) {
+                validateTicketForm();
+            }
+        });
+        modal.addEventListener('change', function(e) {
+            if (e.target.matches('input, textarea, select')) {
+                validateTicketForm();
+            }
         });
     }
 
-    // Close modals on overlay click
+    // Close modals on overlay click, prevent propagation from container
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        // Prevent clicks inside modal container from closing the modal
+        overlay.querySelectorAll('.modal-container, [class*="modal-container"]').forEach(container => {
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
                 overlay.classList.remove('active');

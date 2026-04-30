@@ -28,7 +28,7 @@
                 </div>
                 <span class="text-[10px] font-black text-green-500 bg-green-50 px-3 py-1 rounded-full">+12.5%</span>
             </div>
-            <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2">Rp 128.450.000</div>
+            <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2" id="report-total-revenue">Rp 128.450.000</div>
             <div class="stat-unit !font-bold">IDR (Rupiah)</div>
         </div>
         <div class="stat-card !border-none !shadow-2xl !shadow-gray-200/20 !p-10 transform hover:scale-[1.02] transition-all">
@@ -39,7 +39,7 @@
                 </div>
                 <span class="text-[10px] font-black text-blue-500 bg-blue-50 px-3 py-1 rounded-full">+8.2%</span>
             </div>
-            <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2">4,281</div>
+            <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2" id="report-total-tickets">4,281</div>
             <div class="stat-unit !font-bold">Tiket Dipesan</div>
         </div>
         <div class="stat-card !border-none !shadow-2xl !shadow-gray-200/20 !p-10 transform hover:scale-[1.02] transition-all">
@@ -50,7 +50,7 @@
                 </div>
                 <span class="text-[10px] font-black text-gray-400 bg-gray-50 px-3 py-1 rounded-full whitespace-nowrap">STABIL</span>
             </div>
-            <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2">Rp 4.280.000</div>
+            <div class="stat-value !text-4xl !font-black !tracking-tight !mb-2" id="report-daily-avg">Rp 4.280.000</div>
             <div class="stat-unit !font-bold">Penjualan / Hari</div>
         </div>
     </div>

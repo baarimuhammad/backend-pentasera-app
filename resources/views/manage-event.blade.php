@@ -19,13 +19,13 @@
         <nav class="sidebar-nav">
             <div class="nav-group">
                 <p class="nav-label">Main Menu</p>
-                <a href="{{ url('/dashboard') }}" class="nav-item">
+                <a href="{{ url('/dashboard') }}" class="nav-item creator-only">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
                 </a>
-                <a href="{{ url('/my-events') }}" class="nav-item active">
+                <a href="{{ url('/my-events') }}" class="nav-item active creator-only">
                     <i data-lucide="calendar" class="w-5 h-5"></i> Event Saya
                 </a>
-                <a href="{{ url('/manage-access') }}" class="nav-item">
+                <a href="{{ url('/manage-access') }}" class="nav-item creator-only">
                     <i data-lucide="users" class="w-5 h-5"></i> Kelola Akses
                 </a>
                 <a href="{{ url('/my-tickets') }}" class="nav-item user-only">
@@ -40,11 +40,15 @@
                 <a href="{{ url('/settings') }}" class="nav-item">
                     <i data-lucide="settings" class="w-5 h-5"></i> Pengaturan
                 </a>
+                <a href="{{ url('/pusat-bantuan') }}" class="nav-item">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i> Pusat Bantuan
+                </a>
             </div>
         </nav>
         <div class="sidebar-footer">
-            <button onclick="toggleRole()" class="switch-mode-btn">
-                <i data-lucide="arrow-left-right" class="w-4 h-4"></i> Beralih ke Pembeli
+            <button onclick="toggleRoleAndRedirect()" class="switch-mode-btn cursor-pointer">
+                <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                <span>Beralih ke Pembeli</span>
             </button>
         </div>
     </aside>
@@ -275,11 +279,11 @@
 
                 <!-- Contact & Settings -->
                 <div class="bg-white rounded-[1.5rem] p-12 pb-16 border border-gray-100 shadow-xl shadow-gray-200/20">
-                    <div class="mb-32">
-                        <h3 class="font-bold text-ink text-2xl pt-4 mb-20 tracking-tight flex items-center gap-3">
+                    <div class="mb-8">
+                        <h3 class="font-bold text-ink text-2xl pt-4 mb-6 tracking-tight flex items-center gap-3">
                             Informasi Kontak <span class="w-2 h-2 bg-rust rounded-full"></span>
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-28 mb-8">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8 mb-8">
                             <div class="space-y-6">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Nama Narahubung*</label>
                                 <input type="text" placeholder="Nama Penyelenggara" value="Andi Wijaya" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
@@ -294,12 +298,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="border-t border-gray-100 mt-40 mb-40"></div>
+                    <div class="border-t border-gray-100 mt-8 mb-8"></div>
                     <div class="mt-0">
-                        <h3 class="font-bold text-ink text-base mb-20 tracking-tight flex items-center gap-3">
+                        <h3 class="font-bold text-ink text-base mb-6 tracking-tight flex items-center gap-3">
                             Pengaturan Tambahan <span class="w-2 h-2 bg-rust rounded-full"></span>
                         </h3>
-                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-20">
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                             <div class="flex items-center justify-between bg-gray-50/50 px-6 py-6 rounded-[2rem] border border-gray-100 group hover:bg-white hover:border-rust/20 transition-all h-auto">
                                 <div>
                                     <p class="text-base font-bold text-ink mb-1">Jumlah maks. tiket per transaksi</p>
@@ -309,7 +313,7 @@
                                     <input type="number" value="5" min="1" max="5" class="w-20 py-3 text-center text-xl font-black text-rust outline-none">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-10">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="flex items-center justify-between px-6 py-6 bg-gray-50/50 rounded-[2rem] border border-gray-100 h-auto">
                                     <div>
                                         <p class="text-[11px] font-black text-ink mb-2 uppercase tracking-tight">1 akun email – 1 kali transaksi</p>

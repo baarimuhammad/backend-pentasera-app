@@ -20,14 +20,14 @@
         <nav class="sidebar-nav">
             <div class="nav-group">
                 <p class="nav-label">Main Menu</p>
-                <a href="{{ url('/dashboard') }}" class="nav-item">
+                <a href="{{ url('/dashboard') }}" class="nav-item creator-only">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
                 </a>
-                <a href="{{ url('/my-events') }}" class="nav-item active">
+                <a href="{{ url('/my-events') }}" class="nav-item active creator-only">
                     <i data-lucide="calendar" class="w-5 h-5"></i> Event Saya
                     <span class="ml-auto bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full">2</span>
                 </a>
-                <a href="{{ url('/manage-access') }}" class="nav-item">
+                <a href="{{ url('/manage-access') }}" class="nav-item creator-only">
                     <i data-lucide="users" class="w-5 h-5"></i> Kelola Akses
                 </a>
                 <a href="{{ url('/my-tickets') }}" class="nav-item user-only">
@@ -77,9 +77,9 @@
         </div>
 
         <div class="event-tabs">
-            <div class="event-tab active" onclick="switchTab('aktif')">Event Aktif</div>
-            <div class="event-tab" onclick="switchTab('draft')">Event Draft</div>
-            <div class="event-tab" onclick="switchTab('lalu')">Event Lalu</div>
+            <div class="event-tab active" onclick="switchMyEventTab('aktif')">Event Aktif</div>
+            <div class="event-tab" onclick="switchMyEventTab('draft')">Event Draft</div>
+            <div class="event-tab" onclick="switchMyEventTab('lalu')">Event Lalu</div>
         </div>
 
         <div class="flex justify-between items-center mb-8">
@@ -140,7 +140,7 @@
         <!-- Tab Content: Draft -->
         <div id="tab-draft" class="event-tab-content">
             <div class="event-dashboard-grid">
-                <div class="event-dashboard-card opacity-90">
+                <div class="event-dashboard-card opacity-90 cursor-pointer" onclick="location.href='{{ url('/create-event') }}'">
                     <div class="event-card-img" style="filter: grayscale(0.5);">
                         <img src="{{ asset('assets/gamelan.png') }}" alt="Harmony of Javanese Heritage">
                         <span class="event-status-badge" style="background: #9ca3af;">Draft</span>
@@ -162,7 +162,7 @@
                                 <div class="status-dot bg-gray-400"></div>
                                 <span>DRAFT</span>
                             </div>
-                            <a href="#" class="kelola-link">
+                            <a href="{{ url('/create-event') }}" class="kelola-link">
                                 Edit Draft
                                 <i data-lucide="edit-3" class="w-4 h-4"></i>
                             </a>
@@ -175,7 +175,7 @@
         <!-- Tab Content: Lalu -->
         <div id="tab-lalu" class="event-tab-content">
             <div class="event-dashboard-grid">
-                <div class="event-dashboard-card opacity-75">
+                <div class="event-dashboard-card opacity-75 cursor-pointer" onclick="location.href='{{ url('/event-report/3') }}'">
                     <div class="event-card-img" style="filter: grayscale(1);">
                         <img src="{{ asset('assets/wayang.png') }}" alt="Stories Carved in Tradition">
                         <span class="event-status-badge" style="background: #2C1A0E;">Selesai</span>

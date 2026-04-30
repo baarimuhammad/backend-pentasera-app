@@ -21,13 +21,13 @@
         <nav class="sidebar-nav">
             <div class="nav-group">
                 <p class="nav-label">Main Menu</p>
-                <a href="{{ url('/dashboard') }}" class="nav-item active">
+                <a href="{{ url('/dashboard') }}" class="nav-item active creator-only">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
                 </a>
-                <a href="{{ url('/my-events') }}" class="nav-item">
+                <a href="{{ url('/my-events') }}" class="nav-item creator-only">
                     <i data-lucide="calendar" class="w-5 h-5"></i> Event Saya
                 </a>
-                <a href="{{ url('/manage-access') }}" class="nav-item">
+                <a href="{{ url('/manage-access') }}" class="nav-item creator-only">
                     <i data-lucide="users" class="w-5 h-5"></i> Kelola Akses
                 </a>
                 <a href="{{ url('/my-tickets') }}" class="nav-item user-only">
@@ -37,16 +37,20 @@
             <div class="nav-group">
                 <p class="nav-label">Akun</p>
                 <a href="{{ url('/profile') }}" class="nav-item">
-                    <i data-lucide="user" class="w-5 h-5"></i> Profil
+                    <i data-lucide="user-circle" class="w-5 h-5"></i> Informasi Dasar
                 </a>
                 <a href="{{ url('/settings') }}" class="nav-item">
                     <i data-lucide="settings" class="w-5 h-5"></i> Pengaturan
                 </a>
+                <a href="{{ url('/pusat-bantuan') }}" class="nav-item">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i> Pusat Bantuan
+                </a>
             </div>
         </nav>
         <div class="sidebar-footer">
-            <button onclick="toggleRole()" class="switch-mode-btn">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Switch ke Pembeli
+            <button onclick="toggleRoleAndRedirect()" class="switch-mode-btn cursor-pointer">
+                <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                <span>Beralih ke Pembeli</span>
             </button>
         </div>
     </aside>
@@ -94,21 +98,21 @@
                     <span class="stat-label"><i data-lucide="calendar" class="w-4 h-4"></i> Total Event</span>
                     <a href="{{ url('/my-events') }}" class="stat-link">Lihat →</a>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value">2</div>
                 <div class="stat-unit">Event Aktif</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <span class="stat-label"><i data-lucide="ticket" class="w-4 h-4"></i> Tiket Terjual</span>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value">684</div>
                 <div class="stat-unit">Tiket</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <span class="stat-label"><i data-lucide="banknote" class="w-4 h-4"></i> Pendapatan</span>
                 </div>
-                <div class="stat-value">Rp0</div>
+                <div class="stat-value">Rp 121.200.000</div>
                 <div class="stat-unit">Total</div>
             </div>
         </div>

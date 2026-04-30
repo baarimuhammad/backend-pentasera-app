@@ -30,7 +30,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, .logo { font-family: 'Playfair Display', serif; }
+h1, h2, h3, h4, .logo { font-family: 'Playfair Display', serif !important; }
 
 a { text-decoration: none; color: inherit; transition: var(--transition); }
 
@@ -197,12 +197,30 @@ body.is-creator .creator-only { display: flex !important; }
 /* Base Styles End */
 .hero-section { text-align: center; padding: 80px 10% 50px; }
 
-.subtitle { color: var(--primary); letter-spacing: 3px; font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 20px; }
+.hero-section .subtitle,
+.subtitle {
+    color: var(--primary) !important;
+    letter-spacing: 3px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    margin-bottom: 20px !important;
+    font-family: 'Inter', sans-serif !important;
+}
 
-h1 { font-size: 56px; line-height: 1.1; margin-bottom: 20px; font-weight: 400; }
+.hero-section h1,
+h1 {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 56px !important;
+    line-height: 1.1 !important;
+    margin-bottom: 20px !important;
+    font-weight: 400 !important;
+    color: var(--dark) !important;
+}
 
 h1 span { font-style: italic; color: var(--primary); }
 
+.hero-section .hero-desc,
 .hero-desc { max-width: 650px; margin: 0 auto; color: var(--gray-text); font-size: 15px; }
 
 /* ==========================================================================
@@ -295,6 +313,13 @@ h1 span { font-style: italic; color: var(--primary); }
 
 .legal-sidebar { width: 280px; flex-shrink: 0; }
 .nav-doc-card, .update-card { background: rgba(164, 81, 13, 0.05); padding: 35px; border-radius: 15px; margin-bottom: 25px; }
+.nav-doc-card h4 {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--dark) !important;
+    margin-bottom: 15px !important;
+}
 .nav-doc-card a { font-size: 14px; color: #777; display: block; margin-bottom: 18px; }
 .nav-doc-card a.active-link { color: var(--primary); font-weight: 700; }
 
@@ -459,8 +484,10 @@ h1 span { font-style: italic; color: var(--primary); }
 }
 
 .section-header h3 {
-    font-size: 28px;
-    color: #1A0F0A;
+    font-family: 'Playfair Display', serif !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    color: #1A0F0A !important;
     border-bottom: 2px solid #fdf2e9;
     padding-bottom: 10px;
     display: inline-block;

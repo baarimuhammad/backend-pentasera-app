@@ -253,8 +253,8 @@
 
 <!-- Ticket Modal -->
 <div id="ticket-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-ink/60 backdrop-blur-md" onclick="closeTicketModal()"></div>
-    <div class="relative w-full max-w-2xl bg-white rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up flex flex-col max-h-[85vh] border border-gray-100">
+    <div class="absolute inset-0 z-0 bg-ink/60 backdrop-blur-md" onclick="closeTicketModal()"></div>
+    <div class="relative z-10 w-full max-w-2xl bg-white rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up flex flex-col max-h-[85vh] border border-gray-100">
         <div class="flex items-center justify-between p-6 border-b border-gray-50 shrink-0">
             <div class="flex-1 flex gap-8 px-4">
                 <button onclick="switchModalTab('detail')" id="modal-tab-detail" class="py-4 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-rust text-rust transition-all">Detail Tiket</button>

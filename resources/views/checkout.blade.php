@@ -118,26 +118,31 @@
                     <i data-lucide="chevron-up" class="w-4 h-4 text-gray-400 transition-transform" id="ewallet-icon"></i>
                 </button>
                 <div id="ewallet-group" class="px-8 pb-8 grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <label class="relative group cursor-pointer">
-                        <input type="radio" name="payment" value="shopeepay" class="peer absolute opacity-0">
-                        <div class="border-2 border-gray-100 rounded-2xl p-6 flex items-center justify-between transition-all peer-checked:border-rust peer-checked:bg-rust/5 peer-checked:shadow-sm">
+                    @php
+                        $ewalletOptions = [
+                            ['value' => 'shopeepay', 'name' => 'ShopeePay', 'img' => 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40"><rect width="120" height="40" rx="6" fill="%23EE4D2D"/><text x="60" y="26" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">ShopeePay</text></svg>'],
+                            ['value' => 'gopay', 'name' => 'GoPay', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Payment%20Channel/E-Wallet/Gopay.svg'],
+                            ['value' => 'ovo', 'name' => 'OVO', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Payment%20Channel/E-Wallet/OVO.svg'],
+                            ['value' => 'dana', 'name' => 'DANA', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Payment%20Channel/E-Wallet/DANA.svg'],
+                            ['value' => 'qris', 'name' => 'QRIS', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Payment%20Channel/Miscellaneous/QRIS.svg'],
+                        ];
+                    @endphp
+                    @foreach($ewalletOptions as $ewallet)
+                    <label class="relative group cursor-pointer block">
+                        <input type="radio" name="payment" value="{{ $ewallet['value'] }}" class="peer absolute opacity-0">
+                        <div class="border-2 border-gray-100 rounded-2xl p-6 flex items-center justify-between transition-all peer-checked:border-rust peer-checked:bg-rust/5 peer-checked:shadow-sm peer-checked:[&_.circle-indicator]:bg-rust peer-checked:[&_.circle-indicator]:border-rust peer-checked:[&_.check-icon]:opacity-100 peer-checked:[&_.check-icon]:scale-100">
                             <div class="flex items-center gap-5">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/ShopeePay_logo.svg" alt="ShopeePay" class="h-6 w-auto">
-                                <span class="text-[14px] font-bold text-[#2C1A0E]">ShopeePay</span>
+                                <div class="w-14 h-10 flex items-center justify-center">
+                                    <img src="{{ $ewallet['img'] }}" alt="{{ $ewallet['name'] }}" class="max-h-full max-w-full object-contain">
+                                </div>
+                                <span class="text-[14px] font-bold text-[#2C1A0E]">{{ $ewallet['name'] }}</span>
                             </div>
-                            <div class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center transition-all shadow-sm"></div>
+                            <div class="circle-indicator w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center transition-all shadow-sm">
+                                <svg class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition-all" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
                         </div>
                     </label>
-                    <label class="relative group cursor-pointer">
-                        <input type="radio" name="payment" value="qris" class="peer absolute opacity-0">
-                        <div class="border-2 border-gray-100 rounded-2xl p-6 flex items-center justify-between transition-all peer-checked:border-rust peer-checked:bg-rust/5 peer-checked:shadow-sm">
-                            <div class="flex items-center gap-5">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6 w-auto">
-                                <span class="text-[14px] font-bold text-[#2C1A0E]">QRIS</span>
-                            </div>
-                            <div class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center transition-all shadow-sm"></div>
-                        </div>
-                    </label>
+                    @endforeach
                 </div>
             </div>
 
@@ -150,16 +155,16 @@
                 <div id="va-group" class="px-8 pb-8 space-y-4">
                     @php
                         $vaOptions = [
-                            ['value' => 'bni', 'name' => 'BNI Virtual Account', 'img' => 'https://upload.wikimedia.org/wikipedia/id/thumb/5/55/BNI_logo.svg/1200px-BNI_logo.svg.png'],
-                            ['value' => 'bca', 'name' => 'BCA Virtual Account', 'img' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png'],
-                            ['value' => 'mandiri', 'name' => 'Mandiri Virtual Account', 'img' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png'],
-                            ['value' => 'bri', 'name' => 'BRI Virtual Account', 'img' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Logo_BRI.svg/1200px-Logo_BRI.svg.png'],
+                            ['value' => 'bni', 'name' => 'BNI Virtual Account', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Bank/Bank%20Logo/BNI.svg'],
+                            ['value' => 'bca', 'name' => 'BCA Virtual Account', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Bank/Bank%20Logo/BCA.svg'],
+                            ['value' => 'mandiri', 'name' => 'Mandiri Virtual Account', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Bank/Bank%20Logo/Mandiri.svg'],
+                            ['value' => 'bri', 'name' => 'BRI Virtual Account', 'img' => 'https://cdn.jsdelivr.net/gh/Zyknn/paymentlogo@main/Bank/Bank%20Logo/BRI.svg'],
                         ];
                     @endphp
                     @foreach($vaOptions as $va)
                     <label class="relative group cursor-pointer block">
                         <input type="radio" name="payment" value="{{ $va['value'] }}" class="peer absolute opacity-0">
-                        <div class="border-2 border-gray-100 rounded-2xl p-6 flex items-center justify-between transition-all peer-checked:border-rust peer-checked:bg-rust/5 peer-checked:shadow-sm">
+                        <div class="border-2 border-gray-100 rounded-2xl p-6 flex items-center justify-between transition-all peer-checked:border-rust peer-checked:bg-rust/5 peer-checked:shadow-sm peer-checked:[&_.circle-indicator]:bg-rust peer-checked:[&_.circle-indicator]:border-rust peer-checked:[&_.check-icon]:opacity-100 peer-checked:[&_.check-icon]:scale-100">
                             <div class="flex items-center gap-5">
                                 <div class="w-14 h-10 bg-gray-50 rounded-lg flex items-center justify-center p-2">
                                     <img src="{{ $va['img'] }}" alt="{{ $va['value'] }}" class="max-h-full max-w-full object-contain">
@@ -169,7 +174,9 @@
                                     <p class="text-[10px] text-gray-400">Dicek otomatis</p>
                                 </div>
                             </div>
-                            <div class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center transition-all shadow-sm"></div>
+                            <div class="circle-indicator w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center transition-all shadow-sm">
+                                <svg class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition-all" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
                         </div>
                     </label>
                     @endforeach

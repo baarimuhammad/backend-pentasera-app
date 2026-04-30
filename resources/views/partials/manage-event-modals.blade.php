@@ -120,32 +120,32 @@
 
 {{-- Modal: Tambah/Edit Tiket --}}
 <div id="modal-tiket" class="modal-overlay">
-    <div class="modal-container !max-w-2xl !p-0 overflow-hidden flex flex-col max-h-[90vh] !rounded-[2.5rem]">
-        <div class="flex items-center justify-between p-6 border-b border-gray-50 bg-white shrink-0">
-            <div class="flex-1 flex gap-8 px-4">
-                <button onclick="switchModalTab('detail')" id="modal-tab-detail" class="py-4 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-rust text-rust transition-all">Detail Tiket</button>
-                <button onclick="switchModalTab('sales')" id="modal-tab-sales" class="py-4 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-transparent text-gray-400 transition-all">Tanggal Penjualan</button>
+    <div class="modal-container !max-w-lg !p-0 overflow-hidden flex flex-col max-h-[90vh] !rounded-[2rem]">
+        <div class="flex items-center justify-between p-4 border-b border-gray-50 bg-white shrink-0">
+            <div class="flex-1 flex gap-6 px-2">
+                <button onclick="switchModalTab('detail')" id="modal-tab-detail" class="py-3 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-rust text-rust transition-all">Detail Tiket</button>
+                <button onclick="switchModalTab('sales')" id="modal-tab-sales" class="py-3 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-transparent text-gray-400 transition-all">Tanggal Penjualan</button>
             </div>
-            <button onclick="closeModal('modal-tiket')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 rounded-full text-gray-400 transition-colors">
-                <i data-lucide="x" class="w-5 h-5"></i>
+            <button onclick="closeModal('modal-tiket')" class="w-8 h-8 flex items-center justify-center hover:bg-gray-50 rounded-full text-gray-400 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
 
         <div class="overflow-y-auto flex-1 custom-scrollbar bg-white">
             {{-- Modal Content: Detail --}}
-            <div id="modal-content-detail" class="p-10">
-                <div class="space-y-8">
+            <div id="modal-content-detail" class="p-8">
+                <div class="space-y-5">
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Tiket <span class="text-rust">*</span></label>
                         <div class="relative group">
-                            <input type="text" placeholder="Contoh: Early Bird" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-base focus:border-rust outline-none transition-all font-bold text-ink placeholder:text-gray-300 placeholder:font-normal">
+                            <input type="text" placeholder="Contoh: Early Bird" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink placeholder:text-gray-300 placeholder:font-normal">
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Jumlah Tiket <span class="text-rust">*</span></label>
                         <div class="relative group">
-                            <input type="number" value="0" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-base focus:border-rust outline-none transition-all font-bold text-ink">
+                            <input type="number" value="0" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                         <div class="flex justify-end mt-1">
@@ -155,14 +155,14 @@
                     <div id="price-field" class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Harga <span class="text-rust">*</span></label>
                         <div class="relative group">
-                            <input type="text" value="Rp" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-base focus:border-rust outline-none transition-all font-bold text-ink">
+                            <input type="text" value="Rp" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Deskripsi Tiket</label>
                         <div class="relative group">
-                            <textarea placeholder="Berikan info tambahan tentang tiket ini..." class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink h-24 resize-none placeholder:text-gray-300 placeholder:font-normal"></textarea>
+                            <textarea placeholder="Berikan info tambahan tentang tiket ini..." class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink h-20 resize-none placeholder:text-gray-300 placeholder:font-normal"></textarea>
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                         <div class="flex justify-end mt-1">
@@ -170,21 +170,21 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="switchModalTab('sales')" class="w-full bg-rust text-white font-bold py-4 rounded-lg mt-8 hover:bg-rust-deep transition-all uppercase tracking-wider text-sm opacity-50 cursor-not-allowed" disabled>Selanjutnya</button>
+                <button id="btn-next-tab" onclick="switchModalTab('sales')" class="w-full bg-rust text-white font-bold py-3.5 rounded-lg mt-6 hover:bg-rust-deep transition-all uppercase tracking-wider text-sm opacity-50 cursor-not-allowed" disabled>Selanjutnya</button>
             </div>
 
             {{-- Modal Content: Sales Date --}}
-            <div id="modal-content-sales" class="p-10 hidden">
-                <div class="space-y-10">
-                    <div class="space-y-4">
+            <div id="modal-content-sales" class="p-8 hidden">
+                <div class="space-y-8">
+                    <div class="space-y-3">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tanggal Mulai <span class="text-rust">*</span></label>
-                        <div class="flex gap-4">
+                        <div class="flex gap-3">
                             <div class="flex-1 relative group">
-                                <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                                <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                                 <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
-                            <div class="w-40 relative group/select">
-                                <div class="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-4 py-3.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
+                            <div class="w-32 relative group/select">
+                                <div class="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
                                     <div class="flex items-center gap-2">
                                         <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
                                         <span>09:00</span>
@@ -194,15 +194,15 @@
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tanggal Berakhir <span class="text-rust">*</span></label>
-                        <div class="flex gap-4">
+                        <div class="flex gap-3">
                             <div class="flex-1 relative group">
-                                <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-3 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                                <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                                 <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
-                            <div class="w-40 relative group/select">
-                                <div class="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-4 py-3.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
+                            <div class="w-32 relative group/select">
+                                <div class="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
                                     <div class="flex items-center gap-2">
                                         <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
                                         <span>18:00</span>
@@ -212,17 +212,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-start gap-4 p-5 bg-rust/5 rounded-[1.5rem] border border-rust/10 mt-6">
+                    <div class="flex items-start gap-4 p-4 bg-rust/5 rounded-[1.25rem] border border-rust/10 mt-6">
                         <i data-lucide="info" class="w-5 h-5 text-rust shrink-0 mt-0.5"></i>
                         <p class="text-[11px] leading-relaxed text-rust/70 font-medium tracking-tight">Tanggal maksimal penjualan tiket bergantung pada tanggal berakhirnya event yang telah diatur sebelumnya. Pastikan jadwal penjualan selaras dengan waktu pelaksanaan event.</p>
                     </div>
                 </div>
 
-                <div class="flex gap-4 mt-12">
-                    <button onclick="switchModalTab('detail')" class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-rust hover:text-white transition-all shrink-0">
-                        <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                <div class="flex gap-4 mt-8">
+                    <button onclick="switchModalTab('detail')" class="w-12 h-12 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-rust hover:text-white transition-all shrink-0">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
                     </button>
-                    <button id="btn-create-ticket" class="flex-1 bg-rust text-white font-black py-4 rounded-[1.25rem] transition-all uppercase tracking-[0.2em] text-xs shadow-xl shadow-rust/40">Simpan Tiket</button>
+                    <button id="btn-create-ticket" class="flex-1 bg-rust text-white font-black py-3 rounded-[1rem] transition-all uppercase tracking-[0.2em] text-xs shadow-xl shadow-rust/40">Simpan Tiket</button>
                 </div>
             </div>
         </div>

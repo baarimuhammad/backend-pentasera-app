@@ -1,6 +1,14 @@
 @extends('layouts.app')
 @section('title', 'Reset Password | Pentasara')
 
+@section('custom-nav')
+{{-- No navbar on password reset page --}}
+@endsection
+
+@section('custom-footer')
+{{-- No footer on password reset page --}}
+@endsection
+
 @section('content')
 <main class="flex-1 flex items-center justify-center p-4 relative overflow-hidden min-h-[80vh]">
     <div class="bg-glow bg-glow-left"></div>

@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Syarat & Ketentuan | Pentasara')
+@section('title', 'Syarat & Ketentuan | Pentasera')
 
 @section('custom-nav')
-<!-- Navbar Minimalis untuk halaman legal -->
+<!-- Navbar Minimalis untuk halaman legal -->  
 <nav class="navbar-legal">
     <a href="{{ url('/') }}" class="back-link">
-        <span class="arrow">&larr;</span> Pentasara
+        <span class="arrow">&larr;</span> Pentasera
     </a>
     <div class="doc-type">DOKUMEN HUKUM</div>
     <div class="nav-btns">
@@ -66,7 +66,7 @@
     <div class="terms-card-beige">
         <span class="card-icon"><i data-lucide="scale"></i></span>
         <h4>Landasan Hukum</h4>
-        <p>Ketentuan ini merupakan perjanjian yang mengikat antara Anda sebagai pengguna dengan Pentasara mengenai akses dan penggunaan layanan kami.</p>
+        <p>Ketentuan ini merupakan perjanjian yang mengikat antara Anda sebagai pengguna dengan Pentasera mengenai akses dan penggunaan layanan kami.</p>
     </div>
     <div class="terms-card-brown">
         <span class="card-icon"><i data-lucide="shield-check"></i></span>
@@ -82,7 +82,7 @@
     <section class="terms-section">
         <h2><i data-lucide="info"></i> 1. Definisi Layanan</h2>
         <div class="section-body">
-            <p>"Pentasara" adalah platform digital yang dikelola oleh PT Warisan Budaya Digital, yang menyediakan layanan kurasi acara, penjualan tiket, dan arsip seni tradisional Indonesia.</p>
+            <p>"Pentasera" adalah platform digital yang dikelola oleh PT Warisan Budaya Digital, yang menyediakan layanan kurasi acara, penjualan tiket, dan arsip seni tradisional Indonesia.</p>
             <p>"Pengguna" merujuk pada individu atau entitas yang mendaftar, mengakses, atau menggunakan bagian mana pun dari layanan kami.</p>
         </div>
     </section>
@@ -127,7 +127,7 @@
     <section class="terms-section">
         <h2><i data-lucide="copyright"></i> 4. Hak Kekayaan Intelektual</h2>
         <div class="section-body">
-            <p>Seluruh konten dalam Pentasara, termasuk namun tidak terbatas pada teks, grafik, logo, foto pertunjukan, dan rekaman audio-visual, adalah milik Pentasara atau pemberi lisensinya.</p>
+            <p>Seluruh konten dalam Pentasera, termasuk namun tidak terbatas pada teks, grafik, logo, foto pertunjukan, dan rekaman audio-visual, adalah milik Pentasera atau pemberi lisensinya.</p>
             <p>Pengguna dilarang keras mengunduh, mereproduksi, atau mendistribusikan konten arsip seni tanpa izin tertulis yang sah.</p>
         </div>
     </section>
@@ -154,13 +154,13 @@
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-brand">
-            <div class="footer-brand-title">Pentasara</div>
-            <p class="footer-copy">© 2024 Pentasara. Menjaga Tradisi dalam Modernitas.</p>
+            <div class="footer-brand-title">Pentasera</div>
+            <p class="footer-copy">© 2024 Pentasera. Menjaga Tradisi dalam Modernitas.</p>
             <div class="footer-social-wrap">
                 <p class="social-label">Hubungi Kurator:</p>
                 <div class="social-icons">
                     <a href="https://instagram.com" target="_blank" class="social-icon" title="Instagram">
-                        <i data-lucide="instagram"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
                     </a>
                     <a href="https://wa.me" target="_blank" class="social-icon" title="WhatsApp Chat">
                         <i data-lucide="message-circle"></i>

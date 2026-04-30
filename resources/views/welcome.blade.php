@@ -3,6 +3,7 @@
 @section('title', 'Pentasara | Tradisi dalam Genggaman')
 
 @section('content')
+<div class="batik-bg pb-10 min-h-screen w-full">
     @php
         $activeEvents = [
             ['id' => 1, 'name' => 'Witness the Fire of Uluwatu', 'img' => 'kecak.png', 'date' => '03 Apr 2026', 'venue' => 'Pura Luhur Uluwatu, Bali', 'price' => 'Rp150.000'],
@@ -31,13 +32,9 @@
     <div class="flex-1 max-w-7xl mx-auto w-full">
         <!-- Hero Section -->
         <div class="hero">
-            <img src="https://images.unsplash.com/photo-1583994038879-66d5e6a6dcc4?w=1200&h=400&fit=crop" alt="Traditional Dance Performance">
+            <img src="{{ asset('assets/hero-banner.jpg') }}" alt="Pertunjukan Seni Tradisional Indonesia">
             <div class="hero-overlay">
                 <div class="hero-brand">
-                    <div class="flex items-center justify-center gap-3 mb-4">
-                        <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara Logo" class="hero-logo-img">
-                        <span class="logo-text text-white text-4xl">PENTASARA</span>
-                    </div>
                     <div class="hero-tagline">Experience the Magic of Traditional Performances!</div>
                 </div>
             </div>
@@ -117,4 +114,5 @@
             </div>
         </div>
     </div>
+</div>
 @endsection

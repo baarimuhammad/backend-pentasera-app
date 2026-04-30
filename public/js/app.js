@@ -51,6 +51,12 @@ function checkAuthState() {
         document.body.classList.remove('is-creator');
         if (roleLabel) roleLabel.innerText = 'Penyelenggara';
     }
+
+    // Update sidebar switch button text dynamically
+    const switchBtns = document.querySelectorAll('.switch-mode-btn span');
+    switchBtns.forEach(span => {
+        span.innerText = isCreator ? 'Beralih ke Pembeli' : 'Beralih ke Penyelenggara';
+    });
     
     if (window.lucide) window.lucide.createIcons();
 }
@@ -58,6 +64,19 @@ function checkAuthState() {
 function toggleRole() {
     localStorage.setItem('isCreator', JSON.parse(localStorage.getItem('isCreator') === 'false'));
     checkAuthState();
+}
+
+function toggleRoleAndRedirect() {
+    const isCreator = localStorage.getItem('isCreator') === 'true';
+    localStorage.setItem('isCreator', (!isCreator).toString());
+    // Redirect buyer to my-tickets, creator to dashboard
+    if (isCreator) {
+        // Was creator, now switching to buyer
+        window.location.href = '/my-tickets';
+    } else {
+        // Was buyer, now switching to creator
+        window.location.href = '/dashboard';
+    }
 }
 
 function logout() {

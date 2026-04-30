@@ -3,7 +3,8 @@
 @section('title', 'Events | Pentasara')
 
 @section('content')
-<div class="flex-1 max-w-7xl mx-auto w-full px-6 py-8 animate-fade-in">
+<div class="batik-bg min-h-screen">
+    <div class="flex-1 max-w-7xl mx-auto w-full px-6 py-8 animate-fade-in">
     <div class="flex flex-col md:flex-row gap-8">
         <!-- Sidebar Filter -->
         <aside class="w-full md:w-80 space-y-6">
@@ -103,6 +104,7 @@
                 </button>
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection
