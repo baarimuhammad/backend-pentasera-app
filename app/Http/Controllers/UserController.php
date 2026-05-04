@@ -13,6 +13,21 @@ class UserController extends Controller
         return response()->json(User::all());
     }
 
+    public function update(Request $request, $id)
+{
+    $request->validate([
+        'role' => 'required|in:buyer,creator,admin',
+    ]);
+
+    $user = User::findOrFail($id);
+    $user->update(['role' => $request->role]);
+
+    return response()->json([
+        'message' => 'Role berhasil diupdate',
+        'data' => $user
+    ]);
+}
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -34,5 +49,7 @@ class UserController extends Controller
             'message' => 'User berhasil dibuat',
             'data' => $user,
         ], 201);
+
+        
     }
 }
