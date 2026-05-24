@@ -54,64 +54,36 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
+                        @forelse($transactions as $transaction)
                         <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="py-4 text-[10px] font-mono text-gray-400">#TRX-99210</td>
+                            <td class="py-4 text-[10px] font-mono text-gray-400">#TRX-{{ str_pad($transaction->id, 5, '0', STR_PAD_LEFT) }}</td>
                             <td class="py-4">
-                                <div class="text-xs font-bold text-ink">Andi Wijaya</div>
-                                <div class="text-[10px] text-gray-400">andi@mail.com</div>
+                                <div class="text-xs font-bold text-ink">{{ $transaction->order?->user?->nama ?? 'Pembeli' }}</div>
+                                <div class="text-[10px] text-gray-400">{{ $transaction->order?->user?->email ?? '-' }}</div>
                             </td>
                             <td class="py-4">
-                                <span class="text-[10px] font-bold px-2 py-0.5 bg-gray-100 rounded text-gray-600">REGULER</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 bg-gray-100 rounded text-gray-600">{{ $transaction->ticket?->kategori ?? '-' }}</span>
                             </td>
-                            <td class="py-4 text-xs text-center font-bold text-ink">2</td>
-                            <td class="py-4 text-xs font-bold text-ink">Rp 300.000</td>
+                            <td class="py-4 text-xs text-center font-bold text-ink">{{ $transaction->jumlah }}</td>
+                            <td class="py-4 text-xs font-bold text-ink">Rp {{ number_format((float) $transaction->subtotal, 0, ',', '.') }}</td>
                             <td class="py-4">
-                                <div class="text-[10px] text-ink font-medium">08 Apr 2026</div>
-                                <div class="text-[10px] text-gray-400">09:15 WIB</div>
+                                <div class="text-[10px] text-ink font-medium">{{ $transaction->created_at?->format('d M Y') }}</div>
+                                <div class="text-[10px] text-gray-400">{{ $transaction->created_at?->format('H:i') }} WIB</div>
                             </td>
-                            <td class="py-4"><span class="status-badge active">BERHASIL</span></td>
+                            <td class="py-4"><span class="status-badge active">{{ strtoupper($transaction->order?->status_order ?? '-') }}</span></td>
                         </tr>
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="py-4 text-[10px] font-mono text-gray-400">#TRX-99209</td>
-                            <td class="py-4">
-                                <div class="text-xs font-bold text-ink">Siti Aminah</div>
-                                <div class="text-[10px] text-gray-400">siti@mail.com</div>
-                            </td>
-                            <td class="py-4">
-                                <span class="text-[10px] font-bold px-2 py-0.5 bg-gold/10 rounded text-gold-deep">VIP</span>
-                            </td>
-                            <td class="py-4 text-xs text-center font-bold text-ink">1</td>
-                            <td class="py-4 text-xs font-bold text-ink">Rp 300.000</td>
-                            <td class="py-4">
-                                <div class="text-[10px] text-ink font-medium">08 Apr 2026</div>
-                                <div class="text-[10px] text-gray-400">09:02 WIB</div>
-                            </td>
-                            <td class="py-4"><span class="status-badge active">BERHASIL</span></td>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="py-4 text-xs text-gray-400">Belum ada transaksi.</td>
                         </tr>
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="py-4 text-[10px] font-mono text-gray-400">#TRX-99208</td>
-                            <td class="py-4">
-                                <div class="text-xs font-bold text-ink">Budi Santoso</div>
-                                <div class="text-[10px] text-gray-400">budi@mail.com</div>
-                            </td>
-                            <td class="py-4">
-                                <span class="text-[10px] font-bold px-2 py-0.5 bg-gray-100 rounded text-gray-600">REGULER</span>
-                            </td>
-                            <td class="py-4 text-xs text-center font-bold text-ink">4</td>
-                            <td class="py-4 text-xs font-bold text-ink">Rp 600.000</td>
-                            <td class="py-4">
-                                <div class="text-[10px] text-ink font-medium">08 Apr 2026</div>
-                                <div class="text-[10px] text-gray-400">08:15 WIB</div>
-                            </td>
-                            <td class="py-4"><span class="status-badge active">BERHASIL</span></td>
-                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
         <div class="modal-footer !p-8 border-t border-gray-100">
             <div class="flex items-center justify-between w-full">
-                <p class="text-[10px] text-gray-400">Menampilkan 3 dari 342 transaksi</p>
+                <p class="text-[10px] text-gray-400">Menampilkan {{ $transactions->count() }} transaksi</p>
                 <button onclick="closeModal('modal-transaksi')" class="bg-gray-100 text-ink px-8 py-3 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors">Tutup</button>
             </div>
         </div>

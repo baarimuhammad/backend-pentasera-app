@@ -74,13 +74,13 @@
         <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
                 <div class="flex items-center gap-3 mb-2">
-                    <span class="bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full">AKTIF</span>
-                    <span class="text-gray-400 text-xs">ID Event: #EVT-2026-001</span>
+                    <span class="bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{{ strtoupper($event->event_status) }}</span>
+                    <span class="text-gray-400 text-xs">ID Event: #EVT-{{ str_pad($event->id, 3, '0', STR_PAD_LEFT) }}</span>
                 </div>
-                <h1 class="font-display text-3xl text-ink mb-2">Tarian Kecak Uluwatu</h1>
+                <h1 class="font-display text-3xl text-ink mb-2">{{ $event->nama_event }}</h1>
                 <p class="text-gray-500 text-sm flex items-center gap-2">
                     <i data-lucide="map-pin" class="w-4 h-4"></i>
-                    Pura Uluwatu, Bali
+                    {{ $event->lokasi }}
                 </p>
             </div>
             <div class="flex gap-3">
@@ -94,17 +94,17 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="stat-card">
                 <div class="stat-header"><div class="stat-label"><i data-lucide="ticket"></i> Tiket Terjual</div></div>
-                <div class="stat-value" id="stat-tickets-sold">0 / 0</div>
-                <div class="stat-unit" id="stat-tickets-percent">0% Terisi</div>
+                <div class="stat-value" id="stat-tickets-sold">{{ $stats['sold'] }} / {{ $stats['capacity'] }}</div>
+                <div class="stat-unit" id="stat-tickets-percent">{{ $stats['occupancy'] }}% Terisi</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header"><div class="stat-label"><i data-lucide="trending-up"></i> Total Penjualan</div></div>
-                <div class="stat-value" id="stat-total-sales">Rp 0</div>
+                <div class="stat-value" id="stat-total-sales">{{ $stats['revenue_formatted'] }}</div>
                 <div class="stat-unit">IDR</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header"><div class="stat-label"><i data-lucide="shopping-cart"></i> Total Transaksi</div></div>
-                <div class="stat-value" id="stat-total-transactions">0</div>
+                <div class="stat-value" id="stat-total-transactions">{{ $transactions->count() }}</div>
                 <div class="stat-unit">Transaksi Berhasil</div>
             </div>
         </div>
@@ -120,7 +120,7 @@
         <div id="manage-info" class="event-tab-content active">
             <div class="profile-section">
                 <div class="banner-upload">
-                    <img src="{{ asset('assets/kecak.png') }}" alt="Banner" class="w-full h-full object-cover">
+                    <img src="{{ $event->image_src }}" alt="Banner {{ $event->nama_event }}" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <button class="bg-white text-ink px-4 py-2 rounded-lg font-bold text-xs">Ganti Banner</button>
                     </div>
@@ -129,27 +129,27 @@
                     <div class="form-grid">
                         <div class="form-group full">
                             <label>Judul Event</label>
-                            <input type="text" class="form-input" value="Tarian Kecak Uluwatu">
+                            <input type="text" class="form-input" value="{{ $event->nama_event }}">
                         </div>
                         <div class="form-group">
                             <label>Kategori</label>
                             <select class="form-input">
-                                <option selected>Seni Tari</option>
+                                <option selected>{{ $event->kategori_event ?? 'Tanpa kategori' }}</option>
                                 <option>Musik Tradisional</option>
                                 <option>Pertunjukan</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Tanggal & Waktu</label>
-                            <input type="datetime-local" class="form-input" value="2026-04-11T18:00">
+                            <input type="datetime-local" class="form-input" value="{{ $event->event_datetime?->format('Y-m-d\TH:i') }}">
                         </div>
                         <div class="form-group full">
                             <label>Lokasi</label>
-                            <input type="text" class="form-input" value="Pura Uluwatu, Pecatu, Kuta Selatan, Bali">
+                            <input type="text" class="form-input" value="{{ $event->lokasi }}">
                         </div>
                         <div class="form-group full">
                             <label>Deskripsi Event</label>
-                            <textarea class="form-input form-textarea h-40">Nikmati pertunjukan tari Kecak yang spektakuler dengan latar belakang matahari terbenam di Pura Uluwatu. Pertunjukan ini menceritakan kisah Ramayana dengan iringan paduan suara puluhan penari pria yang menciptakan harmoni suara 'cak-cak-cak' yang magis.</textarea>
+                            <textarea class="form-input form-textarea h-40">{{ $event->deskripsi }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -186,12 +186,13 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
+                                @forelse($tickets as $ticket)
                                 <tr class="hover:bg-rust/[0.02] transition-colors">
-                                    <td class="px-10 py-7 font-bold text-ink text-sm">Reguler (Domestik)</td>
-                                    <td class="px-10 py-7 text-sm font-medium">Rp 150.000</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400">400</td>
-                                    <td class="px-10 py-7 text-sm font-bold text-rust">280</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400 font-medium">120</td>
+                                    <td class="px-10 py-7 font-bold text-ink text-sm">{{ $ticket->kategori }}</td>
+                                    <td class="px-10 py-7 text-sm font-medium">{{ $ticket->formatted_price }}</td>
+                                    <td class="px-10 py-7 text-sm text-gray-400">{{ $ticket->kuota }}</td>
+                                    <td class="px-10 py-7 text-sm font-bold text-rust">{{ $ticket->sold_quantity }}</td>
+                                    <td class="px-10 py-7 text-sm text-gray-400 font-medium">{{ $ticket->sisa_kuota }}</td>
                                     <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
                                     <td class="px-10 py-7 text-right">
                                         <button onclick="handleTicketAction('edit', 'paid')" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
@@ -199,19 +200,11 @@
                                         </button>
                                     </td>
                                 </tr>
-                                <tr class="hover:bg-rust/[0.02] transition-colors">
-                                    <td class="px-10 py-7 font-bold text-ink text-sm">VIP Front Row</td>
-                                    <td class="px-10 py-7 text-sm font-medium">Rp 300.000</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400">100</td>
-                                    <td class="px-10 py-7 text-sm font-bold text-rust">62</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400 font-medium">38</td>
-                                    <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
-                                    <td class="px-10 py-7 text-right">
-                                        <button onclick="handleTicketAction('edit', 'paid')" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
-                                            <i data-lucide="edit-3" class="w-5 h-5"></i>
-                                        </button>
-                                    </td>
+                                @empty
+                                <tr>
+                                    <td colspan="7" class="px-10 py-7 text-sm text-gray-400">Belum ada kategori tiket.</td>
                                 </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -286,15 +279,15 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8 mb-8">
                             <div class="space-y-6">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Nama Narahubung*</label>
-                                <input type="text" placeholder="Nama Penyelenggara" value="Andi Wijaya" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                <input type="text" placeholder="Nama Penyelenggara" value="{{ $event->organizer?->organizer_name }}" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
                             </div>
                             <div class="space-y-6">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Email*</label>
-                                <input type="email" placeholder="contact@event.com" value="andi@mail.com" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                <input type="email" placeholder="contact@event.com" value="{{ $event->organizer?->contact_email }}" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
                             </div>
                             <div class="space-y-6">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">No. Ponsel*</label>
-                                <input type="tel" placeholder="08123456789" value="08123456789" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                <input type="tel" placeholder="08123456789" value="{{ $event->organizer?->contact_phone }}" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
                             </div>
                         </div>
                     </div>

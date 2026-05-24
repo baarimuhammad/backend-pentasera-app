@@ -11,4 +11,14 @@ class ETicket extends Model
         'kode_qr',
         'status_validasi'
     ];
+
+    public function detailOrder()
+    {
+        return $this->belongsTo(DetailOrder::class);
+    }
+
+    public function checkin()
+    {
+        return $this->hasOne(Checkin::class);
+    }
 }

@@ -13,6 +13,11 @@ class Order extends Model
         'status_order',
     ];
 
+    protected $casts = [
+        'tanggal_order' => 'datetime',
+        'total_harga' => 'decimal:2',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

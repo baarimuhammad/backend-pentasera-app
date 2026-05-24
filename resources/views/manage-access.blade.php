@@ -14,8 +14,8 @@
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara" class="w-10 h-10 object-contain">
-            <span class="logo-text text-sm">PENTASARA</span>
+            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasera" class="w-10 h-10 object-contain">
+            <span class="logo-text text-sm">PENTESARA</span>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-group">
@@ -58,7 +58,7 @@
     <main class="dashboard-main">
         <header class="dashboard-header">
             <div class="breadcrumb">
-                <a href="{{ url('/dashboard') }}">Pentasara</a>
+                <a href="{{ url('/dashboard') }}">Pentasera</a>
                 <i data-lucide="chevron-right" class="w-3 h-3"></i>
                 <span>Kelola Akses</span>
             </div>
@@ -162,24 +162,22 @@
                     </tr>
                 </thead>
                 <tbody id="eventTableBody">
+                    @forelse($events as $event)
                     <tr class="event-row">
-                        <td class="font-bold">Tarian Kecak Uluwatu</td>
-                        <td>Seni Tari</td>
-                        <td><span class="status-badge active">AKTIF</span></td>
-                        <td><a href="{{ url('/manage-event/1') }}" class="text-rust font-bold text-xs">Kelola Akses</a></td>
+                        <td class="font-bold">{{ $event->nama_event }}</td>
+                        <td>{{ $event->kategori_event ?? '-' }}</td>
+                        <td><span class="status-badge {{ $event->event_status === 'published' ? 'active' : 'bg-gray-100 text-gray-400' }}">{{ strtoupper($event->event_status) }}</span></td>
+                        <td>
+                            <a href="{{ $event->event_status === 'ended' ? url('/event-report/'.$event->id) : url('/manage-event/'.$event->id) }}" class="text-rust font-bold text-xs">
+                                {{ $event->event_status === 'ended' ? 'Lihat Laporan' : 'Kelola Akses' }}
+                            </a>
+                        </td>
                     </tr>
-                    <tr class="event-row">
-                        <td class="font-bold">Gamelan Jawa Heritage</td>
-                        <td>Musik Tradisional</td>
-                        <td><span class="status-badge bg-gray-100 text-gray-400">DRAFT</span></td>
-                        <td><a href="{{ url('/manage-event/2') }}" class="text-rust font-bold text-xs">Kelola Akses</a></td>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-gray-400">Belum ada event di database.</td>
                     </tr>
-                    <tr class="event-row">
-                        <td class="font-bold">Wayang Kulit Purwa</td>
-                        <td>Pertunjukan</td>
-                        <td><span class="status-badge bg-ink text-white">SELESAI</span></td>
-                        <td><a href="{{ url('/event-report/3') }}" class="text-rust font-bold text-xs">Lihat Laporan</a></td>
-                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

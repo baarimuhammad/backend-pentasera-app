@@ -11,33 +11,35 @@ class PaymentController extends Controller
 {
     public function index()
     {
-        return response()->json(Payment::all());
+        return response()->json([
+            'data' => Payment::with('order.user')->latest('waktu_bayar')->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'metode' => 'required|string|max:50',
+            'metode' => 'required|in:qris,ewallet,virtual_account,bank_transfer',
             'jumlah_bayar' => 'required|numeric|min:0'
         ]);
 
         $payment = Payment::create([
-            'order_id' => $request->order_id,
-            'metode' => $request->metode,
-            'jumlah_bayar' => $request->jumlah_bayar,
+            'order_id' => $validated['order_id'],
+            'metode' => $validated['metode'],
+            'jumlah_bayar' => $validated['jumlah_bayar'],
             'status_pembayaran' => 'paid',
             'waktu_bayar' => now()
         ]);
 
-        $order = Order::findOrFail($request->order_id);
+        $order = Order::findOrFail($validated['order_id']);
         $order->update([
             'status_order' => 'paid'
         ]);
 
         return response()->json([
             'message' => 'Payment berhasil dibuat',
-            'data' => $payment
+            'data' => $payment->load('order.user')
         ], 201);
     }
 }

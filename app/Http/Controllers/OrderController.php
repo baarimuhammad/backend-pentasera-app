@@ -8,35 +8,43 @@ use App\Models\Order;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Order::all());
+        $orders = Order::with(['user', 'detailOrders.ticket.event', 'payment'])
+            ->where('user_id', $request->user()->id)
+            ->latest('tanggal_order')
+            ->get();
+
+        return response()->json([
+            'data' => $orders,
+        ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
+        $validated = $request->validate([
             'total_harga' => 'required|numeric|min:0'
         ]);
 
         $order = Order::create([
-            'user_id' => $request->user_id,
+            'user_id' => $request->user()->id,
             'tanggal_order' => now(),
-            'total_harga' => $request->total_harga,
+            'total_harga' => $validated['total_harga'],
             'status_order' => 'pending'
         ]);
 
         return response()->json([
             'message' => 'Order berhasil dibuat',
-            'data' => $order
+            'data' => $order->load(['user', 'detailOrders.ticket.event', 'payment'])
         ], 201);
     }
 
-    public function show($id)
+    public function show(Request $request, Order $order)
     {
-        $order = Order::findOrFail($id);
+        abort_if($order->user_id !== $request->user()->id && $request->user()->role !== 'admin', 403);
 
-        return response()->json($order);
+        return response()->json([
+            'data' => $order->load(['user', 'detailOrders.ticket.event', 'payment']),
+        ]);
     }
 }

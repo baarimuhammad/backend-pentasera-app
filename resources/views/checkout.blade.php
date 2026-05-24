@@ -317,5 +317,11 @@
 @endsection
 
 @push('scripts')
+<script>
+    window.PENTASARA_CHECKOUT = {
+        event: @json($checkoutEvent),
+        tickets: @json($checkoutTickets),
+    };
+</script>
 <script src="{{ asset('js/checkout.js') }}"></script>
 @endpush

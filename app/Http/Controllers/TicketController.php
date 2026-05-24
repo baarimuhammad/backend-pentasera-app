@@ -10,12 +10,14 @@ class TicketController extends Controller
 {
     public function index()
     {
-        return response()->json(Ticket::all());
+        return response()->json([
+            'data' => Ticket::with('event.organizer')->orderBy('event_id')->orderBy('harga')->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'event_id' => 'required|exists:events,id',
             'kategori' => 'required|string|max:50',
             'harga' => 'required|numeric',
@@ -23,21 +25,23 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::create([
-            'event_id' => $request->event_id,
-            'kategori' => $request->kategori,
-            'harga' => $request->harga,
-            'kuota' => $request->kuota,
-            'sisa_kuota' => $request->kuota
+            'event_id' => $validated['event_id'],
+            'kategori' => $validated['kategori'],
+            'harga' => $validated['harga'],
+            'kuota' => $validated['kuota'],
+            'sisa_kuota' => $validated['kuota']
         ]);
 
         return response()->json([
             'message' => 'Ticket berhasil dibuat',
-            'data' => $ticket
+            'data' => $ticket->load('event.organizer')
         ], 201);
     }
-    public function show($id)
+
+    public function show(Ticket $ticket)
     {
-        $ticket = Ticket::findOrFail($id);
-        return response()->json($ticket);
+        return response()->json([
+            'data' => $ticket->load('event.organizer'),
+        ]);
     }
 }

@@ -62,10 +62,10 @@
                 </a>
                 <div>
                     <div class="flex items-center gap-3 mb-1">
-                        <span class="bg-gray-200 text-gray-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">Selesai</span>
-                        <span class="text-gray-400 text-[10px] font-bold">Laporan Event #EVT-2026-003</span>
+                        <span class="bg-gray-200 text-gray-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">{{ $event->event_status }}</span>
+                        <span class="text-gray-400 text-[10px] font-bold">Laporan Event #EVT-{{ str_pad($event->id, 3, '0', STR_PAD_LEFT) }}</span>
                     </div>
-                    <h1 id="report-event-name" class="font-display text-2xl text-ink font-bold">Stories Carved in Tradition</h1>
+                    <h1 id="report-event-name" class="font-display text-2xl text-ink font-bold">{{ $event->nama_event }}</h1>
                 </div>
             </div>
             <div class="flex items-center gap-4">
@@ -84,13 +84,13 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 space-x-0">
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/10">
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Pendapatan</p>
-                <h3 class="text-xl font-black text-ink">Rp 60.600.000</h3>
-                <p class="text-[10px] text-green-500 font-bold mt-1">Target tercapai 100%</p>
+                <h3 class="text-xl font-black text-ink">{{ $stats['revenue_formatted'] }}</h3>
+                <p class="text-[10px] text-green-500 font-bold mt-1">Terhitung dari tiket terjual</p>
             </div>
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/10">
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tiket Terjual</p>
-                <h3 class="text-xl font-black text-ink">342 / 500</h3>
-                <p class="text-[10px] text-rust font-bold mt-1">68.4% Terisi</p>
+                <h3 class="text-xl font-black text-ink">{{ $stats['sold'] }} / {{ $stats['capacity'] }}</h3>
+                <p class="text-[10px] text-rust font-bold mt-1">{{ $stats['occupancy'] }}% Terisi</p>
             </div>
         </div>
 
@@ -123,38 +123,31 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
+                                @forelse($tickets as $ticket)
+                                @php
+                                    $occupancy = $ticket->kuota > 0 ? round(($ticket->sold_quantity / $ticket->kuota) * 100) : 0;
+                                @endphp
                                 <tr>
                                     <td class="py-3">
-                                        <p class="font-bold text-ink text-sm">Reguler (Domestik)</p>
-                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Rp 150.000</p>
+                                        <p class="font-bold text-ink text-sm">{{ $ticket->kategori }}</p>
+                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $ticket->formatted_price }}</p>
                                     </td>
-                                    <td class="py-3 text-center font-bold text-ink text-sm">280</td>
-                                    <td class="py-3 text-right font-bold text-ink text-sm">Rp 42.000.000</td>
+                                    <td class="py-3 text-center font-bold text-ink text-sm">{{ $ticket->sold_quantity }}</td>
+                                    <td class="py-3 text-right font-bold text-ink text-sm">Rp {{ number_format($ticket->sold_quantity * (float) $ticket->harga, 0, ',', '.') }}</td>
                                     <td class="py-3">
                                         <div class="flex items-center justify-end gap-3 font-bold text-[10px] text-rust">
-                                            70%
+                                            {{ $occupancy }}%
                                             <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                <div class="h-full bg-rust rounded-full" style="width: 70%"></div>
+                                                <div class="h-full bg-rust rounded-full" style="width: {{ $occupancy }}%"></div>
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
+                                @empty
                                 <tr>
-                                    <td class="py-3">
-                                        <p class="font-bold text-ink text-sm">VIP Front Row</p>
-                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Rp 300.000</p>
-                                    </td>
-                                    <td class="py-3 text-center font-bold text-ink text-sm">62</td>
-                                    <td class="py-3 text-right font-bold text-ink text-sm">Rp 18.600.000</td>
-                                    <td class="py-3">
-                                        <div class="flex items-center justify-end gap-3 font-bold text-[10px] text-rust">
-                                            62%
-                                            <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                <div class="h-full bg-rust rounded-full" style="width: 62%"></div>
-                                            </div>
-                                        </div>
-                                    </td>
+                                    <td colspan="4" class="py-3 text-sm text-gray-400">Belum ada tiket.</td>
                                 </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

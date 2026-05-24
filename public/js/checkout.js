@@ -1,15 +1,12 @@
-const EVENTS = [
-    { id: '1', name: 'Witness the Fire of Uluwatu', date: '03 Apr 2026', venue: 'Pura Luhur Uluwatu, Bali', image: 'assets/kecak.png' },
-    { id: '2', name: 'Stories Carved in Tradition', date: '08 Apr 2026', venue: 'Keraton Yogyakarta', image: 'assets/wayang.png' },
-    { id: '3', name: 'Feel the Rhythm of Minangkabau', date: '11 Apr 2026', venue: 'Padang Cultural Center', image: 'assets/TariPiring.png' }
-];
+const CHECKOUT_DATA = window.PENTASARA_CHECKOUT || {};
+const EVENTS = CHECKOUT_DATA.event ? [CHECKOUT_DATA.event] : [];
+const TICKETS = CHECKOUT_DATA.tickets || [];
 
-const TICKETS = [
-    { id: 't1', type: 'REGULAR', price: 'Rp115.000' },
-    { id: 't2', type: 'VIP', price: 'Rp250.000' },
-    { id: 't3', type: 'VVIP', price: 'Rp500.000' },
-    { id: 't4', type: 'EARLY BIRD', price: 'Rp85.000' }
-];
+function resolveImageUrl(image, baseUrl) {
+    if (!image) return '';
+    if (image.startsWith('http://') || image.startsWith('https://')) return image;
+    return `${baseUrl}/${image.replace(/^\/+/, '')}`;
+}
 
 function initCheckout() {
     const params = new URLSearchParams(window.location.search);
@@ -19,11 +16,11 @@ function initCheckout() {
 
     const baseUrl = document.querySelector('meta[name="base-url"]')?.content || '';
 
-    document.getElementById('event-thumb').src = baseUrl + '/' + event.image;
+    document.getElementById('event-thumb').src = resolveImageUrl(event.image, baseUrl);
     document.getElementById('event-name').innerText = event.name;
     document.getElementById('event-date').innerText = event.date;
     document.getElementById('event-venue').innerText = event.venue;
-    document.getElementById('modal-event-thumb').src = baseUrl + '/' + event.image;
+    document.getElementById('modal-event-thumb').src = resolveImageUrl(event.image, baseUrl);
     document.getElementById('modal-event-name').innerText = event.name;
     document.getElementById('modal-event-date').innerText = event.date;
 

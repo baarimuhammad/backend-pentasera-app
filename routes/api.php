@@ -12,25 +12,31 @@ use App\Http\Controllers\DetailOrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ETicketController;
 use App\Http\Controllers\CheckinController;
+use App\Http\Controllers\VerificationController;
 
 # ───────────────────────────────────────────
 # PUBLIC ROUTES (tanpa token)
 # ───────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
-Route::patch('/users/{id}', [UserController::class, 'update']);
+
+# Email Verification
+Route::post('/email/resend-verification', [AuthController::class, 'resendVerification']);
+Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verifyApi'])
+    ->middleware('signed')
+    ->name('api.verification.verify');
 
 # Events & tickets publik (bisa dilihat tanpa login)
 Route::get('/events',       [EventController::class, 'index']);
-Route::get('/events/{id}',  [EventController::class, 'show']);
+Route::get('/events/{event}',  [EventController::class, 'show']);
 Route::get('/tickets',      [TicketController::class, 'index']);
-Route::get('/tickets/{id}', [TicketController::class, 'show']);
+Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
 Route::get('/organizers',   [OrganizerController::class, 'index']);
 
 # ───────────────────────────────────────────
-# PROTECTED ROUTES (butuh token)
+# PROTECTED ROUTES (butuh token + email verified)
 # ───────────────────────────────────────────
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     # Auth
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -39,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     # Orders (buyer)
     Route::post('/orders',      [OrderController::class, 'store']);
     Route::get('/orders',       [OrderController::class, 'index']);
-    Route::get('/orders/{id}',  [OrderController::class, 'show']);
+    Route::get('/orders/{order}',  [OrderController::class, 'show']);
 
     # Detail Orders
     Route::post('/detail-orders', [DetailOrderController::class, 'store']);
@@ -59,10 +65,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     # Creator/Admin only
     Route::post('/events',       [EventController::class, 'store']);
+    Route::patch('/events/{id}', [EventController::class, 'update']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']);
     Route::post('/organizers',   [OrganizerController::class, 'store']);
     Route::post('/tickets',      [TicketController::class, 'store']);
 
     # Admin only
     Route::get('/users',    [UserController::class, 'index']);
     Route::post('/users',   [UserController::class, 'store']);
+    Route::patch('/users/{id}', [UserController::class, 'updateRole']);
+    Route::patch('/users/{user}', [UserController::class, 'update']);
 });

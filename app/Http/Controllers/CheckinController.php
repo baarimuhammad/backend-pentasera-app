@@ -11,7 +11,9 @@ class CheckinController extends Controller
 {
     public function index()
     {
-        return response()->json(Checkin::all());
+        return response()->json([
+            'data' => Checkin::with(['eTicket.detailOrder.ticket.event', 'user'])->latest('waktu_checkin')->get(),
+        ]);
     }
 
     public function store(Request $request)
@@ -41,7 +43,7 @@ class CheckinController extends Controller
 
         return response()->json([
             'message' => 'Check-in berhasil',
-            'data' => $checkin
+            'data' => $checkin->load(['eTicket.detailOrder.ticket.event', 'user'])
         ], 201);
     }
 }

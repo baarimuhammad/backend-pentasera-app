@@ -11,7 +11,9 @@ class ETicketController extends Controller
 {
     public function index()
     {
-        return response()->json(ETicket::all());
+        return response()->json([
+            'data' => ETicket::with(['detailOrder.ticket.event', 'checkin'])->get(),
+        ]);
     }
 
     public function store(Request $request)
@@ -28,7 +30,7 @@ class ETicketController extends Controller
 
         return response()->json([
             'message' => 'E-ticket berhasil dibuat',
-            'data' => $ticket
+            'data' => $ticket->load('detailOrder.ticket.event')
         ], 201);
     }
 }

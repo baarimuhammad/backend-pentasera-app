@@ -9,23 +9,26 @@ class OrganizerController extends Controller
 {
     public function index()
     {
-        return response()->json(Organizer::all());
+        return response()->json([
+            'data' => Organizer::with('events')->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $organizer = Organizer::create([
-            'organizer_name' => $request->organizer_name,
-            'deskripsi' => $request->deskripsi,
-            'contact_email' => $request->contact_email,
-            'contact_phone' => $request->contact_phone,
-            'address' => $request->address
+        $validated = $request->validate([
+            'organizer_name' => 'required|string|max:100',
+            'deskripsi' => 'nullable|string',
+            'contact_email' => 'nullable|email|max:100',
+            'contact_phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
         ]);
+
+        $organizer = Organizer::create($validated);
 
         return response()->json([
             'message' => 'Organizer berhasil dibuat',
-            'data' => $organizer
+            'data' => $organizer->load('events')
         ],201);
     }
 }
-

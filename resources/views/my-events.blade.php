@@ -25,7 +25,7 @@
                 </a>
                 <a href="{{ url('/my-events') }}" class="nav-item active creator-only">
                     <i data-lucide="calendar" class="w-5 h-5"></i> Event Saya
-                    <span class="ml-auto bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full">2</span>
+                    <span class="ml-auto bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full">{{ $activeEvents->count() }}</span>
                 </a>
                 <a href="{{ url('/manage-access') }}" class="nav-item creator-only">
                     <i data-lucide="users" class="w-5 h-5"></i> Kelola Akses
@@ -95,22 +95,22 @@
         <!-- Tab Content: Aktif -->
         <div id="tab-aktif" class="event-tab-content active">
             <div class="event-dashboard-grid">
-                <!-- Event Aktif -->
+                @forelse($activeEvents as $event)
                 <div class="event-dashboard-card">
                     <div class="event-card-img">
-                        <img src="{{ asset('assets/kecak.png') }}" alt="Witness the Fire of Uluwatu">
+                        <img src="{{ $event->image_src }}" alt="{{ $event->nama_event }}">
                         <span class="event-status-badge">Aktif</span>
                     </div>
                     <div class="event-card-body">
-                        <h3 class="event-card-title">Witness the Fire of Uluwatu</h3>
+                        <h3 class="event-card-title">{{ $event->nama_event }}</h3>
                         <div class="event-card-meta">
                             <div class="meta-item">
                                 <label>Kapasitas</label>
-                                <span>500</span>
+                                <span>{{ $event->total_capacity }}</span>
                             </div>
                             <div class="meta-item">
                                 <label>Tanggal Event</label>
-                                <span>11 April 2026</span>
+                                <span>{{ $event->event_datetime?->format('d M Y') }}</span>
                             </div>
                         </div>
                         <div class="event-card-footer">
@@ -118,13 +118,16 @@
                                 <div class="status-dot"></div>
                                 <span>AKTIF</span>
                             </div>
-                            <a href="{{ url('/manage-event/1') }}" class="kelola-link">
+                            <a href="{{ url('/manage-event/'.$event->id) }}" class="kelola-link">
                                 Kelola
                                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
                             </a>
                         </div>
                     </div>
                 </div>
+                @empty
+                <div class="text-sm text-gray-500">Belum ada event aktif.</div>
+                @endforelse
 
                 <!-- Create Event Placeholder -->
                 <div onclick="location.href='{{ url('/create-event') }}'" class="create-event-placeholder">
@@ -140,17 +143,18 @@
         <!-- Tab Content: Draft -->
         <div id="tab-draft" class="event-tab-content">
             <div class="event-dashboard-grid">
+                @forelse($draftEvents as $event)
                 <div class="event-dashboard-card opacity-90 cursor-pointer" onclick="location.href='{{ url('/create-event') }}'">
                     <div class="event-card-img" style="filter: grayscale(0.5);">
-                        <img src="{{ asset('assets/gamelan.png') }}" alt="Harmony of Javanese Heritage">
+                        <img src="{{ $event->image_src }}" alt="{{ $event->nama_event }}">
                         <span class="event-status-badge" style="background: #9ca3af;">Draft</span>
                     </div>
                     <div class="event-card-body">
-                        <h3 class="event-card-title">Harmony of Javanese Heritage</h3>
+                        <h3 class="event-card-title">{{ $event->nama_event }}</h3>
                         <div class="event-card-meta">
                             <div class="meta-item">
                                 <label>Kapasitas</label>
-                                <span>200</span>
+                                <span>{{ $event->total_capacity }}</span>
                             </div>
                             <div class="meta-item">
                                 <label>Status</label>
@@ -169,27 +173,31 @@
                         </div>
                     </div>
                 </div>
+                @empty
+                <div class="text-sm text-gray-500">Belum ada draft event.</div>
+                @endforelse
             </div>
         </div>
 
         <!-- Tab Content: Lalu -->
         <div id="tab-lalu" class="event-tab-content">
             <div class="event-dashboard-grid">
-                <div class="event-dashboard-card opacity-75 cursor-pointer" onclick="location.href='{{ url('/event-report/3') }}'">
+                @forelse($pastEvents as $event)
+                <div class="event-dashboard-card opacity-75 cursor-pointer" onclick="location.href='{{ url('/event-report/'.$event->id) }}'">
                     <div class="event-card-img" style="filter: grayscale(1);">
-                        <img src="{{ asset('assets/wayang.png') }}" alt="Stories Carved in Tradition">
+                        <img src="{{ $event->image_src }}" alt="{{ $event->nama_event }}">
                         <span class="event-status-badge" style="background: #2C1A0E;">Selesai</span>
                     </div>
                     <div class="event-card-body">
-                        <h3 class="event-card-title">Stories Carved in Tradition</h3>
+                        <h3 class="event-card-title">{{ $event->nama_event }}</h3>
                         <div class="event-card-meta">
                             <div class="meta-item">
                                 <label>Total Terjual</label>
-                                <span>342</span>
+                                <span>{{ $event->sold_tickets }}</span>
                             </div>
                             <div class="meta-item">
                                 <label>Tanggal</label>
-                                <span>15 Jan 2026</span>
+                                <span>{{ $event->event_datetime?->format('d M Y') }}</span>
                             </div>
                         </div>
                         <div class="event-card-footer">
@@ -197,13 +205,16 @@
                                 <div class="status-dot bg-ink"></div>
                                 <span>SELESAI</span>
                             </div>
-                            <a href="{{ url('/event-report/3') }}" class="kelola-link">
+                            <a href="{{ url('/event-report/'.$event->id) }}" class="kelola-link">
                                 Laporan
                                 <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                             </a>
                         </div>
                     </div>
                 </div>
+                @empty
+                <div class="text-sm text-gray-500">Belum ada event lalu.</div>
+                @endforelse
             </div>
         </div>
     </main>

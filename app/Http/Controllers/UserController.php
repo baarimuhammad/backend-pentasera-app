@@ -10,23 +10,24 @@ class UserController extends Controller
 {
     public function index()
     {
-        return response()->json(User::all());
+        return response()->json([
+            'data' => User::with('orders')->get(),
+        ]);
     }
 
-    public function update(Request $request, $id)
-{
-    $request->validate([
-        'role' => 'required|in:buyer,creator,admin',
-    ]);
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'role' => 'required|in:buyer,creator,admin',
+        ]);
 
-    $user = User::findOrFail($id);
-    $user->update(['role' => $request->role]);
+        $user->update(['role' => $validated['role']]);
 
-    return response()->json([
-        'message' => 'Role berhasil diupdate',
-        'data' => $user
-    ]);
-}
+        return response()->json([
+            'message' => 'Role berhasil diupdate',
+            'data' => $user
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -49,7 +50,20 @@ class UserController extends Controller
             'message' => 'User berhasil dibuat',
             'data' => $user,
         ], 201);
+    }
 
-        
+    public function updateRole(Request $request, $id)
+    {
+        $request->validate([
+            'role' => 'required|in:buyer,creator,admin',
+        ]);
+
+        $user = \App\Models\User::findOrFail($id);
+        $user->update(['role' => $request->role]);
+
+        return response()->json([
+            'message' => 'Role berhasil diupdate',
+            'data' => $user
+        ]);
     }
 }
