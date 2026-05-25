@@ -138,14 +138,14 @@
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Tiket <span class="text-rust">*</span></label>
                         <div class="relative group">
-                            <input type="text" placeholder="Contoh: Early Bird" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink placeholder:text-gray-300 placeholder:font-normal">
+                            <input id="ticket-name" type="text" placeholder="Contoh: Early Bird" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink placeholder:text-gray-300 placeholder:font-normal">
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Jumlah Tiket <span class="text-rust">*</span></label>
                         <div class="relative group">
-                            <input type="number" value="0" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                            <input id="ticket-qty" type="number" value="0" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                         <div class="flex justify-end mt-1">
@@ -155,14 +155,14 @@
                     <div id="price-field" class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Harga <span class="text-rust">*</span></label>
                         <div class="relative group">
-                            <input type="text" value="Rp" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                            <input id="ticket-price" type="text" value="Rp" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Deskripsi Tiket</label>
                         <div class="relative group">
-                            <textarea placeholder="Berikan info tambahan tentang tiket ini..." class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink h-20 resize-none placeholder:text-gray-300 placeholder:font-normal"></textarea>
+                            <textarea id="ticket-desc" placeholder="Berikan info tambahan tentang tiket ini..." class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink h-20 resize-none placeholder:text-gray-300 placeholder:font-normal"></textarea>
                             <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                         </div>
                         <div class="flex justify-end mt-1">
@@ -180,7 +180,7 @@
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tanggal Mulai <span class="text-rust">*</span></label>
                         <div class="flex gap-3">
                             <div class="flex-1 relative group">
-                                <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                                <input id="ticket-start-date" type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                                 <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
                             <div class="w-32 relative group/select">
@@ -198,7 +198,7 @@
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tanggal Berakhir <span class="text-rust">*</span></label>
                         <div class="flex gap-3">
                             <div class="flex-1 relative group">
-                                <input type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
+                                <input id="ticket-end-date" type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                                 <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
                             <div class="w-32 relative group/select">
@@ -222,7 +222,7 @@
                     <button onclick="switchModalTab('detail')" class="w-12 h-12 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-rust hover:text-white transition-all shrink-0">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                     </button>
-                    <button id="btn-create-ticket" class="flex-1 bg-rust text-white font-black py-3 rounded-[1rem] transition-all uppercase tracking-[0.2em] text-xs shadow-xl shadow-rust/40">Simpan Tiket</button>
+                    <button id="btn-create-ticket" onclick="saveTicket()" class="flex-1 bg-rust text-white font-black py-3 rounded-[1rem] transition-all uppercase tracking-[0.2em] text-xs shadow-xl shadow-rust/40">Simpan Tiket</button>
                 </div>
             </div>
         </div>

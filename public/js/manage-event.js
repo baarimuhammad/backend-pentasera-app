@@ -151,23 +151,12 @@ function openModal(id, type) {
         const btnCreate = document.getElementById('btn-create-ticket');
 
         // Reset all input fields inside the modal
-        modal.querySelectorAll('input').forEach(input => {
-            if (input.type === 'number') {
-                input.value = '0';
-            } else if (input.type === 'date') {
-                input.value = '';
-            } else if (input.type === 'text') {
-                // Check if it's the price field
-                if (input.closest('#price-field')) {
-                    input.value = 'Rp';
-                } else {
-                    input.value = '';
-                }
-            } else {
-                input.value = '';
-            }
-        });
-        modal.querySelectorAll('textarea').forEach(ta => ta.value = '');
+        document.getElementById('ticket-name').value = '';
+        document.getElementById('ticket-qty').value = '0';
+        document.getElementById('ticket-price').value = 'Rp';
+        document.getElementById('ticket-desc').value = '';
+        document.getElementById('ticket-start-date').value = '';
+        document.getElementById('ticket-end-date').value = '';
 
         if (type === 'free') {
             if (priceField) priceField.classList.add('hidden');
@@ -175,6 +164,19 @@ function openModal(id, type) {
         } else {
             if (priceField) priceField.classList.remove('hidden');
             if (btnCreate) btnCreate.textContent = 'Simpan Tiket Berbayar';
+        }
+
+        // If editing, pre-fill from the existing row
+        if (currentAction === 'edit' && editingRow) {
+            const cells = editingRow.querySelectorAll('td');
+            if (cells.length >= 5) {
+                document.getElementById('ticket-name').value = cells[0].textContent.trim();
+                document.getElementById('ticket-qty').value = cells[2].textContent.trim();
+                if (type !== 'free') {
+                    document.getElementById('ticket-price').value = cells[1].textContent.trim();
+                }
+            }
+            if (btnCreate) btnCreate.textContent = type === 'free' ? 'Simpan Perubahan' : 'Simpan Perubahan';
         }
 
         // Reset to detail tab
@@ -206,14 +208,10 @@ function closeModal(id) {
 
 function switchModalTab(tab) {
     if (tab === 'sales') {
-        // Validate detail fields before allowing switch to sales tab
-        const modal = document.getElementById('modal-tiket');
-        if (!modal) return;
-
-        const nameInput = modal.querySelector('#modal-content-detail input[type="text"]');
-        const qtyInput = modal.querySelector('#modal-content-detail input[type="number"]');
+        const nameInput = document.getElementById('ticket-name');
+        const qtyInput = document.getElementById('ticket-qty');
         const priceField = document.getElementById('price-field');
-        const priceInput = priceField ? priceField.querySelector('input') : null;
+        const priceInput = document.getElementById('ticket-price');
         const isFree = priceField && priceField.classList.contains('hidden');
 
         const isNameValid = nameInput && nameInput.value.trim().length > 0;
@@ -247,7 +245,7 @@ function switchModalTab(tab) {
 }
 
 // ── Ticket Actions ──
-function handleTicketAction(action, category) {
+function handleTicketAction(action, category, btnEl) {
     category = category || 'paid';
     currentAction = action;
     currentCategory = category;
@@ -256,6 +254,13 @@ function handleTicketAction(action, category) {
     const title = document.getElementById('action-title');
     const btnText = document.getElementById('btn-action-text');
     if (!section) return;
+
+    // For edit mode, find the row and store it
+    if (action === 'edit' && btnEl) {
+        editingRow = btnEl.closest('tr');
+    } else {
+        editingRow = null;
+    }
 
     section.classList.remove('hidden');
     if (action === 'edit') {
@@ -306,20 +311,15 @@ function setTicketCategory(category) {
 }
 
 // ── Ticket Form Validation ──
+let editingRow = null; // Track which row is being edited
+
 function validateTicketForm() {
-    const modal = document.getElementById('modal-tiket');
-    if (!modal) return;
-
-    // Find inputs specifically within the detail content area
-    const detailContent = document.getElementById('modal-content-detail');
-    if (!detailContent) return;
-
-    const nameInput = detailContent.querySelector('input[placeholder*="Contoh"]');
-    const qtyInput = detailContent.querySelector('input[type="number"]');
+    const nameInput = document.getElementById('ticket-name');
+    const qtyInput = document.getElementById('ticket-qty');
     const priceField = document.getElementById('price-field');
-    const priceInput = priceField ? priceField.querySelector('input') : null;
-
-    // Use specific IDs instead of generic selectors
+    const priceInput = document.getElementById('ticket-price');
+    const startDate = document.getElementById('ticket-start-date');
+    const endDate = document.getElementById('ticket-end-date');
     const btnNext = document.getElementById('btn-next-tab');
     const btnCreate = document.getElementById('btn-create-ticket');
 
@@ -329,7 +329,6 @@ function validateTicketForm() {
     const isPriceValid = isFree || (priceInput && parseInt(priceInput.value.replace(/[^0-9]/g, '')) > 0);
     const isDetailValid = isNameValid && isQtyValid && isPriceValid;
 
-    // "Selanjutnya" button — enable/disable based on detail fields
     if (btnNext) {
         if (isDetailValid) {
             btnNext.disabled = false;
@@ -340,26 +339,71 @@ function validateTicketForm() {
         }
     }
 
-    // "Simpan Tiket" button — enable/disable based on all fields including dates
     if (btnCreate) {
-        const salesContent = document.getElementById('modal-content-sales');
-        const dateInputs = salesContent ? salesContent.querySelectorAll('input[type="date"]') : [];
-        const startDate = dateInputs[0] ? dateInputs[0].value : '';
-        const endDate = dateInputs[1] ? dateInputs[1].value : '';
-        const isAllValid = isDetailValid && startDate && endDate;
+        const hasStart = startDate && startDate.value;
+        const hasEnd = endDate && endDate.value;
+        const isAllValid = isDetailValid && hasStart && hasEnd;
 
         if (isAllValid) {
             btnCreate.disabled = false;
             btnCreate.style.opacity = '1';
             btnCreate.style.cursor = 'pointer';
-            btnCreate.classList.add('hover:bg-rust-deep');
         } else {
             btnCreate.disabled = true;
             btnCreate.style.opacity = '0.3';
             btnCreate.style.cursor = 'not-allowed';
-            btnCreate.classList.remove('hover:bg-rust-deep');
         }
     }
+}
+
+// ── Save / Update Ticket ──
+function saveTicket() {
+    const btnCreate = document.getElementById('btn-create-ticket');
+    if (btnCreate && btnCreate.disabled) return;
+
+    const name = document.getElementById('ticket-name').value.trim();
+    const qty = parseInt(document.getElementById('ticket-qty').value) || 0;
+    const priceField = document.getElementById('price-field');
+    const isFree = priceField && priceField.classList.contains('hidden');
+    const priceRaw = isFree ? 0 : parseInt(document.getElementById('ticket-price').value.replace(/[^0-9]/g, '')) || 0;
+    const priceText = isFree ? 'Gratis' : `Rp ${priceRaw.toLocaleString('id-ID')}`;
+
+    if (currentAction === 'edit' && editingRow) {
+        // Update existing row
+        const cells = editingRow.querySelectorAll('td');
+        cells[0].innerHTML = `<span class="font-bold text-ink text-sm">${name}</span>`;
+        cells[1].textContent = priceText;
+        cells[2].textContent = qty;
+        // keep sold as-is
+        const sold = parseInt(cells[3].textContent) || 0;
+        cells[4].textContent = Math.max(0, qty - sold);
+        editingRow = null;
+    } else {
+        // Add new row
+        const tbody = document.querySelector('#manage-tiket tbody');
+        if (!tbody) return;
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-rust/[0.02] transition-colors';
+        tr.innerHTML = `
+            <td class="px-10 py-7 font-bold text-ink text-sm">${name}</td>
+            <td class="px-10 py-7 text-sm font-medium">${priceText}</td>
+            <td class="px-10 py-7 text-sm text-gray-400">${qty}</td>
+            <td class="px-10 py-7 text-sm font-bold text-rust">0</td>
+            <td class="px-10 py-7 text-sm text-gray-400 font-medium">${qty}</td>
+            <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
+            <td class="px-10 py-7 text-right">
+                <button onclick="handleTicketAction('edit', '${isFree ? 'free' : 'paid'}', this)" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
+                    <i data-lucide="edit-3" class="w-5 h-5"></i>
+                </button>
+            </td>`;
+        tbody.appendChild(tr);
+        if (window.lucide) lucide.createIcons();
+    }
+
+    closeModal('modal-tiket');
+    const section = document.getElementById('ticket-action-section');
+    if (section) section.classList.add('hidden');
+    updateDashboardStats();
 }
 
 function saveEventChanges() {
@@ -370,30 +414,29 @@ function saveEventChanges() {
 document.addEventListener('DOMContentLoaded', () => {
     updateDashboardStats();
 
+    // Attach edit-button context to existing rows
+    document.querySelectorAll('#manage-tiket tbody tr').forEach(row => {
+        const btn = row.querySelector('button[onclick*="handleTicketAction"]');
+        if (btn) {
+            const cat = btn.getAttribute('onclick').includes("'free'") ? 'free' : 'paid';
+            btn.setAttribute('onclick', `handleTicketAction('edit','${cat}',this)`);
+        }
+    });
+
     const modal = document.getElementById('modal-tiket');
     if (modal) {
-        // Use event delegation for all input/textarea events inside the modal
         modal.addEventListener('input', function(e) {
-            if (e.target.matches('input, textarea')) {
-                validateTicketForm();
-            }
+            if (e.target.matches('input, textarea')) validateTicketForm();
         });
         modal.addEventListener('change', function(e) {
-            if (e.target.matches('input, textarea, select')) {
-                validateTicketForm();
-            }
+            if (e.target.matches('input, textarea, select')) validateTicketForm();
         });
     }
 
-    // Close modals on overlay click, prevent propagation from container
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        // Prevent clicks inside modal container from closing the modal
         overlay.querySelectorAll('.modal-container, [class*="modal-container"]').forEach(container => {
-            container.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
+            container.addEventListener('click', (e) => e.stopPropagation());
         });
-
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
                 overlay.classList.remove('active');
