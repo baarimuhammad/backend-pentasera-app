@@ -71,20 +71,34 @@
         </header>
 
         <!-- Event Header Info -->
-        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div id="manage-event-root" data-event-id="{{ $event->id }}" class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
                 <div class="flex items-center gap-3 mb-2">
-                    <span class="bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full">AKTIF</span>
-                    <span class="text-gray-400 text-xs">ID Event: #EVT-2026-001</span>
+                    @php
+                        $statusLabel = match($event->event_status) {
+                            'published' => 'AKTIF',
+                            'draft' => 'DRAF',
+                            'cancelled' => 'DIBATALKAN',
+                            default => strtoupper($event->event_status),
+                        };
+                        $statusColor = match($event->event_status) {
+                            'published' => 'bg-green-100 text-green-600',
+                            'draft' => 'bg-yellow-100 text-yellow-600',
+                            'cancelled' => 'bg-red-100 text-red-600',
+                            default => 'bg-gray-100 text-gray-600',
+                        };
+                    @endphp
+                    <span class="{{ $statusColor }} text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $statusLabel }}</span>
+                    <span class="text-gray-400 text-xs">ID Event: #EVT-{{ $event->id }}</span>
                 </div>
-                <h1 class="font-display text-3xl text-ink mb-2">Tarian Kecak Uluwatu</h1>
+                <h1 class="font-display text-3xl text-ink mb-2">{{ $event->nama_event }}</h1>
                 <p class="text-gray-500 text-sm flex items-center gap-2">
                     <i data-lucide="map-pin" class="w-4 h-4"></i>
-                    Pura Uluwatu, Bali
+                    {{ $event->lokasi }}
                 </p>
             </div>
             <div class="flex gap-3">
-                <button onclick="saveEventChanges()" class="bg-rust text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
+                <button id="btn-save-event" onclick="saveEventChanges()" class="bg-rust text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
                     Simpan Perubahan
                 </button>
             </div>
@@ -120,36 +134,40 @@
         <div id="manage-info" class="event-tab-content active">
             <div class="profile-section">
                 <div class="banner-upload">
-                    <img src="{{ asset('assets/kecak.png') }}" alt="Banner" class="w-full h-full object-cover">
+                    <img id="manage-banner-preview" src="{{ $event->image_src }}" alt="Banner" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <button class="bg-white text-ink px-4 py-2 rounded-lg font-bold text-xs">Ganti Banner</button>
+                        <button onclick="document.getElementById('manage-banner-input').click()" class="bg-white text-ink px-4 py-2 rounded-lg font-bold text-xs">Ganti Banner</button>
                     </div>
+                    <input type="file" id="manage-banner-input" accept="image/*" class="hidden">
                 </div>
                 <div class="profile-content-padding">
                     <div class="form-grid">
                         <div class="form-group full">
                             <label>Judul Event</label>
-                            <input type="text" class="form-input" value="Tarian Kecak Uluwatu">
+                            <input type="text" id="manage-nama-event" class="form-input" value="{{ $event->nama_event }}">
                         </div>
                         <div class="form-group">
                             <label>Kategori</label>
-                            <select class="form-input">
-                                <option selected>Seni Tari</option>
-                                <option>Musik Tradisional</option>
-                                <option>Pertunjukan</option>
+                            <select id="manage-kategori-event" class="form-input">
+                                @php
+                                    $categories = ['Seni Tari', 'Musik Tradisional', 'Pertunjukan', 'Festival', 'Workshop', 'Pameran', 'Lainnya'];
+                                @endphp
+                                @foreach($categories as $cat)
+                                    <option {{ ($event->kategori_event ?? '') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Tanggal & Waktu</label>
-                            <input type="datetime-local" class="form-input" value="2026-04-11T18:00">
+                            <input type="datetime-local" id="manage-event-datetime" class="form-input" value="{{ \Carbon\Carbon::parse($event->event_datetime)->format('Y-m-d\TH:i') }}">
                         </div>
                         <div class="form-group full">
                             <label>Lokasi</label>
-                            <input type="text" class="form-input" value="Pura Uluwatu, Pecatu, Kuta Selatan, Bali">
+                            <input type="text" id="manage-lokasi" class="form-input" value="{{ $event->lokasi }}">
                         </div>
                         <div class="form-group full">
                             <label>Deskripsi Event</label>
-                            <textarea class="form-input form-textarea h-40">Nikmati pertunjukan tari Kecak yang spektakuler dengan latar belakang matahari terbenam di Pura Uluwatu. Pertunjukan ini menceritakan kisah Ramayana dengan iringan paduan suara puluhan penari pria yang menciptakan harmoni suara 'cak-cak-cak' yang magis.</textarea>
+                            <textarea id="manage-deskripsi" class="form-input form-textarea h-40">{{ $event->deskripsi }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -185,33 +203,35 @@
                                     <th class="px-10 py-6"></th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                <tr class="hover:bg-rust/[0.02] transition-colors">
-                                    <td class="px-10 py-7 font-bold text-ink text-sm">Reguler (Domestik)</td>
-                                    <td class="px-10 py-7 text-sm font-medium">Rp 150.000</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400">400</td>
-                                    <td class="px-10 py-7 text-sm font-bold text-rust">280</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400 font-medium">120</td>
-                                    <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
+                            <tbody class="divide-y divide-gray-50" id="ticket-table-body">
+                                @foreach($event->tickets as $ticket)
+                                @php
+                                    $sold = $ticket->kuota - $ticket->sisa_kuota;
+                                    $isFree = $ticket->harga == 0;
+                                    $statusText = $ticket->sisa_kuota > 0 ? 'Tersedia' : 'Habis';
+                                    $statusClass = $ticket->sisa_kuota > 0
+                                        ? 'bg-green-50 text-green-600 border-green-100'
+                                        : 'bg-red-50 text-red-600 border-red-100';
+                                @endphp
+                                <tr class="hover:bg-rust/[0.02] transition-colors" data-ticket-id="{{ $ticket->id }}">
+                                    <td class="px-10 py-7 font-bold text-ink text-sm">{{ $ticket->kategori }}</td>
+                                    <td class="px-10 py-7 text-sm font-medium">{{ $isFree ? 'Gratis' : 'Rp ' . number_format($ticket->harga, 0, ',', '.') }}</td>
+                                    <td class="px-10 py-7 text-sm text-gray-400">{{ $ticket->kuota }}</td>
+                                    <td class="px-10 py-7 text-sm font-bold text-rust">{{ $sold }}</td>
+                                    <td class="px-10 py-7 text-sm text-gray-400 font-medium">{{ $ticket->sisa_kuota }}</td>
+                                    <td class="px-10 py-7"><span class="{{ $statusClass }} text-[10px] font-bold px-4 py-1.5 rounded-full border uppercase tracking-wider">{{ $statusText }}</span></td>
                                     <td class="px-10 py-7 text-right">
-                                        <button onclick="handleTicketAction('edit', 'paid')" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
-                                            <i data-lucide="edit-3" class="w-5 h-5"></i>
-                                        </button>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button onclick="handleTicketAction('edit', '{{ $isFree ? 'free' : 'paid' }}', this)" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
+                                                <i data-lucide="edit-3" class="w-5 h-5"></i>
+                                            </button>
+                                            <button onclick="deleteTicket({{ $ticket->id }}, this)" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-red-50 hover:text-red-500 transition-all" title="Hapus tiket">
+                                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                                <tr class="hover:bg-rust/[0.02] transition-colors">
-                                    <td class="px-10 py-7 font-bold text-ink text-sm">VIP Front Row</td>
-                                    <td class="px-10 py-7 text-sm font-medium">Rp 300.000</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400">100</td>
-                                    <td class="px-10 py-7 text-sm font-bold text-rust">62</td>
-                                    <td class="px-10 py-7 text-sm text-gray-400 font-medium">38</td>
-                                    <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
-                                    <td class="px-10 py-7 text-right">
-                                        <button onclick="handleTicketAction('edit', 'paid')" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
-                                            <i data-lucide="edit-3" class="w-5 h-5"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -350,5 +370,12 @@
 @endsection
 
 @push('scripts')
+<script>
+    // Inject server data for JS consumption
+    window.__eventId = {{ $event->id }};
+    window.__eventData = @json($event);
+    window.__eventStats = @json($stats);
+    window.__recentOrders = @json($recentOrders);
+</script>
 <script src="{{ asset('js/manage-event.js') }}"></script>
 @endpush

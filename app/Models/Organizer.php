@@ -4,13 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class organizer extends Model
+class Organizer extends Model
 {
     protected $fillable = [
         'organizer_name',
         'deskripsi',
         'contact_email',
         'contact_phone',
-        'address'
+        'address',
+        'user_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class);
+    }
 }

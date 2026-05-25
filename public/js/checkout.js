@@ -1,47 +1,54 @@
-const EVENTS = [
-    { id: '1', name: 'Witness the Fire of Uluwatu', date: '03 Apr 2026', venue: 'Pura Luhur Uluwatu, Bali', image: 'assets/kecak.png' },
-    { id: '2', name: 'Stories Carved in Tradition', date: '08 Apr 2026', venue: 'Keraton Yogyakarta', image: 'assets/wayang.png' },
-    { id: '3', name: 'Feel the Rhythm of Minangkabau', date: '11 Apr 2026', venue: 'Padang Cultural Center', image: 'assets/TariPiring.png' }
-];
-
-const TICKETS = [
-    { id: 't1', type: 'REGULAR', price: 'Rp115.000' },
-    { id: 't2', type: 'VIP', price: 'Rp250.000' },
-    { id: 't3', type: 'VVIP', price: 'Rp500.000' },
-    { id: 't4', type: 'EARLY BIRD', price: 'Rp85.000' }
-];
+// ── checkout.js — Pentasara ──
 
 function initCheckout() {
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get('id');
     const ticketData = params.get('tickets');
-    const event = EVENTS.find(e => e.id === eventId) || EVENTS[0];
+    
+    if (typeof PENTASARA_CHECKOUT === 'undefined') {
+        console.error('PENTASARA_CHECKOUT is undefined!');
+        return;
+    }
+
+    const event = PENTASARA_CHECKOUT.event;
+    const ticketsList = PENTASARA_CHECKOUT.tickets;
+
+    if (!event) {
+        console.error('No event data!');
+        return;
+    }
 
     const baseUrl = document.querySelector('meta[name="base-url"]')?.content || '';
 
-    document.getElementById('event-thumb').src = baseUrl + '/' + event.image;
-    document.getElementById('event-name').innerText = event.name;
-    document.getElementById('event-date').innerText = event.date;
-    document.getElementById('event-venue').innerText = event.venue;
-    document.getElementById('modal-event-thumb').src = baseUrl + '/' + event.image;
-    document.getElementById('modal-event-name').innerText = event.name;
-    document.getElementById('modal-event-date').innerText = event.date;
+    // Render Event details
+    document.getElementById('event-thumb').src = event.image_url ? (event.image_url.startsWith('http') ? event.image_url : baseUrl + '/' + event.image_url) : baseUrl + '/assets/kecak.png';
+    document.getElementById('event-name').innerText = event.nama_event;
+    
+    // Format date nicely
+    const dateObj = new Date(event.event_datetime);
+    const formattedDate = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    document.getElementById('event-date').innerText = formattedDate;
+    document.getElementById('event-venue').innerText = event.lokasi;
+    
+    document.getElementById('modal-event-thumb').src = document.getElementById('event-thumb').src;
+    document.getElementById('modal-event-name').innerText = event.nama_event;
+    document.getElementById('modal-event-date').innerText = formattedDate;
 
     if (ticketData) {
         const ticketEntries = ticketData.split(',').map(s => s.split(':'));
         let subtotal = 0, ticketListHtml = '', modalTicketListHtml = '', totalQty = 0, ticketTypes = [];
 
         ticketEntries.forEach(([tid, q]) => {
-            const t = TICKETS.find(tk => tk.id === tid);
+            const t = ticketsList.find(tk => tk.id == tid);
             if (t) {
                 const qty = parseInt(q);
                 totalQty += qty;
-                const price = parseInt(t.price.replace(/[^0-9]/g, ''), 10);
+                const price = parseFloat(t.harga);
                 subtotal += (qty * price);
-                ticketListHtml += `<div class="flex justify-between text-[13px]"><span class="text-gray-400">Harga Tiket (${qty}x)</span><span class="font-bold text-[#2C1A0E]">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
-                modalTicketListHtml += `<div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl"><div><p class="font-bold text-[#2C1A0E]">${t.type}</p><p class="text-[10px] text-gray-400">${qty} Tiket x ${t.price}</p></div><span class="font-bold text-rust">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
+                ticketListHtml += `<div class="flex justify-between text-[13px]"><span class="text-gray-400">Harga Tiket ${t.kategori} (${qty}x)</span><span class="font-bold text-[#2C1A0E]">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
+                modalTicketListHtml += `<div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl"><div><p class="font-bold text-[#2C1A0E]">${t.kategori}</p><p class="text-[10px] text-gray-400">${qty} Tiket x Rp ${price.toLocaleString('id-ID')}</p></div><span class="font-bold text-rust">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
                 for (let i = 0; i < qty; i++) {
-                    ticketTypes.push(`${event.name.toUpperCase()} – ${t.type}`);
+                    ticketTypes.push(`${event.nama_event.toUpperCase()} – ${t.kategori.toUpperCase()}`);
                 }
             }
         });
@@ -61,6 +68,21 @@ function initCheckout() {
         generateVisitorForms(totalQty, ticketTypes);
     }
 
+    // Pre-fill user data if logged in
+    const user = getUser();
+    if (user) {
+        if (document.getElementById('buyer-name')) document.getElementById('buyer-name').value = user.nama || user.name || '';
+        if (document.getElementById('buyer-email')) document.getElementById('buyer-email').value = user.email || '';
+        if (document.getElementById('buyer-phone')) {
+            let phone = user.no_hp || '';
+            if (phone.startsWith('+62')) phone = phone.replace('+62', '');
+            else if (phone.startsWith('62')) phone = phone.substring(2);
+            else if (phone.startsWith('0')) phone = phone.substring(1);
+            document.getElementById('buyer-phone').value = phone;
+        }
+        if (document.getElementById('buyer-id')) document.getElementById('buyer-id').value = user.no_ktp || '';
+    }
+
     if (typeof lucide !== 'undefined') lucide.createIcons();
     startTimer(5 * 60 + 31);
 }
@@ -70,7 +92,7 @@ function generateVisitorForms(count, types) {
     let html = '';
     for (let i = 1; i <= count; i++) {
         html += `
-        <section class="bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 p-10">
+        <section class="bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 p-10 animate-fade-in-up">
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center gap-3">
                     <i data-lucide="users" class="w-5 h-5 text-rust"></i>
@@ -165,13 +187,17 @@ window.applyVoucher = () => {
 function startTimer(duration) {
     let timer = duration;
     const display = document.getElementById('timer');
-    setInterval(() => {
+    const interval = setInterval(() => {
         let minutes = parseInt(timer / 60, 10);
         let seconds = parseInt(timer % 60, 10);
         minutes = minutes < 10 ? "0" + minutes : minutes;
         seconds = seconds < 10 ? "0" + seconds : seconds;
         display.textContent = minutes + ":" + seconds;
-        if (--timer < 0) timer = duration;
+        if (--timer < 0) {
+            clearInterval(interval);
+            alert("Waktu memesan habis. Silakan ulangi pemesanan Anda.");
+            window.location.href = "/";
+        }
     }, 1000);
 }
 
@@ -188,7 +214,13 @@ window.togglePaymentGroup = (id) => {
     }
 };
 
-window.processPayment = () => {
+window.processPayment = async () => {
+    if (!isLoggedIn()) {
+        alert("Silakan login terlebih dahulu untuk melakukan pembelian tiket.");
+        window.location.href = "/auth";
+        return;
+    }
+
     const missing = [];
     const buyerName = document.getElementById('buyer-name');
     const buyerEmail = document.getElementById('buyer-email');
@@ -243,11 +275,49 @@ window.processPayment = () => {
         }
     }
 
+    // Call API transactions
     const params = new URLSearchParams(window.location.search);
-    const total = document.getElementById('total-payment').innerText;
-    const baseUrl = document.querySelector('meta[name="base-url"]')?.content || '';
-    const targetUrl = `${baseUrl}/payment?method=${selectedPayment.value}&total=${encodeURIComponent(total)}&${params.toString()}`;
-    window.location.href = targetUrl;
+    const ticketData = params.get('tickets');
+    const ticketEntries = ticketData.split(',').map(s => s.split(':'));
+
+    const items = ticketEntries.map(([tid, q]) => ({
+        ticket_id: parseInt(tid),
+        jumlah: parseInt(q)
+    }));
+
+    const body = {
+        items: items,
+        buyer_info: {
+            nama: buyerName.value,
+            email: buyerEmail.value,
+            no_hp: '0' + buyerPhone.value,
+            no_ktp: buyerId.value
+        },
+        metode_pembayaran: selectedPayment.value
+    };
+
+    // Show loading indicator
+    const payBtn = document.querySelector('button[onclick="processPayment()"]');
+    const originalBtnText = payBtn.innerHTML;
+    payBtn.disabled = true;
+    payBtn.innerHTML = `<i class="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2 inline-block"></i> Memproses...`;
+
+    try {
+        const response = await apiPost('/transactions', body);
+        if (response && response.success) {
+            sessionStorage.setItem('order_result', JSON.stringify(response.data));
+            window.location.href = '/payment';
+        } else {
+            alert("Gagal memproses transaksi: " + (response ? response.message : 'Terjadi kesalahan sistem'));
+            payBtn.disabled = false;
+            payBtn.innerHTML = originalBtnText;
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Gagal menghubungi server. Pastikan koneksi internet aktif.");
+        payBtn.disabled = false;
+        payBtn.innerHTML = originalBtnText;
+    }
 };
 
 document.addEventListener('DOMContentLoaded', initCheckout);

@@ -13,4 +13,9 @@ class Payment extends Model
         'status_pembayaran',
         'waktu_bayar'
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
 }

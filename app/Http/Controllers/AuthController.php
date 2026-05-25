@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Traits\ApiResponseTrait;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    use ApiResponseTrait;
+
     public function register(Request $request)
     {
         $request->validate([
@@ -26,18 +30,20 @@ class AuthController extends Controller
             'status'   => 'aktif',
         ]);
 
+        // Kirim email verifikasi
+        $user->notify(new VerifyEmailNotification);
+
         $token = $user->createToken('pantasera-token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Registrasi berhasil',
-            'token'   => $token,
-            'user'    => [
+        return $this->success([
+            'token' => $token,
+            'user'  => [
                 'id'    => $user->id,
                 'nama'  => $user->nama,
                 'email' => $user->email,
                 'role'  => $user->role,
             ]
-        ], 201);
+        ], 'Registrasi berhasil. Silakan cek email untuk verifikasi.', 201);
     }
 
     public function login(Request $request)
@@ -56,40 +62,57 @@ class AuthController extends Controller
         }
 
         if ($user->status === 'nonaktif') {
-            return response()->json([
-                'message' => 'Akun kamu dinonaktifkan. Hubungi admin.'
-            ], 403);
+            return $this->error('Akun kamu dinonaktifkan. Hubungi admin.', 403);
         }
 
         // Hapus token lama, buat yang baru
         $user->tokens()->delete();
         $token = $user->createToken('pantasera-token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login berhasil',
-            'token'   => $token,
-            'user'    => [
+        return $this->success([
+            'token' => $token,
+            'user'  => [
                 'id'    => $user->id,
                 'nama'  => $user->nama,
                 'email' => $user->email,
                 'role'  => $user->role,
             ]
-        ]);
+        ], 'Login berhasil');
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logout berhasil'
-        ]);
+        return $this->success(null, 'Logout berhasil');
     }
 
     public function me(Request $request)
     {
-        return response()->json([
-            'user' => $request->user()
+        return $this->success(['user' => $request->user()]);
+    }
+
+    /**
+     * Resend email verification notification.
+     */
+    public function resendVerification(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
         ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return $this->error('User dengan email tersebut tidak ditemukan.', 404);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->error('Email sudah diverifikasi.', 400);
+        }
+
+        $user->notify(new VerifyEmailNotification);
+
+        return $this->success(null, 'Email verifikasi berhasil dikirim ulang.');
     }
 }

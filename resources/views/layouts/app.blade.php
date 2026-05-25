@@ -87,10 +87,14 @@
 
                 <!-- Profile Dropdown -->
                 <div class="profile-container">
-                    <div class="profile-img-wrap">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" alt="User Profile">
+                    <div class="profile-img-wrap" title="" id="nav-profile-wrap">
+                        <div id="nav-avatar-letter" class="w-full h-full flex items-center justify-center bg-rust text-white font-bold text-sm rounded-full">U</div>
                     </div>
                     <div class="dropdown-menu">
+                        <div class="dropdown-user-info px-4 py-2 border-b border-gray-100">
+                            <div class="font-bold text-ink text-sm" id="nav-user-name">User</div>
+                            <div class="text-xs text-gray-400" id="nav-user-email">-</div>
+                        </div>
                         <div class="dropdown-header" onclick="toggleRole()">
                             <div class="switch-icon">
                                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
@@ -188,8 +192,54 @@
 
     @yield('custom-footer')
 
+    <!-- API Helper (must load before app.js and page scripts) -->
+    <script src="{{ asset('js/api-helper.js') }}?v={{ time() }}"></script>
+
     <!-- App JS -->
     <script src="{{ asset('js/app.js') }}"></script>
+
+    {{-- Sync navbar auth state from api-helper --}}
+    <script>
+    (function() {
+        function syncNavbar() {
+            const loggedIn = isLoggedIn();
+            const user = getUser();
+
+            // Toggle body classes used by CSS to show/hide elements
+            document.body.classList.toggle('is-logged-in', loggedIn);
+
+            if (loggedIn && user) {
+                const isCreator = user.role === 'creator';
+                document.body.classList.toggle('is-creator', isCreator);
+
+                // User name & avatar
+                const nameEl = document.getElementById('nav-user-name');
+                const emailEl = document.getElementById('nav-user-email');
+                const avatarEl = document.getElementById('nav-avatar-letter');
+                const profileWrap = document.getElementById('nav-profile-wrap');
+
+                if (nameEl) nameEl.textContent = user.nama || 'User';
+                if (emailEl) emailEl.textContent = user.email || '';
+                if (avatarEl) avatarEl.textContent = (user.nama || 'U').charAt(0).toUpperCase();
+                if (profileWrap) profileWrap.title = user.nama || '';
+
+                // Role label
+                const roleLabel = document.getElementById('dropdown-role-label');
+                if (roleLabel) roleLabel.innerText = isCreator ? 'Pembeli' : 'Penyelenggara';
+            } else {
+                document.body.classList.remove('is-creator');
+            }
+        }
+
+        // Run immediately and also on DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', syncNavbar);
+        } else {
+            syncNavbar();
+        }
+    })();
+    </script>
+
     @stack('scripts')
 </body>
 </html>

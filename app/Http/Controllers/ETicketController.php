@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use App\Models\ETicket;
 use Illuminate\Support\Str;
 
 class ETicketController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
-        return response()->json(ETicket::all());
+        return $this->success(ETicket::all(), 'Daftar e-ticket berhasil diambil');
     }
 
     public function store(Request $request)
@@ -26,9 +29,6 @@ class ETicketController extends Controller
             'status_validasi' => 'valid'
         ]);
 
-        return response()->json([
-            'message' => 'E-ticket berhasil dibuat',
-            'data' => $ticket
-        ], 201);
+        return $this->success($ticket, 'E-ticket berhasil dibuat', 201);
     }
 }

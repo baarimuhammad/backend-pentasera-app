@@ -10,12 +10,19 @@
     <!-- Banner Upload -->
     <section class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
         <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4">Banner Event*</label>
-        <div class="border-2 border-dashed border-gray-200 rounded-xl p-12 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group">
-            <div class="w-12 h-12 rounded-full bg-gold-light/20 flex items-center justify-center text-gold mb-4 group-hover:scale-110 transition-transform">
-                <i data-lucide="image"></i>
+        <div class="border-2 border-dashed border-gray-200 rounded-xl p-12 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group" id="banner-drop-zone" onclick="document.getElementById('banner-input').click()">
+            <input type="file" id="banner-input" accept="image/jpeg,image/png,image/webp" class="hidden">
+            <div id="banner-preview-container" class="hidden w-full">
+                <img id="banner-preview" src="" alt="Preview" class="w-full h-48 object-cover rounded-lg">
+                <p class="text-xs text-gray-400 mt-2 text-center">Klik untuk mengganti gambar</p>
             </div>
-            <p class="text-sm text-gray-500 font-medium">Klik untuk unggah atau seret gambar ke sini</p>
-            <p class="text-[10px] text-gray-400 mt-1">Rasio 16:9 recommended, Maks. 5MB (JPG, PNG)</p>
+            <div id="banner-placeholder">
+                <div class="w-12 h-12 rounded-full bg-gold-light/20 flex items-center justify-center text-gold mb-4 group-hover:scale-110 transition-transform mx-auto">
+                    <i data-lucide="image"></i>
+                </div>
+                <p class="text-sm text-gray-500 font-medium text-center">Klik untuk unggah atau seret gambar ke sini</p>
+                <p class="text-[10px] text-gray-400 mt-1 text-center">Rasio 16:9 recommended, Maks. 5MB (JPG, PNG)</p>
+            </div>
         </div>
     </section>
 
@@ -24,15 +31,15 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Nama Event*</label>
-                <input type="text" placeholder="Contoh: Pentas Tari Kecak Uluwatu" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
+                <input type="text" id="input-nama-event" placeholder="Contoh: Pentas Tari Kecak Uluwatu" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
             </div>
             <div>
                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Pilih Kategori*</label>
-                <select class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none appearance-none">
-                    <option>Seni Pertunjukan</option>
-                    <option>Festival Budaya</option>
-                    <option>Pameran Seni</option>
-                    <option>Workshop</option>
+                <select id="input-kategori-event" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none appearance-none">
+                    <option value="Seni Pertunjukan">Seni Pertunjukan</option>
+                    <option value="Festival Budaya">Festival Budaya</option>
+                    <option value="Pameran Seni">Pameran Seni</option>
+                    <option value="Workshop">Workshop</option>
                 </select>
             </div>
         </div>
@@ -46,19 +53,19 @@
                 <label class="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                     <i data-lucide="user" class="w-3 h-3 text-rust"></i> Penyelenggara
                 </label>
-                <input type="text" placeholder="Nama Komunitas/EO" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
+                <input type="text" id="input-penyelenggara" placeholder="Nama Komunitas/EO" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
             </div>
             <div>
                 <label class="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                     <i data-lucide="calendar" class="w-3 h-3 text-rust"></i> Tanggal & Waktu
                 </label>
-                <input type="datetime-local" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
+                <input type="datetime-local" id="input-datetime" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
             </div>
             <div>
                 <label class="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                     <i data-lucide="map-pin" class="w-3 h-3 text-rust"></i> Lokasi
                 </label>
-                <input type="text" placeholder="Nama Tempat/Gedung" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
+                <input type="text" id="input-lokasi" placeholder="Nama Tempat/Gedung" class="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-gold outline-none">
             </div>
         </div>
     </section>
@@ -218,7 +225,7 @@
                         <button class="p-1.5 hover:bg-white rounded text-gray-600"><i data-lucide="link" class="w-4 h-4"></i></button>
                         <button class="p-1.5 hover:bg-white rounded text-gray-600"><i data-lucide="image" class="w-4 h-4"></i></button>
                     </div>
-                    <textarea class="w-full h-64 p-4 outline-none resize-none text-sm" placeholder="Ceritakan detail event Anda..."></textarea>
+                    <textarea id="input-deskripsi" class="w-full h-64 p-4 outline-none resize-none text-sm" placeholder="Ceritakan detail event Anda..."></textarea>
                 </div>
             </div>
 
@@ -246,8 +253,8 @@
 
     <!-- Action Buttons -->
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-end gap-4">
-        <button class="px-8 py-3 rounded-full border border-rust text-rust font-bold text-sm hover:bg-rust/5 transition-all">Simpan Draf</button>
-        <button class="px-8 py-3 rounded-full bg-rust text-white font-bold text-sm hover:bg-rust-deep transition-all shadow-lg shadow-rust/20">Buat Event Sekarang</button>
+        <button id="btn-save-draft" class="px-8 py-3 rounded-full border border-rust text-rust font-bold text-sm hover:bg-rust/5 transition-all">Simpan Draf</button>
+        <button id="btn-publish-event" class="px-8 py-3 rounded-full bg-rust text-white font-bold text-sm hover:bg-rust-deep transition-all shadow-lg shadow-rust/20">Buat Event Sekarang</button>
     </div>
 </main>
 

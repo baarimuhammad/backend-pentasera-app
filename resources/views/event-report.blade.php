@@ -62,10 +62,24 @@
                 </a>
                 <div>
                     <div class="flex items-center gap-3 mb-1">
-                        <span class="bg-gray-200 text-gray-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">Selesai</span>
-                        <span class="text-gray-400 text-[10px] font-bold">Laporan Event #EVT-2026-003</span>
+                        @php
+                            $statusLabel = match($event->event_status) {
+                                'published' => 'Aktif',
+                                'draft' => 'Draf',
+                                'cancelled' => 'Dibatalkan',
+                                default => ucfirst($event->event_status),
+                            };
+                            $statusColor = match($event->event_status) {
+                                'published' => 'bg-green-100 text-green-600',
+                                'draft' => 'bg-yellow-100 text-yellow-600',
+                                'cancelled' => 'bg-red-100 text-red-600',
+                                default => 'bg-gray-200 text-gray-600',
+                            };
+                        @endphp
+                        <span class="{{ $statusColor }} text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">{{ $statusLabel }}</span>
+                        <span class="text-gray-400 text-[10px] font-bold">Laporan Event #EVT-{{ $event->id }}</span>
                     </div>
-                    <h1 id="report-event-name" class="font-display text-2xl text-ink font-bold">Stories Carved in Tradition</h1>
+                    <h1 id="report-event-name" class="font-display text-2xl text-ink font-bold">{{ $event->nama_event }}</h1>
                 </div>
             </div>
             <div class="flex items-center gap-4">
@@ -73,7 +87,11 @@
                     <i data-lucide="share-2" class="w-4 h-4"></i>
                     Bagikan
                 </button>
-                <button class="bg-rust text-white px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
+                <button id="btn-export-csv" onclick="exportCSV()" class="bg-rust text-white px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Export CSV
+                </button>
+                <button onclick="window.print()" class="bg-rust text-white px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 shadow-lg shadow-rust/20 hover:bg-rust-deep transition-all">
                     <i data-lucide="printer" class="w-4 h-4"></i>
                     Cetak Laporan
                 </button>
@@ -84,13 +102,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 space-x-0">
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/10">
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Pendapatan</p>
-                <h3 class="text-xl font-black text-ink">Rp 60.600.000</h3>
-                <p class="text-[10px] text-green-500 font-bold mt-1">Target tercapai 100%</p>
+                <h3 class="text-xl font-black text-ink">{{ $stats['revenueFormatted'] }}</h3>
+                <p class="text-[10px] text-green-500 font-bold mt-1">
+                    @if($stats['capacity'] > 0)
+                        {{ number_format(($stats['sold'] / $stats['capacity']) * 100, 1) }}% Target tercapai
+                    @else
+                        Belum ada tiket
+                    @endif
+                </p>
             </div>
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/10">
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tiket Terjual</p>
-                <h3 class="text-xl font-black text-ink">342 / 500</h3>
-                <p class="text-[10px] text-rust font-bold mt-1">68.4% Terisi</p>
+                <h3 class="text-xl font-black text-ink">{{ number_format($stats['sold']) }} / {{ number_format($stats['capacity']) }}</h3>
+                <p class="text-[10px] text-rust font-bold mt-1">{{ $stats['occupancy'] }} Terisi</p>
             </div>
         </div>
 
@@ -123,38 +147,24 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
+                                @foreach($ticketsBreakdown as $tb)
                                 <tr>
                                     <td class="py-3">
-                                        <p class="font-bold text-ink text-sm">Reguler (Domestik)</p>
-                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Rp 150.000</p>
+                                        <p class="font-bold text-ink text-sm">{{ $tb['kategori'] }}</p>
+                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $tb['harga_formatted'] }}</p>
                                     </td>
-                                    <td class="py-3 text-center font-bold text-ink text-sm">280</td>
-                                    <td class="py-3 text-right font-bold text-ink text-sm">Rp 42.000.000</td>
+                                    <td class="py-3 text-center font-bold text-ink text-sm">{{ $tb['terjual'] }}</td>
+                                    <td class="py-3 text-right font-bold text-ink text-sm">{{ $tb['revenue_formatted'] }}</td>
                                     <td class="py-3">
                                         <div class="flex items-center justify-end gap-3 font-bold text-[10px] text-rust">
-                                            70%
+                                            {{ $tb['occupancy'] }}%
                                             <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                <div class="h-full bg-rust rounded-full" style="width: 70%"></div>
+                                                <div class="h-full bg-rust rounded-full" style="width: {{ min(100, $tb['occupancy']) }}%"></div>
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td class="py-3">
-                                        <p class="font-bold text-ink text-sm">VIP Front Row</p>
-                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Rp 300.000</p>
-                                    </td>
-                                    <td class="py-3 text-center font-bold text-ink text-sm">62</td>
-                                    <td class="py-3 text-right font-bold text-ink text-sm">Rp 18.600.000</td>
-                                    <td class="py-3">
-                                        <div class="flex items-center justify-end gap-3 font-bold text-[10px] text-rust">
-                                            62%
-                                            <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                <div class="h-full bg-rust rounded-full" style="width: 62%"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -164,35 +174,46 @@
             <!-- Demographics & Extras -->
             <div class="space-y-8">
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/10">
-                    <h4 class="text-base font-black text-ink uppercase tracking-tight mb-6">Demografi Pengunjung</h4>
+                    <h4 class="text-base font-black text-ink uppercase tracking-tight mb-6">Ringkasan Transaksi</h4>
                     <div class="space-y-6">
                         <div>
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-ink uppercase tracking-wider">Domestik (Bali)</span>
-                                <span class="text-xs font-black text-rust">65%</span>
-                            </div>
-                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                <div class="bg-rust h-full rounded-full" style="width: 65%"></div>
+                                <span class="text-xs font-bold text-ink uppercase tracking-wider">Total Order</span>
+                                <span class="text-xs font-black text-rust">{{ $recentTransactions->count() }}</span>
                             </div>
                         </div>
+                        @foreach($ticketsBreakdown as $tb)
                         <div>
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-ink uppercase tracking-wider">Luar Kota</span>
-                                <span class="text-xs font-black text-rust">25%</span>
+                                <span class="text-xs font-bold text-ink uppercase tracking-wider">{{ $tb['kategori'] }}</span>
+                                <span class="text-xs font-black text-rust">{{ $tb['occupancy'] }}%</span>
                             </div>
                             <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                <div class="bg-rust/60 h-full rounded-full" style="width: 25%"></div>
+                                <div class="bg-rust h-full rounded-full" style="width: {{ min(100, $tb['occupancy']) }}%"></div>
                             </div>
                         </div>
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-ink uppercase tracking-wider">Mancanegara</span>
-                                <span class="text-xs font-black text-rust">10%</span>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Recent Transactions Preview -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/10">
+                    <h4 class="text-base font-black text-ink uppercase tracking-tight mb-6">Transaksi Terbaru</h4>
+                    <div class="space-y-4">
+                        @forelse($recentTransactions->take(5) as $tx)
+                        <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                            <div>
+                                <p class="text-sm font-bold text-ink">{{ $tx['buyer_name'] }}</p>
+                                <p class="text-[10px] text-gray-400">{{ $tx['tickets'] }} &middot; {{ $tx['qty'] }}x</p>
                             </div>
-                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                <div class="bg-rust/30 h-full rounded-full" style="width: 10%"></div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold text-ink">{{ $tx['total_formatted'] }}</p>
+                                <p class="text-[10px] text-gray-400">{{ \Carbon\Carbon::parse($tx['date'])->format('d M Y') }}</p>
                             </div>
                         </div>
+                        @empty
+                        <p class="text-sm text-gray-400 text-center py-4">Belum ada transaksi</p>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -202,5 +223,11 @@
 @endsection
 
 @push('scripts')
+<script>
+    // Inject server data for JS chart and CSV export
+    window.__dailySales = @json($dailySales);
+    window.__recentTransactions = @json($recentTransactions);
+    window.__eventName = @json($event->nama_event);
+</script>
 <script src="{{ asset('js/event-report.js') }}"></script>
 @endpush

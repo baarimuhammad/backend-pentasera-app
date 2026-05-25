@@ -36,53 +36,56 @@ function scrollCarousel(btn, dir) {
 }
 
 // --- Auth & Role Logic ---
+// NOTE: Primary auth state is managed by api-helper.js (getUser, getToken, isLoggedIn, logout).
+// The functions below are kept for backward compatibility with existing onclick handlers.
 
 function checkAuthState() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const isCreator = localStorage.getItem('isCreator') === 'true';
+    // Delegate to the layout's syncNavbar (loaded via api-helper + app.blade.php).
+    // This is now a no-op fallback; the layout script handles everything.
+    const loggedIn = typeof isLoggedIn === 'function' ? isLoggedIn() : false;
+    const user = typeof getUser === 'function' ? getUser() : null;
 
-    document.body.classList.toggle('is-logged-in', isLoggedIn);
+    document.body.classList.toggle('is-logged-in', loggedIn);
 
-    const roleLabel = document.getElementById('dropdown-role-label');
-    if (isCreator) {
-        document.body.classList.add('is-creator');
-        if (roleLabel) roleLabel.innerText = 'Pembeli';
+    if (loggedIn && user) {
+        const isCreator = user.role === 'creator';
+        document.body.classList.toggle('is-creator', isCreator);
+
+        const roleLabel = document.getElementById('dropdown-role-label');
+        if (roleLabel) roleLabel.innerText = isCreator ? 'Pembeli' : 'Penyelenggara';
     } else {
         document.body.classList.remove('is-creator');
-        if (roleLabel) roleLabel.innerText = 'Penyelenggara';
     }
 
     // Update sidebar switch button text dynamically
     const switchBtns = document.querySelectorAll('.switch-mode-btn span');
-    switchBtns.forEach(span => {
-        span.innerText = isCreator ? 'Beralih ke Pembeli' : 'Beralih ke Penyelenggara';
-    });
-    
+    if (switchBtns.length && user) {
+        const isCreator = user && user.role === 'creator';
+        switchBtns.forEach(span => {
+            span.innerText = isCreator ? 'Beralih ke Pembeli' : 'Beralih ke Penyelenggara';
+        });
+    }
+
     if (window.lucide) window.lucide.createIcons();
 }
 
 function toggleRole() {
-    localStorage.setItem('isCreator', JSON.parse(localStorage.getItem('isCreator') === 'false'));
+    // Role switch is not applicable with real backend roles;
+    // keep for UI demonstration only.
     checkAuthState();
 }
 
 function toggleRoleAndRedirect() {
-    const isCreator = localStorage.getItem('isCreator') === 'true';
-    localStorage.setItem('isCreator', (!isCreator).toString());
-    // Redirect buyer to my-tickets, creator to dashboard
-    if (isCreator) {
-        // Was creator, now switching to buyer
+    // With real auth, redirect based on actual role
+    const user = typeof getUser === 'function' ? getUser() : null;
+    if (user && user.role === 'creator') {
         window.location.href = '/my-tickets';
     } else {
-        // Was buyer, now switching to creator
-        window.location.href = '/dashboard';
+        window.location.href = '/my-events';
     }
 }
 
-function logout() {
-    localStorage.clear();
-    window.location.href = '/';
-}
+// logout() is provided by api-helper.js (calls POST /api/logout, clears storage, redirects)
 
 window.addEventListener('DOMContentLoaded', () => {
     checkAuthState();
@@ -337,7 +340,7 @@ function switchModalTab(tab) {
 window.scrollCarousel = scrollCarousel;
 window.toggleRole = toggleRole;
 window.toggleRoleAndRedirect = toggleRoleAndRedirect;
-window.logout = logout;
+// window.logout is provided by api-helper.js
 window.checkAuthState = checkAuthState;
 window.switchTab = switchTab;
 window.openTicketModal = openTicketModal;

@@ -10,8 +10,18 @@ class Order extends Model
         'user_id',
         'tanggal_order',
         'total_harga',
+        'biaya_layanan',
         'status_order',
+        'expired_at',
+        'order_code',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'expired_at' => 'datetime',
+        ];
+    }
 
     public function user()
     {

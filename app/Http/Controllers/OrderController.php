@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use App\Models\Order;
 
 class OrderController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
-        return response()->json(Order::all());
+        return $this->success(Order::all(), 'Daftar order berhasil diambil');
     }
 
     public function store(Request $request)
@@ -27,16 +30,13 @@ class OrderController extends Controller
             'status_order' => 'pending'
         ]);
 
-        return response()->json([
-            'message' => 'Order berhasil dibuat',
-            'data' => $order
-        ], 201);
+        return $this->success($order, 'Order berhasil dibuat', 201);
     }
 
     public function show($id)
     {
         $order = Order::findOrFail($id);
 
-        return response()->json($order);
+        return $this->success($order, 'Detail order berhasil diambil');
     }
 }

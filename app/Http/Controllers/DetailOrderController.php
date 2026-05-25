@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\DetailOrder;
 
 class DetailOrderController extends Controller
 {
+    use ApiResponseTrait;
+
     public function store(Request $request)
     {
         $request->validate([
@@ -28,14 +31,11 @@ class DetailOrderController extends Controller
             'subtotal' => $subtotal
         ]);
 
-        return response()->json([
-            'message' => 'Detail order berhasil dibuat',
-            'data' => $detail
-        ], 201);
+        return $this->success($detail, 'Detail order berhasil dibuat', 201);
     }
 
     public function index()
     {
-        return response()->json(DetailOrder::all());
+        return $this->success(DetailOrder::all(), 'Daftar detail order berhasil diambil');
     }
 }

@@ -12,13 +12,23 @@ use App\Http\Controllers\DetailOrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ETicketController;
 use App\Http\Controllers\CheckinController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\MyOrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\VerificationController;
 
 # ───────────────────────────────────────────
 # PUBLIC ROUTES (tanpa token)
 # ───────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
-Route::patch('/users/{id}', [UserController::class, 'update']);
+
+# Email Verification
+Route::post('/email/resend-verification', [AuthController::class, 'resendVerification']);
+Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verifyFromApi'])
+    ->middleware('signed')
+    ->name('api.verification.verify');
 
 # Events & tickets publik (bisa dilihat tanpa login)
 Route::get('/events',       [EventController::class, 'index']);
@@ -41,6 +51,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders',       [OrderController::class, 'index']);
     Route::get('/orders/{id}',  [OrderController::class, 'show']);
 
+    # Transactions (buyer)
+    Route::post('/transactions', [TransactionController::class, 'store'])
+        ->middleware('role:buyer');
+    Route::post('/orders/{id}/confirm-payment', [TransactionController::class, 'confirmPayment']);
+
     # Detail Orders
     Route::post('/detail-orders', [DetailOrderController::class, 'store']);
     Route::get('/detail-orders',  [DetailOrderController::class, 'index']);
@@ -57,12 +72,41 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/checkins', [CheckinController::class, 'store']);
     Route::get('/checkins',  [CheckinController::class, 'index']);
 
-    # Creator/Admin only
-    Route::post('/events',       [EventController::class, 'store']);
-    Route::post('/organizers',   [OrganizerController::class, 'store']);
-    Route::post('/tickets',      [TicketController::class, 'store']);
+    # My Orders & My Tickets (buyer)
+    Route::get('/my-orders',    [MyOrderController::class, 'index']);
+    Route::get('/my-orders/{id}', [MyOrderController::class, 'show']);
+    Route::get('/my-tickets',   [MyOrderController::class, 'myTickets']);
+    Route::get('/e-tickets/{id}', [MyOrderController::class, 'showETicket']);
 
-    # Admin only
-    Route::get('/users',    [UserController::class, 'index']);
-    Route::post('/users',   [UserController::class, 'store']);
+    # Profile
+    Route::patch('/profile',        [ProfileController::class, 'update']);
+    Route::post('/profile/avatar',  [ProfileController::class, 'uploadAvatar']);
+
+    # ───────────────────────────────────────────
+    # CREATOR ONLY (role:creator,admin)
+    # ───────────────────────────────────────────
+    Route::middleware('role:creator,admin')->group(function () {
+        Route::post('/events',          [EventController::class, 'store']);
+        Route::patch('/events/{id}',    [EventController::class, 'update']);
+        Route::delete('/events/{id}',   [EventController::class, 'destroy']);
+        Route::post('/tickets',         [TicketController::class, 'store']);
+        Route::patch('/tickets/{id}',   [TicketController::class, 'update']);
+        Route::delete('/tickets/{id}',  [TicketController::class, 'destroy']);
+        Route::post('/organizers',      [OrganizerController::class, 'store']);
+
+        // Dashboard & Reports
+        Route::get('/dashboard/stats',    [DashboardController::class, 'stats']);
+        Route::get('/my-events',          [DashboardController::class, 'myEvents']);
+        Route::get('/events/{id}/report', [DashboardController::class, 'eventReport']);
+    });
+
+    # ───────────────────────────────────────────
+    # ADMIN ONLY (role:admin)
+    # ───────────────────────────────────────────
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/users',           [UserController::class, 'index']);
+        Route::post('/users',          [UserController::class, 'store']);
+        Route::patch('/users/{id}',    [UserController::class, 'update']);
+        Route::patch('/users/{user}',  [UserController::class, 'update']);
+    });
 });

@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Models\Order;
 
 class PaymentController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
-        return response()->json(Payment::all());
+        return $this->success(Payment::all(), 'Daftar pembayaran berhasil diambil');
     }
 
     public function store(Request $request)
@@ -26,18 +29,10 @@ class PaymentController extends Controller
             'order_id' => $request->order_id,
             'metode' => $request->metode,
             'jumlah_bayar' => $request->jumlah_bayar,
-            'status_pembayaran' => 'paid',
+            'status_pembayaran' => 'pending',
             'waktu_bayar' => now()
         ]);
 
-        $order = Order::findOrFail($request->order_id);
-        $order->update([
-            'status_order' => 'paid'
-        ]);
-
-        return response()->json([
-            'message' => 'Payment berhasil dibuat',
-            'data' => $payment
-        ], 201);
+        return $this->success($payment, 'Payment berhasil dibuat', 201);
     }
 }

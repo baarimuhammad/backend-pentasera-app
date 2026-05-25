@@ -12,4 +12,19 @@ class DetailOrder extends Model
         'jumlah',
         'subtotal'
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    public function eTickets()
+    {
+        return $this->hasMany(ETicket::class);
+    }
 }

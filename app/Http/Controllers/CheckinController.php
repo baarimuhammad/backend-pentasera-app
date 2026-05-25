@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use App\Models\Checkin;
 use App\Models\ETicket;
 
 class CheckinController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
-        return response()->json(Checkin::all());
+        return $this->success(Checkin::all(), 'Daftar check-in berhasil diambil');
     }
 
     public function store(Request $request)
@@ -24,9 +27,7 @@ class CheckinController extends Controller
         $ticket = ETicket::findOrFail($request->e_ticket_id);
 
         if ($ticket->status_validasi !== 'valid') {
-            return response()->json([
-                'message' => 'Tiket tidak valid atau sudah digunakan'
-            ], 400);
+            return $this->error('Tiket tidak valid atau sudah digunakan', 400);
         }
 
         $checkin = Checkin::create([
@@ -39,9 +40,6 @@ class CheckinController extends Controller
             'status_validasi' => 'used'
         ]);
 
-        return response()->json([
-            'message' => 'Check-in berhasil',
-            'data' => $checkin
-        ], 201);
+        return $this->success($checkin, 'Check-in berhasil', 201);
     }
 }

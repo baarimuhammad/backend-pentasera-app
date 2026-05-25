@@ -1,20 +1,22 @@
 /**
  * manage-event.js
  * All client-side logic for the Manage Event page.
- * Extracted from the original static manage-event.html.
+ * Uses API calls via api-helper.js for CRUD operations.
  */
 
 // ── State ──
 let currentCategory = 'paid';
 let currentAction = 'add';
+let editingRow = null;
+
+// ── Get Event ID ──
+function getEventId() {
+    return window.__eventId || document.getElementById('manage-event-root')?.dataset?.eventId;
+}
 
 // ── Dashboard Stats ──
-// Reads ticket data from the Kategori Tiket table and updates:
-//  1. Quick Stats cards (top of manage-event page)
-//  2. Laporan Penjualan summary cards
-// This ensures all numbers stay in sync across the page.
 function updateDashboardStats() {
-    const ticketRows = document.querySelectorAll('#manage-tiket tbody tr');
+    const ticketRows = document.querySelectorAll('#ticket-table-body tr');
     let totalSold = 0;
     let totalCapacity = 0;
     let totalRevenue = 0;
@@ -38,16 +40,6 @@ function updateDashboardStats() {
     const transactionRows = document.querySelectorAll('#dash-transaction-table tbody tr');
     const totalTransactions = transactionRows.length;
 
-    // Calculate transaction revenue from the transaction table
-    let txRevenue = 0;
-    transactionRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length >= 4) {
-            const amountText = cells[3].textContent.replace(/[^0-9]/g, '');
-            txRevenue += parseInt(amountText) || 0;
-        }
-    });
-
     // ── 1. Quick Stats Cards (top of page) ──
     const elSold = document.getElementById('stat-tickets-sold');
     const elPercent = document.getElementById('stat-tickets-percent');
@@ -67,7 +59,6 @@ function updateDashboardStats() {
 
     if (reportRevenue) reportRevenue.textContent = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
     if (reportTickets) reportTickets.textContent = totalSold.toLocaleString('id-ID');
-    // Daily average (assume 30-day period for demo)
     const dailyAvg = totalRevenue > 0 ? Math.round(totalRevenue / 30) : 0;
     if (reportDaily) reportDaily.textContent = `Rp ${dailyAvg.toLocaleString('id-ID')}`;
 }
@@ -130,7 +121,6 @@ function switchManageTab(tabId) {
     if (el) el.classList.add('active');
 
     if (tabId === 'penjualan') {
-        // Recalculate stats when switching to sales report
         updateDashboardStats();
         setTimeout(() => {
             renderSalesChart();
@@ -311,8 +301,6 @@ function setTicketCategory(category) {
 }
 
 // ── Ticket Form Validation ──
-let editingRow = null; // Track which row is being edited
-
 function validateTicketForm() {
     const nameInput = document.getElementById('ticket-name');
     const qtyInput = document.getElementById('ticket-qty');
@@ -356,8 +344,72 @@ function validateTicketForm() {
     }
 }
 
-// ── Save / Update Ticket ──
-function saveTicket() {
+// ── Notification helper ──
+function showNotification(message, type = 'success') {
+    const existing = document.getElementById('manage-notification');
+    if (existing) existing.remove();
+
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+    };
+
+    const notif = document.createElement('div');
+    notif.id = 'manage-notification';
+    notif.className = `fixed top-6 right-6 z-[9999] ${colors[type] || colors.info} text-white px-6 py-4 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-3 animate-fade-in-up`;
+    notif.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(notif);
+
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        notif.style.transform = 'translateY(-10px)';
+        notif.style.transition = 'all 0.3s';
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// ── Save Event Changes (API) ──
+async function saveEventChanges() {
+    const eventId = getEventId();
+    if (!eventId) return;
+
+    const btn = document.getElementById('btn-save-event');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+    }
+
+    try {
+        const data = {
+            nama_event: document.getElementById('manage-nama-event')?.value?.trim(),
+            kategori_event: document.getElementById('manage-kategori-event')?.value,
+            event_datetime: document.getElementById('manage-event-datetime')?.value,
+            lokasi: document.getElementById('manage-lokasi')?.value?.trim(),
+            deskripsi: document.getElementById('manage-deskripsi')?.value?.trim(),
+        };
+
+        const res = await apiPatch('/events/' + eventId, data);
+
+        if (res && res._ok) {
+            showNotification('Perubahan event berhasil disimpan!', 'success');
+        } else {
+            const msg = res?.message || 'Gagal menyimpan perubahan';
+            showNotification(msg, 'error');
+        }
+    } catch (err) {
+        showNotification('Terjadi kesalahan saat menyimpan', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+}
+
+// ── Save / Update Ticket (API) ──
+async function saveTicket() {
     const btnCreate = document.getElementById('btn-create-ticket');
     if (btnCreate && btnCreate.disabled) return;
 
@@ -368,60 +420,146 @@ function saveTicket() {
     const priceRaw = isFree ? 0 : parseInt(document.getElementById('ticket-price').value.replace(/[^0-9]/g, '')) || 0;
     const priceText = isFree ? 'Gratis' : `Rp ${priceRaw.toLocaleString('id-ID')}`;
 
-    if (currentAction === 'edit' && editingRow) {
-        // Update existing row
-        const cells = editingRow.querySelectorAll('td');
-        cells[0].innerHTML = `<span class="font-bold text-ink text-sm">${name}</span>`;
-        cells[1].textContent = priceText;
-        cells[2].textContent = qty;
-        // keep sold as-is
-        const sold = parseInt(cells[3].textContent) || 0;
-        cells[4].textContent = Math.max(0, qty - sold);
-        editingRow = null;
-    } else {
-        // Add new row
-        const tbody = document.querySelector('#manage-tiket tbody');
-        if (!tbody) return;
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-rust/[0.02] transition-colors';
-        tr.innerHTML = `
-            <td class="px-10 py-7 font-bold text-ink text-sm">${name}</td>
-            <td class="px-10 py-7 text-sm font-medium">${priceText}</td>
-            <td class="px-10 py-7 text-sm text-gray-400">${qty}</td>
-            <td class="px-10 py-7 text-sm font-bold text-rust">0</td>
-            <td class="px-10 py-7 text-sm text-gray-400 font-medium">${qty}</td>
-            <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
-            <td class="px-10 py-7 text-right">
-                <button onclick="handleTicketAction('edit', '${isFree ? 'free' : 'paid'}', this)" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
-                    <i data-lucide="edit-3" class="w-5 h-5"></i>
-                </button>
-            </td>`;
-        tbody.appendChild(tr);
-        if (window.lucide) lucide.createIcons();
+    // Show loading
+    if (btnCreate) {
+        btnCreate.disabled = true;
+        btnCreate.textContent = 'Menyimpan...';
     }
 
-    closeModal('modal-tiket');
-    const section = document.getElementById('ticket-action-section');
-    if (section) section.classList.add('hidden');
-    updateDashboardStats();
+    try {
+        if (currentAction === 'edit' && editingRow) {
+            // Edit existing ticket via API
+            const ticketId = editingRow.dataset.ticketId;
+            if (ticketId) {
+                const res = await apiPatch('/tickets/' + ticketId, {
+                    kategori: name,
+                    harga: priceRaw,
+                    kuota: qty,
+                });
+
+                if (res && res._ok) {
+                    // Update DOM
+                    const cells = editingRow.querySelectorAll('td');
+                    cells[0].innerHTML = `<span class="font-bold text-ink text-sm">${name}</span>`;
+                    cells[1].textContent = priceText;
+                    cells[2].textContent = qty;
+                    const sold = parseInt(cells[3].textContent) || 0;
+                    cells[4].textContent = Math.max(0, qty - sold);
+                    showNotification('Tiket berhasil diperbarui!', 'success');
+                } else {
+                    showNotification(res?.message || 'Gagal memperbarui tiket', 'error');
+                    return;
+                }
+            }
+            editingRow = null;
+        } else {
+            // Add new ticket via API
+            const eventId = getEventId();
+            const res = await apiPost('/tickets', {
+                event_id: parseInt(eventId),
+                kategori: name,
+                harga: priceRaw,
+                kuota: qty,
+            });
+
+            if (res && res._ok) {
+                const ticket = res.data;
+                const tbody = document.getElementById('ticket-table-body');
+                if (!tbody) return;
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-rust/[0.02] transition-colors';
+                tr.dataset.ticketId = ticket.id;
+                tr.innerHTML = `
+                    <td class="px-10 py-7 font-bold text-ink text-sm">${name}</td>
+                    <td class="px-10 py-7 text-sm font-medium">${priceText}</td>
+                    <td class="px-10 py-7 text-sm text-gray-400">${qty}</td>
+                    <td class="px-10 py-7 text-sm font-bold text-rust">0</td>
+                    <td class="px-10 py-7 text-sm text-gray-400 font-medium">${qty}</td>
+                    <td class="px-10 py-7"><span class="bg-green-50 text-green-600 text-[10px] font-bold px-4 py-1.5 rounded-full border border-green-100 uppercase tracking-wider">Tersedia</span></td>
+                    <td class="px-10 py-7 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="handleTicketAction('edit', '${isFree ? 'free' : 'paid'}', this)" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-rust/10 hover:text-rust transition-all">
+                                <i data-lucide="edit-3" class="w-5 h-5"></i>
+                            </button>
+                            <button onclick="deleteTicket(${ticket.id}, this)" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:bg-red-50 hover:text-red-500 transition-all" title="Hapus tiket">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </td>`;
+                tbody.appendChild(tr);
+                if (window.lucide) lucide.createIcons();
+                showNotification('Tiket berhasil ditambahkan!', 'success');
+            } else {
+                showNotification(res?.message || 'Gagal menambahkan tiket', 'error');
+                return;
+            }
+        }
+
+        closeModal('modal-tiket');
+        const section = document.getElementById('ticket-action-section');
+        if (section) section.classList.add('hidden');
+        updateDashboardStats();
+    } catch (err) {
+        showNotification('Terjadi kesalahan saat menyimpan tiket', 'error');
+    } finally {
+        if (btnCreate) {
+            btnCreate.disabled = false;
+            btnCreate.textContent = isFree ? 'Simpan Tiket Gratis' : 'Simpan Tiket Berbayar';
+        }
+    }
 }
 
-function saveEventChanges() {
-    alert('Perubahan event berhasil disimpan!');
+// ── Delete Ticket (API) ──
+async function deleteTicket(ticketId, btnEl) {
+    if (!confirm('Yakin ingin menghapus tiket ini? Tiket yang sudah memiliki pesanan tidak bisa dihapus.')) {
+        return;
+    }
+
+    const row = btnEl ? btnEl.closest('tr') : null;
+
+    try {
+        const res = await apiDelete('/tickets/' + ticketId);
+
+        if (res && res._ok) {
+            if (row) {
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                row.style.transition = 'all 0.3s';
+                setTimeout(() => {
+                    row.remove();
+                    updateDashboardStats();
+                }, 300);
+            }
+            showNotification('Tiket berhasil dihapus!', 'success');
+        } else {
+            showNotification(res?.message || 'Gagal menghapus tiket', 'error');
+        }
+    } catch (err) {
+        showNotification('Terjadi kesalahan saat menghapus tiket', 'error');
+    }
+}
+
+// ── Banner preview ──
+function setupBannerPreview() {
+    const input = document.getElementById('manage-banner-input');
+    const preview = document.getElementById('manage-banner-preview');
+    if (!input || !preview) return;
+
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            preview.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
 }
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
     updateDashboardStats();
-
-    // Attach edit-button context to existing rows
-    document.querySelectorAll('#manage-tiket tbody tr').forEach(row => {
-        const btn = row.querySelector('button[onclick*="handleTicketAction"]');
-        if (btn) {
-            const cat = btn.getAttribute('onclick').includes("'free'") ? 'free' : 'paid';
-            btn.setAttribute('onclick', `handleTicketAction('edit','${cat}',this)`);
-        }
-    });
+    setupBannerPreview();
 
     const modal = document.getElementById('modal-tiket');
     if (modal) {

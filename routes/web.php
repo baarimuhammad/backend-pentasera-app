@@ -1,28 +1,33 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\VerificationController;
+
+// Email Verification (web — signed URL)
+Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verifyFromEmail'])
+    ->middleware('signed')
+    ->name('verification.verify');
 
 // Halaman Utama
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [PageController::class, 'home']);
 
 // Auth
 Route::get('/auth', function () { return view('auth'); });
 
 // Events
-Route::get('/events', function () { return view('events'); });
-Route::get('/order/{id}', function ($id) { return view('order', compact('id')); });
-Route::get('/checkout', function () { return view('checkout'); });
-Route::get('/payment', function () { return view('payment'); });
+Route::get('/events', [PageController::class, 'events']);
+Route::get('/order/{event}', [PageController::class, 'order']);
+Route::get('/checkout', [PageController::class, 'checkout']);
+Route::get('/payment', [PageController::class, 'payment']);
 
 // Dashboard & Management (Creator Only — auth dibekukan sementara)
-Route::get('/dashboard', function () { return view('dashboard'); });
-Route::get('/my-events', function () { return view('my-events'); });
-Route::get('/create-event', function () { return view('create-event'); });
-Route::get('/manage-access', function () { return view('manage-access'); });
-Route::get('/manage-event/{id}', function ($id) { return view('manage-event', compact('id')); });
-Route::get('/event-report/{id}', function ($id) { return view('event-report', compact('id')); });
+Route::get('/dashboard', [PageController::class, 'dashboard']);
+Route::get('/my-events', [PageController::class, 'myEvents']);
+Route::get('/create-event', [PageController::class, 'createEvent']);
+Route::get('/manage-access', [PageController::class, 'manageAccess']);
+Route::get('/manage-event/{event}', [PageController::class, 'manageEvent']);
+Route::get('/event-report/{event}', [PageController::class, 'eventReport']);
 
 // Auth Support
 Route::get('/reset-password', function () { return view('reset-password'); });
@@ -31,11 +36,11 @@ Route::get('/reset-password', function () { return view('reset-password'); });
 Route::get('/pusat-bantuan', function () { return view('pusat-bantuan'); });
 
 // Profile & Settings
-Route::get('/profile', function () { return view('profile'); });
+Route::get('/profile', [PageController::class, 'profile']);
 Route::get('/settings', function () { return view('settings'); });
 
 // My Tickets (Pembeli)
-Route::get('/my-tickets', function () { return view('my-tickets'); });
+Route::get('/my-tickets', [PageController::class, 'myTickets']);
 
 // Static Pages
 Route::get('/tentang-kami', function () { return view('tentang-kami'); });

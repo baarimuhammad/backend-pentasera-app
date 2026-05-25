@@ -125,7 +125,7 @@
         </div>
 
         <div class="space-y-4">
-            <button onclick="confirmPayment()" class="w-full bg-[#B84C2B] text-white py-5 rounded-2xl font-bold hover:bg-rust-deep transition-all shadow-lg shadow-rust/20 flex items-center justify-center gap-3">
+            <button id="confirm-payment-btn" class="w-full bg-[#B84C2B] text-white py-5 rounded-2xl font-bold hover:bg-rust-deep transition-all shadow-lg shadow-rust/20 flex items-center justify-center gap-3">
                 <i data-lucide="check-circle" class="w-5 h-5"></i>
                 I Have Paid
             </button>
@@ -168,10 +168,16 @@
                 <p id="qris-total" class="text-4xl font-black text-[#2C1A0E]">Rp 117.500</p>
             </div>
 
-            <button class="w-full bg-[#B84C2B] text-white py-5 rounded-2xl font-bold hover:bg-rust-deep transition-all shadow-lg shadow-rust/20 flex items-center justify-center gap-3">
-                <i data-lucide="download" class="w-5 h-5"></i>
-                Download QR Code
-            </button>
+            <div class="space-y-4">
+                <button class="w-full bg-[#B84C2B] text-white py-5 rounded-2xl font-bold hover:bg-rust-deep transition-all shadow-lg shadow-rust/20 flex items-center justify-center gap-3">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    Download QR Code
+                </button>
+                <button id="qris-confirm-btn" class="w-full bg-white border border-[#B84C2B] text-[#B84C2B] py-5 rounded-2xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-3">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    Saya Sudah Bayar
+                </button>
+            </div>
         </div>
 
         <aside class="w-full lg:w-[400px] space-y-8">
@@ -238,8 +244,8 @@
             <h3 class="font-bold text-2xl text-[#2C1A0E]">Pembayaran Berhasil!</h3>
             <p class="text-sm text-gray-400">Tiket Anda telah berhasil dipesan. Silakan cek email Anda untuk e-tiket.</p>
         </div>
-        <button onclick="location.href='{{ url('/') }}'" class="w-full bg-[#B84C2B] text-white py-4 rounded-xl font-bold hover:bg-rust-deep transition-all">
-            Kembali ke Beranda
+        <button onclick="location.href='{{ url('/my-tickets') }}'" class="w-full bg-[#B84C2B] text-white py-4 rounded-xl font-bold hover:bg-rust-deep transition-all">
+            Lihat Tiket Saya
         </button>
     </div>
 </div>

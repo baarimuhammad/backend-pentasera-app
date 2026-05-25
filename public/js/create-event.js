@@ -1,5 +1,5 @@
 /**
- * Create Event — Tab Switching, Modal & Ticket Management
+ * Create Event — Tab Switching, Modal & Ticket Management + API Submission
  * public/js/create-event.js
  */
 (function () {
@@ -13,6 +13,40 @@
 
     let currentTicketType = 'paid';
     let tickets = [];
+
+    // ============================================
+    // Auth Guard
+    // ============================================
+    if (typeof requireAuth === 'function') requireAuth();
+    if (typeof requireRole === 'function') requireRole('creator');
+
+    // ============================================
+    // Banner Image Upload Preview
+    // ============================================
+    const bannerInput = document.getElementById('banner-input');
+    const bannerPreview = document.getElementById('banner-preview');
+    const bannerPreviewContainer = document.getElementById('banner-preview-container');
+    const bannerPlaceholder = document.getElementById('banner-placeholder');
+
+    if (bannerInput) {
+        bannerInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 5MB');
+                    bannerInput.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    if (bannerPreview) bannerPreview.src = ev.target.result;
+                    if (bannerPreviewContainer) bannerPreviewContainer.classList.remove('hidden');
+                    if (bannerPlaceholder) bannerPlaceholder.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 
     // ============================================
     // Tab Switching (Tickets & Description)
@@ -198,7 +232,7 @@
             const detailInputs = modal.querySelectorAll('#modal-content-detail input');
             const name = detailInputs[0] ? detailInputs[0].value.trim() : '';
             const qty = detailInputs[1] ? parseInt(detailInputs[1].value) : 0;
-            const price = currentTicketType === 'free' ? 0 : (detailInputs[2] ? detailInputs[2].value.trim() : '0');
+            const priceRaw = currentTicketType === 'free' ? 0 : parseInt((detailInputs[2] ? detailInputs[2].value : '0').replace(/[^0-9]/g, ''));
 
             if (!name) {
                 alert('Nama tiket wajib diisi!');
@@ -214,7 +248,8 @@
                 id: Date.now(),
                 name: name,
                 qty: qty,
-                price: currentTicketType === 'free' ? 'Gratis' : price,
+                price: priceRaw,
+                priceDisplay: currentTicketType === 'free' ? 'Gratis' : 'Rp ' + priceRaw.toLocaleString('id-ID'),
                 type: currentTicketType
             };
 
@@ -238,7 +273,7 @@
             <div class="flex items-center justify-between p-4 bg-cream/30 rounded-xl border border-gold/10">
                 <div>
                     <div class="font-bold text-ink text-sm">${t.name}</div>
-                    <div class="text-xs text-gray-500">${t.qty} tiket • ${t.price}</div>
+                    <div class="text-xs text-gray-500">${t.qty} tiket • ${t.priceDisplay}</div>
                 </div>
                 <button onclick="removeTicket(${t.id})" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-red-400 hover:text-red-600 transition-all">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -256,4 +291,139 @@
         tickets = tickets.filter(t => t.id !== id);
         renderTickets();
     };
+
+    // ============================================
+    // Submit Event (API)
+    // ============================================
+    async function submitEvent(status) {
+        const namaEvent     = document.getElementById('input-nama-event')?.value.trim();
+        const kategoriEvent = document.getElementById('input-kategori-event')?.value;
+        const penyelenggara = document.getElementById('input-penyelenggara')?.value.trim();
+        const datetime      = document.getElementById('input-datetime')?.value;
+        const lokasi        = document.getElementById('input-lokasi')?.value.trim();
+        const deskripsi     = document.getElementById('input-deskripsi')?.value.trim();
+        const bannerFile    = document.getElementById('banner-input')?.files[0];
+
+        // Validate required fields
+        if (!namaEvent) { alert('Nama event wajib diisi!'); return; }
+        if (!datetime)  { alert('Tanggal & waktu wajib diisi!'); return; }
+        if (!lokasi)    { alert('Lokasi wajib diisi!'); return; }
+
+        // Show loading
+        const btnDraft = document.getElementById('btn-save-draft');
+        const btnPublish = document.getElementById('btn-publish-event');
+        const activeBtn = status === 'draft' ? btnDraft : btnPublish;
+        const originalText = activeBtn.textContent;
+        activeBtn.textContent = 'Menyimpan...';
+        activeBtn.disabled = true;
+
+        try {
+            // Step 1: Check/create organizer
+            let organizerId = null;
+
+            const meRes = await apiGet('/me');
+            if (!meRes || !meRes._ok) {
+                alert('Gagal mengambil data user');
+                return;
+            }
+
+            // Try to get organizer from dashboard stats
+            const statsRes = await apiGet('/dashboard/stats');
+
+            // Check if user already has events (meaning they have an organizer)
+            const eventsRes = await apiGet('/my-events');
+            if (eventsRes && eventsRes._ok && eventsRes.data && eventsRes.data.length > 0) {
+                // User already has an organizer — get the organizer_id from existing event
+                const existingEventRes = await apiGet('/events/' + eventsRes.data[0].id);
+                if (existingEventRes && existingEventRes._ok) {
+                    organizerId = existingEventRes.data.organizer_id;
+                }
+            }
+
+            // If no organizer found, create one
+            if (!organizerId) {
+                const orgName = penyelenggara || meRes.data.name || 'Organizer';
+                const orgRes = await apiPost('/organizers', {
+                    organizer_name: orgName,
+                    contact_email: meRes.data.email || '',
+                });
+
+                if (!orgRes || !orgRes._ok) {
+                    alert('Gagal membuat organizer: ' + (orgRes?.message || 'Unknown error'));
+                    return;
+                }
+                organizerId = orgRes.data.id;
+            }
+
+            // Step 2: Create event via FormData (for file upload)
+            const formData = new FormData();
+            formData.append('organizer_id', organizerId);
+            formData.append('nama_event', namaEvent);
+            formData.append('kategori_event', kategoriEvent || '');
+            formData.append('event_datetime', datetime);
+            formData.append('lokasi', lokasi);
+            formData.append('deskripsi', deskripsi || '');
+            formData.append('event_status', status);
+
+            if (bannerFile) {
+                formData.append('image', bannerFile);
+            }
+
+            const eventRes = await apiUpload('/events', formData);
+            if (!eventRes || !eventRes._ok) {
+                alert('Gagal membuat event: ' + (eventRes?.message || 'Unknown error'));
+                return;
+            }
+
+            const eventId = eventRes.data.id;
+
+            // Step 3: Create tickets
+            if (tickets.length > 0) {
+                const ticketPromises = tickets.map(t =>
+                    apiPost('/tickets', {
+                        event_id: eventId,
+                        kategori: t.name,
+                        harga: t.price,
+                        kuota: t.qty
+                    })
+                );
+
+                const ticketResults = await Promise.allSettled(ticketPromises);
+                const failed = ticketResults.filter(r => r.status === 'rejected' || (r.value && !r.value._ok));
+
+                if (failed.length > 0 && failed.length < tickets.length) {
+                    alert(`Event berhasil dibuat! Namun ${failed.length} tiket gagal dibuat. Silakan kelola di halaman manage event.`);
+                    window.location.href = '/manage-event/' + eventId;
+                    return;
+                } else if (failed.length === tickets.length) {
+                    alert('Event berhasil dibuat, namun semua tiket gagal dibuat. Silakan kelola tiket di halaman manage event.');
+                    window.location.href = '/manage-event/' + eventId;
+                    return;
+                }
+            }
+
+            alert('Event berhasil dibuat!');
+            window.location.href = '/my-events';
+
+        } catch (err) {
+            console.error('Submit event error:', err);
+            alert('Terjadi kesalahan saat membuat event.');
+        } finally {
+            activeBtn.textContent = originalText;
+            activeBtn.disabled = false;
+        }
+    }
+
+    // ============================================
+    // Button Event Listeners
+    // ============================================
+    const btnDraft = document.getElementById('btn-save-draft');
+    const btnPublish = document.getElementById('btn-publish-event');
+
+    if (btnDraft) {
+        btnDraft.addEventListener('click', () => submitEvent('draft'));
+    }
+    if (btnPublish) {
+        btnPublish.addEventListener('click', () => submitEvent('published'));
+    }
 })();

@@ -1,0 +1,278 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Event;
+use App\Models\Order;
+use App\Models\Organizer;
+use App\Models\DetailOrder;
+
+class PageController extends Controller
+{
+    /**
+     * Home page — published (active + ended) events, top 3 active events.
+     */
+    public function home()
+    {
+        $now = now();
+
+        $events = Event::where('event_status', 'published')
+            ->with('organizer')
+            ->orderBy('event_datetime', 'desc')
+            ->get();
+
+        $activeEvents = $events->filter(fn($e) => $e->event_datetime >= $now);
+        $endedEvents  = $events->filter(fn($e) => $e->event_datetime < $now);
+        $topEvents    = $activeEvents->take(3);
+
+        return view('welcome', compact('activeEvents', 'endedEvents', 'topEvents'));
+    }
+
+    /**
+     * Dashboard page — just return the view (data loads via API).
+     */
+    public function dashboard()
+    {
+        return view('dashboard');
+    }
+
+    /**
+     * Create Event page — return the form view.
+     */
+    public function createEvent()
+    {
+        return view('create-event');
+    }
+
+    /**
+     * Events listing page — published events + unique categories.
+     */
+    public function events()
+    {
+        $events = Event::where('event_status', 'published')
+            ->with('organizer')
+            ->orderBy('event_datetime', 'desc')
+            ->get();
+
+        $categories = $events->pluck('kategori_event')->unique()->filter()->values();
+
+        return view('events', compact('events', 'categories'));
+    }
+
+    /**
+     * Order page — event detail with organizer & tickets sorted by price.
+     */
+    public function order(Event $event)
+    {
+        $event->load(['organizer', 'tickets' => function ($q) {
+            $q->orderBy('harga', 'asc');
+        }]);
+
+        return view('order', compact('event'));
+    }
+
+    /**
+     * Checkout page — retrieve event from query param ?id=
+     */
+    public function checkout(Request $request)
+    {
+        $checkoutEvent = Event::with('tickets')->findOrFail($request->query('id'));
+        $checkoutTickets = $checkoutEvent->tickets;
+
+        return view('checkout', compact('checkoutEvent', 'checkoutTickets'));
+    }
+
+    /**
+     * Payment page — data comes from sessionStorage on the client side.
+     */
+    public function payment()
+    {
+        return view('payment');
+    }
+
+    /**
+     * Manage Event page — event detail + tickets + stats + last 10 paid orders.
+     */
+    public function manageEvent(Event $event)
+    {
+        $event->load(['organizer', 'tickets']);
+
+        $stats = $this->calculateStats($event);
+
+        // Last 10 paid orders whose detail_orders reference this event's tickets
+        $ticketIds = $event->tickets->pluck('id');
+
+        $recentOrders = Order::where('status_order', 'paid')
+            ->whereHas('detailOrders', function ($q) use ($ticketIds) {
+                $q->whereIn('ticket_id', $ticketIds);
+            })
+            ->with(['user', 'detailOrders.ticket'])
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('manage-event', compact('event', 'stats', 'recentOrders'));
+    }
+
+    /**
+     * Event Report page — event detail + tickets + stats + daily sales + recent transactions.
+     */
+    public function eventReport(Event $event)
+    {
+        $event->load(['organizer', 'tickets']);
+
+        $stats = $this->calculateStats($event);
+
+        $ticketIds = $event->tickets->pluck('id');
+
+        // Tickets breakdown
+        $ticketsBreakdown = $event->tickets->map(function ($ticket) {
+            $sold = DetailOrder::where('ticket_id', $ticket->id)
+                ->whereHas('order', fn($q) => $q->where('status_order', 'paid'))
+                ->sum('jumlah');
+
+            $revenue = $sold * $ticket->harga;
+            $occupancy = $ticket->kuota > 0
+                ? number_format(($sold / $ticket->kuota) * 100, 1)
+                : '0.0';
+
+            return [
+                'kategori'  => $ticket->kategori,
+                'harga'     => $ticket->harga,
+                'harga_formatted' => 'Rp ' . number_format($ticket->harga, 0, ',', '.'),
+                'kuota'     => $ticket->kuota,
+                'terjual'   => (int) $sold,
+                'sisa'      => $ticket->sisa_kuota,
+                'revenue'   => (int) $revenue,
+                'revenue_formatted' => 'Rp ' . number_format($revenue, 0, ',', '.'),
+                'occupancy' => $occupancy,
+            ];
+        });
+
+        // Daily sales (last 30 days)
+        $dailySales = Order::where('status_order', 'paid')
+            ->whereHas('detailOrders', fn($q) => $q->whereIn('ticket_id', $ticketIds))
+            ->where('created_at', '>=', now()->subDays(30))
+            ->selectRaw('DATE(tanggal_order) as date, COUNT(*) as orders, SUM(total_harga) as revenue')
+            ->groupByRaw('DATE(tanggal_order)')
+            ->orderBy('date')
+            ->get();
+
+        // Recent transactions (last 20 paid orders)
+        $recentTransactions = Order::where('status_order', 'paid')
+            ->whereHas('detailOrders', fn($q) => $q->whereIn('ticket_id', $ticketIds))
+            ->with(['user', 'detailOrders.ticket'])
+            ->orderBy('created_at', 'desc')
+            ->take(20)
+            ->get()
+            ->map(function ($order) {
+                $ticketNames = $order->detailOrders->map(fn($d) => $d->ticket->kategori ?? '-')->implode(', ');
+                $totalQty = $order->detailOrders->sum('jumlah');
+
+                return [
+                    'order_code'  => $order->order_code ?? '-',
+                    'buyer_name'  => $order->user->name ?? '-',
+                    'buyer_email' => $order->user->email ?? '-',
+                    'tickets'     => $ticketNames,
+                    'qty'         => $totalQty,
+                    'total'       => $order->total_harga,
+                    'total_formatted' => 'Rp ' . number_format($order->total_harga, 0, ',', '.'),
+                    'date'        => $order->tanggal_order,
+                ];
+            });
+
+        return view('event-report', compact('event', 'stats', 'ticketsBreakdown', 'dailySales', 'recentTransactions'));
+    }
+
+    /**
+     * Manage Access page — all events for dropdown.
+     */
+    public function manageAccess()
+    {
+        $events = Event::orderBy('event_datetime', 'desc')->get();
+
+        return view('manage-access', compact('events'));
+    }
+
+    /**
+     * My Events page — only shows events belonging to the logged-in creator's organizer.
+     */
+    public function myEvents()
+    {
+        $activeEvents = collect();
+        $draftEvents  = collect();
+        $pastEvents   = collect();
+
+        $organizer = Organizer::where('user_id', auth()->id())->first();
+
+        if ($organizer) {
+            $events = Event::where('organizer_id', $organizer->id)
+                ->with('tickets')
+                ->orderBy('event_datetime', 'desc')
+                ->get();
+
+            $now = now();
+
+            $activeEvents = $events->filter(function ($event) use ($now) {
+                return $event->event_status === 'published'
+                    && $event->event_datetime >= $now;
+            });
+
+            $draftEvents = $events->filter(function ($event) {
+                return $event->event_status === 'draft';
+            });
+
+            $pastEvents = $events->filter(function ($event) use ($now) {
+                return $event->event_status === 'published'
+                    && $event->event_datetime < $now;
+            });
+        }
+
+        return view('my-events', compact('activeEvents', 'draftEvents', 'pastEvents'));
+    }
+
+    /**
+     * My Tickets page — buyer's e-tickets.
+     */
+    public function myTickets()
+    {
+        return view('my-tickets');
+    }
+
+    /**
+     * Profile page — user profile / organizer info.
+     */
+    public function profile()
+    {
+        return view('profile');
+    }
+
+    // ─── Private Helpers ─────────────────────────────────────────────
+
+    /**
+     * Calculate event stats: capacity, sold, remaining, occupancy, revenue.
+     */
+    private function calculateStats(Event $event): array
+    {
+        $capacity  = $event->tickets->sum('kuota');
+        $sold      = $event->tickets->sum(fn($t) => $t->kuota - $t->sisa_kuota);
+        $remaining = $capacity - $sold;
+        $occupancy = $capacity > 0
+            ? number_format(($sold / $capacity) * 100, 1) . '%'
+            : '0%';
+
+        // Revenue from paid orders that reference this event's tickets
+        $ticketIds = $event->tickets->pluck('id');
+
+        $revenue = Order::where('status_order', 'paid')
+            ->whereHas('detailOrders', function ($q) use ($ticketIds) {
+                $q->whereIn('ticket_id', $ticketIds);
+            })
+            ->sum('total_harga');
+
+        $revenueFormatted = 'Rp ' . number_format($revenue, 0, ',', '.');
+
+        return compact('capacity', 'sold', 'remaining', 'occupancy', 'revenue', 'revenueFormatted');
+    }
+}

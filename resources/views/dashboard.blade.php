@@ -98,24 +98,39 @@
                     <span class="stat-label"><i data-lucide="calendar" class="w-4 h-4"></i> Total Event</span>
                     <a href="{{ url('/my-events') }}" class="stat-link">Lihat →</a>
                 </div>
-                <div class="stat-value">2</div>
+                <div class="stat-value" id="dash-stat-events">0</div>
                 <div class="stat-unit">Event Aktif</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <span class="stat-label"><i data-lucide="ticket" class="w-4 h-4"></i> Tiket Terjual</span>
                 </div>
-                <div class="stat-value">684</div>
+                <div class="stat-value" id="dash-stat-tickets">0</div>
                 <div class="stat-unit">Tiket</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <span class="stat-label"><i data-lucide="banknote" class="w-4 h-4"></i> Pendapatan</span>
                 </div>
-                <div class="stat-value">Rp 121.200.000</div>
+                <div class="stat-value" id="dash-stat-revenue">Rp 0</div>
                 <div class="stat-unit">Total</div>
+            </div>
+        </div>
+
+        <!-- Event List -->
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-ink">Event Saya</h2>
+                <a href="{{ url('/my-events') }}" class="text-sm text-rust font-bold hover:underline">Lihat Semua →</a>
+            </div>
+            <div id="dashboard-events-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="text-gray-400 text-sm col-span-full" id="dash-events-empty">Memuat data event...</p>
             </div>
         </div>
     </main>
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/dashboard.js') }}"></script>
+@endpush

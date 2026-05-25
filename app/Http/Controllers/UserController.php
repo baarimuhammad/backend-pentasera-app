@@ -3,30 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use App\Models\User;
 
 class UserController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
-        return response()->json(User::all());
+        return $this->success(User::all(), 'Daftar user berhasil diambil');
     }
 
     public function update(Request $request, $id)
-{
-    $request->validate([
-        'role' => 'required|in:buyer,creator,admin',
-    ]);
+    {
+        $request->validate([
+            'role' => 'required|in:buyer,creator,admin',
+        ]);
 
-    $user = User::findOrFail($id);
-    $user->update(['role' => $request->role]);
+        $user = User::findOrFail($id);
+        $user->update(['role' => $request->role]);
 
-    return response()->json([
-        'message' => 'Role berhasil diupdate',
-        'data' => $user
-    ]);
-}
+        return $this->success($user, 'Role berhasil diupdate');
+    }
 
     public function store(Request $request)
     {
@@ -45,11 +45,6 @@ class UserController extends Controller
             'status' => 'aktif',
         ]);
 
-        return response()->json([
-            'message' => 'User berhasil dibuat',
-            'data' => $user,
-        ], 201);
-
-        
+        return $this->success($user, 'User berhasil dibuat', 201);
     }
 }
