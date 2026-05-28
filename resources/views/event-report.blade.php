@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Laporan Event | Pentasara')
+@section('title', 'Laporan Event | Pentasera')
 
 @section('custom-nav'){{-- Dashboard uses sidebar, no top nav --}}@endsection
 @section('custom-footer'){{-- No footer on dashboard pages --}}@endsection
@@ -13,8 +13,8 @@
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara" class="w-10 h-10 object-contain">
-            <span class="logo-text text-sm">PENTASARA</span>
+            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasera Logo" class="w-10 h-10 object-contain">
+            <span class="logo-text text-sm">PENTASERA</span>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-group">

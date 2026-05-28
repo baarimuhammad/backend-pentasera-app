@@ -17,6 +17,7 @@ use App\Http\Controllers\MyOrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\SettingsController;
 
 # ───────────────────────────────────────────
 # PUBLIC ROUTES (tanpa token)
@@ -36,6 +37,7 @@ Route::get('/events/{id}',  [EventController::class, 'show']);
 Route::get('/tickets',      [TicketController::class, 'index']);
 Route::get('/tickets/{id}', [TicketController::class, 'show']);
 Route::get('/organizers',   [OrganizerController::class, 'index']);
+Route::get('/organizers/{id}', [OrganizerController::class, 'show']);
 
 # ───────────────────────────────────────────
 # PROTECTED ROUTES (butuh token)
@@ -82,6 +84,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/profile',        [ProfileController::class, 'update']);
     Route::post('/profile/avatar',  [ProfileController::class, 'uploadAvatar']);
 
+    # Checkin Scan
+    Route::post('/checkin/scan',    [CheckinController::class, 'scan']);
+
+    # Settings
+    Route::patch('/settings/password', [SettingsController::class, 'updatePassword']);
+    Route::delete('/settings/account', [SettingsController::class, 'deleteAccount']);
+
     # ───────────────────────────────────────────
     # CREATOR ONLY (role:creator,admin)
     # ───────────────────────────────────────────
@@ -92,12 +101,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/tickets',         [TicketController::class, 'store']);
         Route::patch('/tickets/{id}',   [TicketController::class, 'update']);
         Route::delete('/tickets/{id}',  [TicketController::class, 'destroy']);
+        
+        // Organizers
         Route::post('/organizers',      [OrganizerController::class, 'store']);
+        Route::patch('/organizers/{id}', [OrganizerController::class, 'update']);
 
-        // Dashboard & Reports
+        // Dashboard & Reports & Stats
         Route::get('/dashboard/stats',    [DashboardController::class, 'stats']);
         Route::get('/my-events',          [DashboardController::class, 'myEvents']);
         Route::get('/events/{id}/report', [DashboardController::class, 'eventReport']);
+        Route::get('/events/{id}/stats',  [DashboardController::class, 'eventStats']);
+
+        // Checkin lists per event
+        Route::get('/events/{id}/checkins', [CheckinController::class, 'eventCheckins']);
     });
 
     # ───────────────────────────────────────────

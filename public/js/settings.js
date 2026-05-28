@@ -46,9 +46,3 @@ function handlePasswordChange(e) {
     }, 1000);
 }
 
-function toggleRoleAndRedirect() {
-    const currentRole = localStorage.getItem('pentasara_role') || 'creator';
-    const newRole = currentRole === 'creator' ? 'user' : 'creator';
-    localStorage.setItem('pentasara_role', newRole);
-    window.location.href = '/';
-}

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Tentang Kami | Pentasara')
+@section('title', 'Tentang Kami | Pentasera')
 
 @section('content')
 <!-- Hero Section -->

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Pengaturan | Pentasara')
+@section('title', 'Pengaturan | Pentasera')
 
 @section('custom-nav')
 {{-- Dashboard pages use their own sidebar, no main nav --}}
@@ -14,8 +14,8 @@
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara" class="w-10 h-10 object-contain">
-            <span class="logo-text text-sm">PENTASARA</span>
+            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasera Logo" class="w-10 h-10 object-contain">
+            <span class="logo-text text-sm">PENTASERA</span>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-group">
@@ -58,7 +58,7 @@
     <main class="dashboard-main">
         <header class="dashboard-header">
             <div class="breadcrumb">
-                <a href="{{ url('/dashboard') }}">Pentasara</a>
+                <a href="{{ url('/dashboard') }}">Pentasera</a>
                 <i data-lucide="chevron-right" class="w-3 h-3"></i>
                 <span>Pengaturan</span>
             </div>
@@ -178,7 +178,7 @@
                 </div>
                 <div>
                     <h4 class="text-sm font-bold text-red-900 mb-1">Tindakan ini tidak dapat dibatalkan</h4>
-                    <p class="text-xs text-red-700 leading-relaxed">Seluruh data event, informasi profil, dan riwayat transaksi Anda akan dihapus secara permanen dari server Pentasara.</p>
+                    <p class="text-xs text-red-700 leading-relaxed">Seluruh data event, informasi profil, dan riwayat transaksi Anda akan dihapus secara permanen dari server Pentasera.</p>
                 </div>
             </div>
             <div class="space-y-1.5">

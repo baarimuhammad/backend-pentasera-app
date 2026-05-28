@@ -18,7 +18,7 @@ class PageController extends Controller
         $now = now();
 
         $events = Event::where('event_status', 'published')
-            ->with('organizer')
+            ->with(['organizer', 'tickets'])
             ->orderBy('event_datetime', 'desc')
             ->get();
 
@@ -48,14 +48,28 @@ class PageController extends Controller
     /**
      * Events listing page — published events + unique categories.
      */
-    public function events()
+    public function events(Request $request)
     {
-        $events = Event::where('event_status', 'published')
-            ->with('organizer')
-            ->orderBy('event_datetime', 'desc')
-            ->get();
+        // Get categories from ALL published events (before filtering)
+        $allPublished = Event::where('event_status', 'published')->get();
+        $categories = $allPublished->pluck('kategori_event')->unique()->filter()->values();
 
-        $categories = $events->pluck('kategori_event')->unique()->filter()->values();
+        // Build query with filters
+        $query = Event::where('event_status', 'published')
+            ->with(['organizer', 'tickets'])
+            ->orderBy('event_datetime', 'desc');
+
+        if ($request->filled('kategori')) {
+            $query->where('kategori_event', $request->kategori);
+        }
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi', 'like', '%' . $request->lokasi . '%');
+        }
+        if ($request->filled('date')) {
+            $query->whereDate('event_datetime', $request->date);
+        }
+
+        $events = $query->paginate(12);
 
         return view('events', compact('events', 'categories'));
     }

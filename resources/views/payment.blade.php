@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Pembayaran | Pentasara')
+@section('title', 'Pembayaran | Pentasera')
 
 @push('styles')
 <style>
@@ -205,7 +205,7 @@
                         <span class="w-8 h-8 rounded-full bg-[#FFF5F2] text-[#B84C2B] flex items-center justify-center text-sm font-bold shrink-0">3</span>
                         <div class="space-y-1">
                             <p class="text-[13px] font-bold text-[#2C1A0E]">Cek Detail</p>
-                            <p class="text-[11px] text-gray-400 leading-relaxed">Pastikan nama merchant adalah <span class="font-bold text-[#2C1A0E]">Pentasara</span> dan total <span id="qris-total-small" class="font-bold text-[#2C1A0E]">Rp117.500</span>.</p>
+                            <p class="text-[11px] text-gray-400 leading-relaxed">Pastikan nama merchant adalah <span class="font-bold text-[#2C1A0E]">Pentasera</span> dan total <span id="qris-total-small" class="font-bold text-[#2C1A0E]">Rp117.500</span>.</p>
                         </div>
                     </div>
                     <div class="flex gap-5">

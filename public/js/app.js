@@ -69,19 +69,41 @@ function checkAuthState() {
     if (window.lucide) window.lucide.createIcons();
 }
 
-function toggleRole() {
-    // Role switch is not applicable with real backend roles;
-    // keep for UI demonstration only.
-    checkAuthState();
+async function toggleRole() {
+    const user = typeof getUser === 'function' ? getUser() : null;
+    if (!user) return;
+    const targetRole = user.role === 'creator' ? 'buyer' : 'creator';
+    try {
+        const res = await apiPatch('/profile', { role: targetRole });
+        if (res && res._ok && res.data) {
+            localStorage.setItem('user', JSON.stringify(res.data));
+            checkAuthState();
+            window.location.href = '/';
+        } else {
+            alert('Gagal beralih akun: ' + (res?.message || 'Error tidak diketahui'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Gagal menghubungi server untuk beralih akun.');
+    }
 }
 
-function toggleRoleAndRedirect() {
-    // With real auth, redirect based on actual role
+async function toggleRoleAndRedirect() {
     const user = typeof getUser === 'function' ? getUser() : null;
-    if (user && user.role === 'creator') {
-        window.location.href = '/my-tickets';
-    } else {
-        window.location.href = '/my-events';
+    if (!user) return;
+    const targetRole = user.role === 'creator' ? 'buyer' : 'creator';
+    try {
+        const res = await apiPatch('/profile', { role: targetRole });
+        if (res && res._ok && res.data) {
+            localStorage.setItem('user', JSON.stringify(res.data));
+            checkAuthState();
+            window.location.href = '/';
+        } else {
+            alert('Gagal beralih akun: ' + (res?.message || 'Error tidak diketahui'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Gagal menghubungi server untuk beralih akun.');
     }
 }
 

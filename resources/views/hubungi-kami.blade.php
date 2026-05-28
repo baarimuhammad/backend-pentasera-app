@@ -1,10 +1,10 @@
 @extends('layouts.app')
-@section('title', 'Hubungi Kami | Pentasara')
+@section('title', 'Hubungi Kami | Pentasera')
 
 @section('custom-nav')
 <!-- Navbar (matching original style-support.css .navbar) -->
 <nav class="navbar">
-    <div class="logo">Pentasara</div>
+    <div class="logo">Pentasera</div>
     <ul class="nav-links">
         <li><a href="{{ url('/') }}">Eksplorasi</a></li>
         <li><a href="{{ url('/events') }}">Kalender</a></li>
@@ -85,7 +85,7 @@
                 </div>
                 <h4 style="font-family: 'Playfair Display'; font-weight: 700; font-size: 20px;">Surat Elektronik</h4>
             </div>
-            <p style="font-size: 14px; color: #4A3000;">halo@pentasara.id<br>info@pentasara.id</p>
+            <p style="font-size: 14px; color: #4A3000;">halo@pentasera.id<br>info@pentasera.id</p>
         </div>
 
         <div class="info-card">
@@ -157,8 +157,8 @@
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-brand">
-            <div class="footer-brand-title">Pentasara</div>
-            <p class="footer-copy">© 2024 Pentasara. Menjaga Tradisi dalam Modernitas.</p>
+            <div class="footer-brand-title">Pentasera</div>
+            <p class="footer-copy">© 2024 Pentasera. Menjaga Tradisi dalam Modernitas.</p>
             <div class="footer-social-wrap">
                 <p class="social-label">Hubungi Kurator:</p>
                 <div class="social-icons">

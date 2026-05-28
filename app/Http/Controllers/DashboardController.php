@@ -222,4 +222,42 @@ class DashboardController extends Controller
             'recent_transactions'  => $recentTransactions,
         ], 'Laporan event berhasil diambil');
     }
+
+    /**
+     * GET /api/events/{id}/stats
+     * Return stats summary for a single event (ownership check).
+     */
+    public function eventStats(Request $request, $id)
+    {
+        $event = Event::with(['organizer', 'tickets'])->findOrFail($id);
+
+        if ($request->user()->role !== 'admin' && $event->organizer->user_id !== $request->user()->id) {
+            return $this->error('Anda tidak memiliki akses ke statistik event ini', 403);
+        }
+
+        $capacity  = $event->tickets->sum('kuota');
+        $sold      = $event->tickets->sum(fn($t) => $t->kuota - $t->sisa_kuota);
+        $remaining = $capacity - $sold;
+        $occupancy = $capacity > 0
+            ? number_format(($sold / $capacity) * 100, 1) . '%'
+            : '0%';
+
+        $ticketIds = $event->tickets->pluck('id');
+        $revenue = Order::where('status_order', 'paid')
+            ->whereHas('detailOrders', function ($q) use ($ticketIds) {
+                $q->whereIn('ticket_id', $ticketIds);
+            })
+            ->sum('total_harga');
+
+        $revenue_formatted = 'Rp ' . number_format($revenue, 0, ',', '.');
+
+        return $this->success([
+            'capacity'          => $capacity,
+            'sold'              => $sold,
+            'remaining'         => $remaining,
+            'occupancy'         => $occupancy,
+            'revenue'           => $revenue,
+            'revenue_formatted' => $revenue_formatted,
+        ], 'Statistik event berhasil diambil');
+    }
 }

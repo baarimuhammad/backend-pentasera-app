@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Kelola Event | Pentasara')
+@section('title', 'Kelola Event | Pentasera')
 
 @section('custom-nav'){{-- Dashboard uses sidebar, no top nav --}}@endsection
 @section('custom-footer'){{-- No footer on dashboard pages --}}@endsection
@@ -13,8 +13,8 @@
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara" class="w-10 h-10 object-contain">
-            <span class="logo-text text-sm">PENTASARA</span>
+            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasera" class="w-10 h-10 object-contain">
+            <span class="logo-text text-sm">PENTASERA</span>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-group">
@@ -306,15 +306,15 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8 mb-8">
                             <div class="space-y-6">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Nama Narahubung*</label>
-                                <input type="text" placeholder="Nama Penyelenggara" value="Andi Wijaya" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                <input type="text" placeholder="Nama Penyelenggara" value="{{ $event->organizer->organizer_name ?? '' }}" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
                             </div>
                             <div class="space-y-6">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Email*</label>
-                                <input type="email" placeholder="contact@event.com" value="andi@mail.com" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                <input type="email" placeholder="contact@event.com" value="{{ $event->organizer->contact_email ?? '' }}" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
                             </div>
                             <div class="space-y-6">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">No. Ponsel*</label>
-                                <input type="tel" placeholder="08123456789" value="08123456789" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
+                                <input type="tel" placeholder="08123456789" value="{{ $event->organizer->contact_phone ?? '' }}" class="w-full bg-[#FAFAF8] border-none rounded-2xl px-5 py-4 text-base font-bold text-ink focus:ring-2 focus:ring-rust/20 outline-none transition-all placeholder:text-gray-300 placeholder:font-normal">
                             </div>
                         </div>
                     </div>

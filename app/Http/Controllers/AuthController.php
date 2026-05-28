@@ -31,19 +31,19 @@ class AuthController extends Controller
         ]);
 
         // Kirim email verifikasi
-        $user->notify(new VerifyEmailNotification);
+        try {
+            $user->notify(new VerifyEmailNotification);
+            $emailSent = true;
+        } catch (\Exception $e) {
+            $emailSent = false;
+        }
 
-        $token = $user->createToken('pantasera-token')->plainTextToken;
-
-        return $this->success([
-            'token' => $token,
-            'user'  => [
-                'id'    => $user->id,
-                'nama'  => $user->nama,
-                'email' => $user->email,
-                'role'  => $user->role,
-            ]
-        ], 'Registrasi berhasil. Silakan cek email untuk verifikasi.', 201);
+        return response()->json([
+            'success' => true,
+            'requires_verification' => true,
+            'email_delivery_failed' => !$emailSent,
+            'message' => 'Registrasi berhasil! Silakan cek email untuk verifikasi, lalu login.',
+        ], 201);
     }
 
     public function login(Request $request)
@@ -89,7 +89,11 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return $this->success(['user' => $request->user()]);
+        $user = $request->user();
+        if ($user->role === 'creator') {
+            $user->load('organizer');
+        }
+        return $this->success(['user' => $user]);
     }
 
     /**

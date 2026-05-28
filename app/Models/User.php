@@ -50,4 +50,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function organizer()
+    {
+        return $this->hasOne(Organizer::class);
+    }
 }

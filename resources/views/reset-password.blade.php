@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Reset Password | Pentasara')
+@section('title', 'Reset Password | Pentasera')
 
 @section('custom-nav')
 {{-- No navbar on password reset page --}}

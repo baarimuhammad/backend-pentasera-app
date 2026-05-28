@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard | Pentasara')
+@section('title', 'Dashboard | Pentasera')
 
 @section('custom-nav')
 {{-- Dashboard pages use their own sidebar, no main nav --}}
@@ -15,8 +15,8 @@
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara" class="w-10 h-10 object-contain">
-            <span class="logo-text text-sm">PENTASARA</span>
+            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasera Logo" class="w-10 h-10 object-contain">
+            <span class="logo-text text-sm">PENTASERA</span>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-group">

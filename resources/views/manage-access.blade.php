@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Kelola Akses | Pentasara')
+@section('title', 'Kelola Akses | Pentasera')
 
 @section('custom-nav')
 {{-- Dashboard pages use their own sidebar, no main nav --}}
@@ -14,8 +14,8 @@
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara" class="w-10 h-10 object-contain">
-            <span class="logo-text text-sm">PENTASARA</span>
+            <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasera" class="w-10 h-10 object-contain">
+            <span class="logo-text text-sm">PENTASERA</span>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-group">
@@ -58,7 +58,7 @@
     <main class="dashboard-main">
         <header class="dashboard-header">
             <div class="breadcrumb">
-                <a href="{{ url('/dashboard') }}">Pentasara</a>
+                <a href="{{ url('/dashboard') }}">Pentasera</a>
                 <i data-lucide="chevron-right" class="w-3 h-3"></i>
                 <span>Kelola Akses</span>
             </div>
@@ -84,7 +84,7 @@
                         <i data-lucide="search"></i>
                         <input type="text" class="search-input" id="searchUserInput" placeholder="Cari pengguna..." oninput="filterUsers()">
                     </div>
-                    <button id="btnUndangPengguna" onclick="openInviteModal()" class="bg-rust text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 cursor-pointer hover:opacity-90 transition-all">
+                    <button id="btnUndangPengguna" onclick="openInviteModal()" class="bg-rust text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 cursor-pointer hover:opacity-90 transition-all opacity-50" disabled title="🚧 Fitur dalam pengembangan">
                         <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
                         Undang
                     </button>
@@ -101,39 +101,14 @@
                     </tr>
                 </thead>
                 <tbody id="userTableBody">
-                    <tr class="user-row">
-                        <td>
-                            <div class="user-cell">
-                                <div class="user-avatar">RR</div>
-                                <span class="font-bold">rizaldi rizki</span>
-                            </div>
-                        </td>
-                        <td>rizkirizaldi199@gmail.com</td>
-                        <td class="font-bold">Tarian Kecak Uluwatu</td>
-                        <td><span class="status-badge active">AKTIF</span></td>
-                        <td style="position:relative">
-                            <button class="text-gray-400 hover:text-ink cursor-pointer" onclick="toggleActionMenu(this)"><i data-lucide="more-vertical" class="w-4 h-4"></i></button>
-                            <div class="action-dropdown" style="display:none">
-                                <button onclick="editUserRole(this)"><i data-lucide="shield" class="w-3.5 h-3.5"></i> Ubah Role</button>
-                                <button onclick="removeUser(this)" class="text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="user-row">
-                        <td>
-                            <div class="user-cell">
-                                <div class="user-avatar bg-gray-100 text-gray-400">JD</div>
-                                <span class="font-bold">John Doe</span>
-                            </div>
-                        </td>
-                        <td>john.doe@example.com</td>
-                        <td class="font-bold text-gray-400">Gamelan Jawa Heritage</td>
-                        <td><span class="status-badge bg-gray-100 text-gray-400">DRAFT</span></td>
-                        <td style="position:relative">
-                            <button class="text-gray-400 hover:text-ink cursor-pointer" onclick="toggleActionMenu(this)"><i data-lucide="more-vertical" class="w-4 h-4"></i></button>
-                            <div class="action-dropdown" style="display:none">
-                                <button onclick="editUserRole(this)"><i data-lucide="shield" class="w-3.5 h-3.5"></i> Ubah Role</button>
-                                <button onclick="removeUser(this)" class="text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus</button>
+                    <tr>
+                        <td colspan="5" class="text-center py-12">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500">
+                                    <i data-lucide="construction" class="w-8 h-8"></i>
+                                </div>
+                                <p class="font-bold text-ink text-sm">🚧 Fitur dalam pengembangan</p>
+                                <p class="text-gray-400 text-xs">Manajemen staff/pengguna akan segera hadir di versi berikutnya</p>
                             </div>
                         </td>
                     </tr>
@@ -162,24 +137,39 @@
                     </tr>
                 </thead>
                 <tbody id="eventTableBody">
+                    @forelse($events as $event)
+                    @php
+                        $statusLabel = match($event->event_status) {
+                            'published' => 'AKTIF',
+                            'draft' => 'DRAFT',
+                            'cancelled' => 'DIBATALKAN',
+                            default => strtoupper($event->event_status),
+                        };
+                        $statusClass = match($event->event_status) {
+                            'published' => 'active',
+                            'draft' => 'bg-gray-100 text-gray-400',
+                            'cancelled' => 'bg-red-100 text-red-500',
+                            default => 'bg-gray-100 text-gray-400',
+                        };
+                        $isPast = $event->event_status === 'published' && $event->event_datetime < now();
+                    @endphp
                     <tr class="event-row">
-                        <td class="font-bold">Tarian Kecak Uluwatu</td>
-                        <td>Seni Tari</td>
-                        <td><span class="status-badge active">AKTIF</span></td>
-                        <td><a href="{{ url('/manage-event/1') }}" class="text-rust font-bold text-xs">Kelola Akses</a></td>
+                        <td class="font-bold">{{ $event->nama_event }}</td>
+                        <td>{{ $event->kategori_event ?? '-' }}</td>
+                        <td><span class="status-badge {{ $isPast ? 'bg-ink text-white' : $statusClass }}">{{ $isPast ? 'SELESAI' : $statusLabel }}</span></td>
+                        <td>
+                            @if($isPast)
+                                <a href="{{ url('/event-report/' . $event->id) }}" class="text-rust font-bold text-xs">Lihat Laporan</a>
+                            @else
+                                <a href="{{ url('/manage-event/' . $event->id) }}" class="text-rust font-bold text-xs">Kelola Akses</a>
+                            @endif
+                        </td>
                     </tr>
-                    <tr class="event-row">
-                        <td class="font-bold">Gamelan Jawa Heritage</td>
-                        <td>Musik Tradisional</td>
-                        <td><span class="status-badge bg-gray-100 text-gray-400">DRAFT</span></td>
-                        <td><a href="{{ url('/manage-event/2') }}" class="text-rust font-bold text-xs">Kelola Akses</a></td>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center py-8 text-gray-400">Belum ada event</td>
                     </tr>
-                    <tr class="event-row">
-                        <td class="font-bold">Wayang Kulit Purwa</td>
-                        <td>Pertunjukan</td>
-                        <td><span class="status-badge bg-ink text-white">SELESAI</span></td>
-                        <td><a href="{{ url('/event-report/3') }}" class="text-rust font-bold text-xs">Lihat Laporan</a></td>
-                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -237,17 +227,18 @@
                 </div>
                 <div class="form-group" style="margin-bottom:20px">
                     <label for="inviteEvent" style="display:block;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">Assign ke Event</label>
-                    <select id="inviteEvent" class="form-input" style="cursor:pointer">
+                    <select id="inviteEvent" class="form-input" style="cursor:pointer" disabled title="🚧 Fitur dalam pengembangan">
                         <option value="">— Pilih Event —</option>
-                        <option value="1">Tarian Kecak Uluwatu</option>
-                        <option value="2">Gamelan Jawa Heritage</option>
+                        @foreach($events as $event)
+                            <option value="{{ $event->id }}">{{ $event->nama_event }}</option>
+                        @endforeach
                     </select>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
             <button onclick="closeInviteModal()" class="cursor-pointer" style="padding:12px 28px;border-radius:14px;font-size:13px;font-weight:700;background:#F5F5F5;color:var(--ink);border:none;transition:all 0.2s" onmouseover="this.style.background='#E5E5E5'" onmouseout="this.style.background='#F5F5F5'">Batal</button>
-            <button onclick="document.getElementById('inviteForm').requestSubmit()" class="cursor-pointer" style="padding:12px 28px;border-radius:14px;font-size:13px;font-weight:700;background:var(--rust);color:white;border:none;transition:all 0.2s;display:flex;align-items:center;gap:8px" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+            <button onclick="document.getElementById('inviteForm').requestSubmit()" class="cursor-pointer opacity-50" disabled title="🚧 Fitur dalam pengembangan" style="padding:12px 28px;border-radius:14px;font-size:13px;font-weight:700;background:var(--rust);color:white;border:none;transition:all 0.2s;display:flex;align-items:center;gap:8px" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='0.5'">
                 <i data-lucide="send" class="w-4 h-4"></i>
                 Kirim Undangan
             </button>
@@ -351,12 +342,6 @@
 
 @push('scripts')
 <script>
-function toggleRoleAndRedirect() {
-    const currentRole = localStorage.getItem('pentasara_role') || 'creator';
-    const newRole = currentRole === 'creator' ? 'user' : 'creator';
-    localStorage.setItem('pentasara_role', newRole);
-    window.location.href = '/';
-}
 
 /* ── Invite Modal ── */
 function openInviteModal() {

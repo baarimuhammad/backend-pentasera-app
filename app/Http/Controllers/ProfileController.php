@@ -20,6 +20,7 @@ class ProfileController extends Controller
         $request->validate([
             'nama'          => 'sometimes|string|max:255',
             'no_hp'         => 'sometimes|nullable|string|max:20',
+            'role'          => 'sometimes|string|in:buyer,creator',
             // Creator-only organizer fields
             'organizer_name' => 'sometimes|string|max:255',
             'deskripsi'      => 'sometimes|nullable|string|max:500',
@@ -36,20 +37,33 @@ class ProfileController extends Controller
         if ($request->has('no_hp')) {
             $user->no_hp = $request->no_hp;
         }
+        if ($request->has('role')) {
+            $user->role = $request->role;
+        }
         $user->save();
 
-        // If creator, update organizer
+        // If creator, update or create organizer
         if ($user->role === 'creator') {
             $organizer = Organizer::where('user_id', $user->id)->first();
 
-            if ($organizer) {
-                $organizerFields = $request->only([
-                    'organizer_name', 'deskripsi', 'address', 'contact_phone'
+            if (!$organizer) {
+                $organizer = Organizer::create([
+                    'user_id' => $user->id,
+                    'organizer_name' => 'Organizer ' . ($user->nama ?: $user->email),
                 ]);
+            }
 
-                if (!empty($organizerFields)) {
-                    $organizer->update($organizerFields);
-                }
+            $organizerFields = $request->only([
+                'organizer_name', 'deskripsi', 'address', 'contact_phone'
+            ]);
+
+            // Filter out null or empty elements to avoid overwriting existing data if not provided
+            $organizerFields = array_filter($organizerFields, function ($value) {
+                return !is_null($value);
+            });
+
+            if (!empty($organizerFields)) {
+                $organizer->update($organizerFields);
             }
         }
 

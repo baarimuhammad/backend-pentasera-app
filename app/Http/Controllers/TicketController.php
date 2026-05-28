@@ -11,9 +11,13 @@ class TicketController extends Controller
 {
     use ApiResponseTrait;
 
-    public function index()
+    public function index(Request $request)
     {
-        return $this->success(Ticket::all(), 'Daftar tiket berhasil diambil');
+        $query = Ticket::query();
+        if ($request->has('event_id')) {
+            $query->where('event_id', $request->event_id);
+        }
+        return $this->success($query->get(), 'Daftar tiket berhasil diambil');
     }
 
     public function store(Request $request)

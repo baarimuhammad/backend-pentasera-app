@@ -38,4 +38,22 @@ class Event extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    /**
+     * Accessor: formatted lowest ticket price (e.g. "Rp 50.000" or "Gratis").
+     */
+    public function getFormattedLowestTicketPriceAttribute(): string
+    {
+        if (!$this->relationLoaded('tickets') || $this->tickets->isEmpty()) {
+            return 'Rp 0';
+        }
+
+        $lowest = $this->tickets->min('harga');
+
+        if ($lowest == 0) {
+            return 'Gratis';
+        }
+
+        return 'Rp ' . number_format($lowest, 0, ',', '.');
+    }
 }

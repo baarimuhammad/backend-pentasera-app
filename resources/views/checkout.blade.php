@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Checkout | Pentasara')
+@section('title', 'Checkout | Pentasera')
 
 @push('styles')
 <meta name="base-url" content="{{ rtrim(asset(''), '/') }}">

@@ -1,10 +1,10 @@
 @extends('layouts.app')
-@section('title', 'Pusat Bantuan | Pentasara')
+@section('title', 'Pusat Bantuan | Pentasera')
 
 @section('custom-nav')
 <!-- Navbar dengan Search Bar (matching original style-support.css .navbar) -->
 <nav class="navbar">
-    <div class="logo">Pentasara</div>
+    <div class="logo">Pentasera</div>
     <ul class="nav-links">
         <li><a href="{{ url('/') }}">Eksplorasi</a></li>
         <li><a href="{{ url('/events') }}">Kalender</a></li>
@@ -66,7 +66,7 @@
 <!-- Header Bantuan -->
 <header class="help-header">
     <h1>Pusat Bantuan <span>Pentasera</span></h1>
-    <p>Temukan jawaban atas pertanyaan Anda mengenai pelestarian seni dan manajemen acara di platform Pentasara.</p>
+    <p>Temukan jawaban atas pertanyaan Anda mengenai pelestarian seni dan manajemen acara di platform Pentasera.</p>
 </header>
 
 <!-- Main Layout: Sidebar + FAQ -->
@@ -206,8 +206,8 @@
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-brand">
-            <div class="footer-brand-title">Pentasara</div>
-            <p class="footer-copy">© 2024 Pentasara. Menjaga Tradisi dalam Modernitas.</p>
+            <div class="footer-brand-title">Pentasera</div>
+            <p class="footer-copy">© 2024 Pentasera. Menjaga Tradisi dalam Modernitas.</p>
             <div class="footer-social-wrap">
                 <p class="social-label">Hubungi Kurator:</p>
                 <div class="social-icons">

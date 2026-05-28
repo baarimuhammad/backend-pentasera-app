@@ -11,4 +11,14 @@ class Checkin extends Model
         'user_id',
         'waktu_checkin'
     ];
+
+    public function eTicket()
+    {
+        return $this->belongsTo(ETicket::class, 'e_ticket_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

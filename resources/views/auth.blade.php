@@ -1,6 +1,6 @@
 @extends('layouts.app', ['hideChrome' => true])
 
-@section('title', 'Login / Sign Up | Pentasara')
+@section('title', 'Login / Sign Up | Pentasera')
 
 @section('content')
     <!-- Main Content -->
@@ -11,8 +11,8 @@
         <div class="relative z-10 bg-white rounded-3xl shadow-2xl p-8 md:p-10 w-full max-w-[460px] border border-gold/10 animate-fade-in">
             <div class="text-center mb-8">
                 <a href="{{ url('/') }}" class="inline-flex items-center gap-2 mb-4 group">
-                    <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara Logo" class="w-8 h-8 object-contain">
-                    <span class="logo-text text-sm">PENTASARA</span>
+                    <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasera Logo" class="w-8 h-8 object-contain">
+                    <span class="logo-text text-sm">PENTASERA</span>
                 </a>
                 <h1 class="text-2xl md:text-3xl font-bold text-ink mb-2" id="auth-title">Welcome Back!</h1>
                 <p class="text-sm text-gray-500" id="auth-subtitle">Your Gateway to Simple Fun starts here.</p>
@@ -101,18 +101,7 @@
                         <span id="auth-btn-text">Masuk Sekarang</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </button>
 
-                    <div class="relative py-2">
-                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-100"></div></div>
-                        <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-gray-400">Atau masuk dengan</span></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button type="button" onclick="handleSocialLogin()" class="flex items-center justify-center gap-2 py-2.5 border-2 border-gray-100 rounded-xl hover:bg-gray-50 transition-colors font-bold text-sm">
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google"> Google
-                        </button>
-                        <button type="button" onclick="handleSocialLogin()" class="flex items-center justify-center gap-2 py-2.5 border-2 border-gray-100 rounded-xl hover:bg-gray-50 transition-colors font-bold text-sm">
-                            <i data-lucide="facebook" class="w-4 h-4 text-blue-600 fill-current"></i> Facebook
-                        </button>
-                    </div>
+
                 </form>
             </div>
         </div>
@@ -201,19 +190,9 @@
         }
 
         if (res.ok) {
-            if (data.token) {
-                localStorage.setItem('auth_token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                window.location.href = data.user.role === 'creator' ? '/my-events' : '/';
-            } else if (data.data && data.data.token) {
-                localStorage.setItem('auth_token', data.data.token);
-                localStorage.setItem('user', JSON.stringify(data.data.user));
-                window.location.href = data.data.user.role === 'creator' ? '/my-events' : '/';
-            } else {
-                successBox.textContent = data.message || 'Registrasi berhasil! Silakan login.';
-                successBox.classList.remove('hidden');
-                toggleAuth('login');
-            }
+            successBox.textContent = data.message || 'Registrasi berhasil! Silakan login.';
+            successBox.classList.remove('hidden');
+            toggleAuth('login');
         } else {
             errBox.textContent = data.message || 'Pendaftaran gagal. Silakan periksa kembali data Anda.';
             errBox.classList.remove('hidden');
@@ -247,8 +226,7 @@
 
             localStorage.setItem('auth_token', token);
             localStorage.setItem('user', JSON.stringify(user));
-            const role = user.role;
-            window.location.href = role === 'creator' ? '/my-events' : '/';
+            window.location.href = '/';
         } else {
             errBox.textContent = data.message || 'Email atau password salah.';
             errBox.classList.remove('hidden');
@@ -315,9 +293,7 @@
         }
     }
 
-    function handleSocialLogin() {
-        alert('Fitur sosial login belum tersedia.');
-    }
+
 
     // Check URL params on load
     window.onload = () => {
