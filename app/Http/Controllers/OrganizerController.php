@@ -12,7 +12,10 @@ class OrganizerController extends Controller
 
     public function index()
     {
-        return $this->success(Organizer::all(), 'Daftar organizer berhasil diambil');
+        return $this->success(
+            Organizer::with('events')->get(),
+            'Daftar organizer berhasil diambil'
+        );
     }
 
     public function store(Request $request)
@@ -34,7 +37,7 @@ class OrganizerController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return $this->success($organizer, 'Organizer berhasil dibuat', 201);
+        return $this->success($organizer->load('events'), 'Organizer berhasil dibuat', 201);
     }
 
     /**

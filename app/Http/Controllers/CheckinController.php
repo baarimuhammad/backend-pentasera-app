@@ -17,7 +17,10 @@ class CheckinController extends Controller
 
     public function index()
     {
-        return $this->success(Checkin::all(), 'Daftar check-in berhasil diambil');
+        return $this->success(
+            Checkin::with(['eTicket.detailOrder.ticket.event', 'user'])->latest('waktu_checkin')->get(),
+            'Daftar check-in berhasil diambil'
+        );
     }
 
     public function store(Request $request)
@@ -43,7 +46,11 @@ class CheckinController extends Controller
             'status_validasi' => 'used'
         ]);
 
-        return $this->success($checkin, 'Check-in berhasil', 201);
+        return $this->success(
+            $checkin->load(['eTicket.detailOrder.ticket.event', 'user']),
+            'Check-in berhasil',
+            201
+        );
     }
 
     /**

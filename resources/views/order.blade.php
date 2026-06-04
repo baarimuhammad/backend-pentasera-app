@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Beli Tiket | Pentasara')
+@section('title', 'Beli Tiket | Pentasera')
 
 @section('content')
 <main id="app" class="flex-1 max-w-7xl mx-auto w-full px-6 py-8 animate-fade-in">
     <div class="flex flex-col lg:flex-row gap-8" id="order-content">
         <div class="flex-1 space-y-8">
             <div class="rounded-2xl overflow-hidden shadow-2xl relative h-[400px]">
-                <img src="{{ $event->image_url ? (Str::startsWith($event->image_url, 'http') ? $event->image_url : asset($event->image_url)) : asset('assets/kecak.png') }}" alt="{{ $event->nama_event }}" class="w-full h-full object-cover">
+                <img src="{{ $event->image_src }}" alt="{{ $event->nama_event }}" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div class="absolute bottom-8 left-8">
                     <h1 class="font-display font-bold text-3xl text-white drop-shadow-lg uppercase tracking-widest">{{ $event->nama_event }}</h1>
@@ -21,27 +21,31 @@
                 </div>
                 
                 <div id="content-tiket" class="p-8 space-y-6">
-                    @foreach($event->tickets as $t)
+                    @forelse($tickets as $t)
                     <div class="ticket-item border border-gold/20 rounded-xl p-6 flex justify-between items-center transition-all">
                         <div class="flex-1 pr-4">
                             <div class="flex items-center gap-2 mb-1">
                                 <h4 class="font-bold text-ink">{{ $t->kategori }}</h4>
                                 @if($t->sisa_kuota <= 5)
                                     <span class="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded uppercase">Limited (Sisa {{ $t->sisa_kuota }})</span>
+                                @elseif($t->sisa_kuota <= 20)
+                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded uppercase">Limited</span>
                                 @endif
                             </div>
-                            <p class="text-xs text-gray-500 leading-relaxed">Kategori tiket {{ $t->kategori }} untuk menghadiri event ini.</p>
+                            <p class="text-xs text-gray-500 leading-relaxed">Sisa kuota {{ $t->sisa_kuota }} dari {{ $t->kuota }} tiket.</p>
                         </div>
                         <div class="flex flex-col items-end gap-3">
-                            <div class="font-bold text-rust-deep text-lg">Rp {{ number_format($t->harga, 0, ',', '.') }}</div>
+                            <div class="font-bold text-rust-deep text-lg">{{ $t->formatted_price }}</div>
                             <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                                <button onclick="updateQty('{{ $t->id }}', -1, {{ $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600 font-bold">-</button>
+                                <button onclick="updateQty('{{ $t->id }}', -1, {{ (int) $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600 font-bold">-</button>
                                 <span id="qty-{{ $t->id }}" class="w-10 text-center font-bold text-ink">0</span>
-                                <button onclick="updateQty('{{ $t->id }}', 1, {{ $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md bg-rust text-white hover:bg-rust-deep shadow-sm transition-all font-bold">+</button>
+                                <button onclick="updateQty('{{ $t->id }}', 1, {{ (int) $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md bg-rust text-white hover:bg-rust-deep shadow-sm transition-all font-bold">+</button>
                             </div>
                         </div>
                     </div>
-                    @endforeach
+                    @empty
+                    <div class="text-sm text-gray-500">Belum ada tiket untuk event ini.</div>
+                    @endforelse
                 </div>
 
                 <div id="content-deskripsi" class="p-8 space-y-6 hidden">
@@ -51,11 +55,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                             <div class="bg-cream/20 p-4 rounded-lg border border-gold/10">
                                 <span class="text-[10px] font-bold text-gold uppercase tracking-widest block mb-1">Penyelenggara</span>
-                                <span class="text-sm font-bold text-ink">{{ $event->organizer->nama_organizer ?? 'Penyelenggara' }}</span>
+                                <span class="text-sm font-bold text-ink">{{ $event->organizer?->organizer_name ?? 'Penyelenggara' }}</span>
                             </div>
                             <div class="bg-cream/20 p-4 rounded-lg border border-gold/10">
                                 <span class="text-[10px] font-bold text-gold uppercase tracking-widest block mb-1">Waktu</span>
-                                <span class="text-sm font-bold text-ink">{{ \Carbon\Carbon::parse($event->event_datetime)->format('H:i') }} WIB</span>
+                                <span class="text-sm font-bold text-ink">{{ $event->event_datetime?->format('H:i') }} WIB</span>
                             </div>
                         </div>
                     </div>
@@ -94,14 +98,14 @@
                         <i data-lucide="calendar" class="w-4 h-4 text-rust mt-0.5"></i>
                         <div>
                             <p class="text-[10px] text-gray-400 uppercase font-bold">Tanggal</p>
-                            <p class="text-xs font-medium">{{ \Carbon\Carbon::parse($event->event_datetime)->translatedFormat('d M Y') }}</p>
+                            <p class="text-xs font-medium">{{ $event->event_datetime?->translatedFormat('d M Y') }}</p>
                         </div>
                     </div>
                     <div class="flex gap-3 items-start">
                         <i data-lucide="clock" class="w-4 h-4 text-rust mt-0.5"></i>
                         <div>
                             <p class="text-[10px] text-gray-400 uppercase font-bold">Waktu</p>
-                            <p class="text-xs font-medium">{{ \Carbon\Carbon::parse($event->event_datetime)->format('H:i') }} WIB</p>
+                            <p class="text-xs font-medium">{{ $event->event_datetime?->format('H:i') }} WIB</p>
                         </div>
                     </div>
                     <div class="flex gap-3 items-start">
@@ -122,11 +126,7 @@
 <script>
     let quantities = {};
     let prices = {};
-    let ticketNames = {
-        @foreach($event->tickets as $t)
-        '{{ $t->id }}': '{{ $t->kategori }}',
-        @endforeach
-    };
+    let ticketNames = @json($tickets->pluck('kategori', 'id'));
 
     function setTab(tab) {
         const isTiket = tab === 'tiket';

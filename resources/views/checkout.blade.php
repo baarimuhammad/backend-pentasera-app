@@ -319,9 +319,9 @@
 @push('scripts')
 <script>
     // ── PENTASARA_CHECKOUT — data dari server, JANGAN hapus marker ini ──
-    const PENTASARA_CHECKOUT = {
+    window.PENTASARA_CHECKOUT = {
         event: @json($checkoutEvent),
-        tickets: @json($checkoutTickets)
+        tickets: @json($checkoutTickets),
     };
 </script>
 <script src="{{ asset('js/checkout.js') }}"></script>

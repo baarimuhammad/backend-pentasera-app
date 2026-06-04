@@ -26,7 +26,7 @@
                         <img class="event-card-img" src="{{ $event->image_src }}" alt="{{ $event->nama_event }}">
                         <div class="event-card-body">
                             <div class="event-name">{{ $event->nama_event }}</div>
-                            <div class="event-date">{{ \Carbon\Carbon::parse($event->event_datetime)->isoFormat('DD MMM YYYY') }}</div>
+                            <div class="event-date">{{ $event->event_datetime?->isoFormat('DD MMM YYYY') }}</div>
                             <div class="event-venue">{{ $event->lokasi }}</div>
                             <div class="event-price">{{ $event->formatted_lowest_ticket_price }}</div>
                         </div>
@@ -76,7 +76,7 @@
                         </div>
                         <div class="event-card-body">
                             <div class="event-name">{{ $event->nama_event }}</div>
-                            <div class="event-date">{{ \Carbon\Carbon::parse($event->event_datetime)->isoFormat('DD MMM YYYY') }}</div>
+                            <div class="event-date">{{ $event->event_datetime?->isoFormat('DD MMM YYYY') }}</div>
                             <div class="event-venue">{{ $event->lokasi }}</div>
                             <div class="event-price">{{ $event->formatted_lowest_ticket_price }}</div>
                         </div>

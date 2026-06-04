@@ -13,16 +13,19 @@ class TicketController extends Controller
 
     public function index(Request $request)
     {
-        $query = Ticket::query();
+        $query = Ticket::with('event.organizer');
         if ($request->has('event_id')) {
             $query->where('event_id', $request->event_id);
         }
-        return $this->success($query->get(), 'Daftar tiket berhasil diambil');
+        return $this->success(
+            $query->orderBy('event_id')->orderBy('harga')->get(),
+            'Daftar tiket berhasil diambil'
+        );
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'event_id' => 'required|exists:events,id',
             'kategori' => 'required|string|max:50',
             'harga' => 'required|numeric',
@@ -30,19 +33,23 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::create([
-            'event_id' => $request->event_id,
-            'kategori' => $request->kategori,
-            'harga' => $request->harga,
-            'kuota' => $request->kuota,
-            'sisa_kuota' => $request->kuota
+            'event_id' => $validated['event_id'],
+            'kategori' => $validated['kategori'],
+            'harga' => $validated['harga'],
+            'kuota' => $validated['kuota'],
+            'sisa_kuota' => $validated['kuota']
         ]);
 
-        return $this->success($ticket, 'Ticket berhasil dibuat', 201);
+        return $this->success(
+            $ticket->load('event.organizer'),
+            'Ticket berhasil dibuat',
+            201
+        );
     }
 
     public function show($id)
     {
-        $ticket = Ticket::findOrFail($id);
+        $ticket = Ticket::with('event.organizer')->findOrFail($id);
         return $this->success($ticket, 'Detail tiket berhasil diambil');
     }
 

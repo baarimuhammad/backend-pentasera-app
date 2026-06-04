@@ -89,7 +89,7 @@
                         };
                     @endphp
                     <span class="{{ $statusColor }} text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $statusLabel }}</span>
-                    <span class="text-gray-400 text-xs">ID Event: #EVT-{{ $event->id }}</span>
+                    <span class="text-gray-400 text-xs">ID Event: #EVT-{{ str_pad($event->id, 3, '0', STR_PAD_LEFT) }}</span>
                 </div>
                 <h1 class="font-display text-3xl text-ink mb-2">{{ $event->nama_event }}</h1>
                 <p class="text-gray-500 text-sm flex items-center gap-2">
@@ -108,17 +108,17 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="stat-card">
                 <div class="stat-header"><div class="stat-label"><i data-lucide="ticket"></i> Tiket Terjual</div></div>
-                <div class="stat-value" id="stat-tickets-sold">0 / 0</div>
-                <div class="stat-unit" id="stat-tickets-percent">0% Terisi</div>
+                <div class="stat-value" id="stat-tickets-sold">{{ $stats['sold'] }} / {{ $stats['capacity'] }}</div>
+                <div class="stat-unit" id="stat-tickets-percent">{{ $stats['occupancy'] }}% Terisi</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header"><div class="stat-label"><i data-lucide="trending-up"></i> Total Penjualan</div></div>
-                <div class="stat-value" id="stat-total-sales">Rp 0</div>
+                <div class="stat-value" id="stat-total-sales">{{ $stats['revenue_formatted'] }}</div>
                 <div class="stat-unit">IDR</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header"><div class="stat-label"><i data-lucide="shopping-cart"></i> Total Transaksi</div></div>
-                <div class="stat-value" id="stat-total-transactions">0</div>
+                <div class="stat-value" id="stat-total-transactions">{{ $transactions->count() }}</div>
                 <div class="stat-unit">Transaksi Berhasil</div>
             </div>
         </div>

@@ -77,7 +77,7 @@
                             };
                         @endphp
                         <span class="{{ $statusColor }} text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">{{ $statusLabel }}</span>
-                        <span class="text-gray-400 text-[10px] font-bold">Laporan Event #EVT-{{ $event->id }}</span>
+                        <span class="text-gray-400 text-[10px] font-bold">Laporan Event #EVT-{{ str_pad($event->id, 3, '0', STR_PAD_LEFT) }}</span>
                     </div>
                     <h1 id="report-event-name" class="font-display text-2xl text-ink font-bold">{{ $event->nama_event }}</h1>
                 </div>

@@ -14,7 +14,10 @@ class ETicketController extends Controller
 
     public function index()
     {
-        return $this->success(ETicket::all(), 'Daftar e-ticket berhasil diambil');
+        return $this->success(
+            ETicket::with(['detailOrder.ticket.event', 'checkin'])->get(),
+            'Daftar e-ticket berhasil diambil'
+        );
     }
 
     public function store(Request $request)
@@ -29,6 +32,10 @@ class ETicketController extends Controller
             'status_validasi' => 'valid'
         ]);
 
-        return $this->success($ticket, 'E-ticket berhasil dibuat', 201);
+        return $this->success(
+            $ticket->load('detailOrder.ticket.event'),
+            'E-ticket berhasil dibuat',
+            201
+        );
     }
 }

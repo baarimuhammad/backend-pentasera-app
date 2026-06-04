@@ -25,12 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::create('checkins', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('e_ticket_id')->unique()->constrained('e_tickets')->cascadeOnDelete();
-        $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-        $table->dateTime('waktu_checkin');
-        $table->timestamps();
-        });
+        Schema::dropIfExists('checkins');
     }
 };

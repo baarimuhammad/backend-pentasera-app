@@ -12,6 +12,10 @@ class Checkin extends Model
         'waktu_checkin'
     ];
 
+    protected $casts = [
+        'waktu_checkin' => 'datetime',
+    ];
+
     public function eTicket()
     {
         return $this->belongsTo(ETicket::class, 'e_ticket_id');

@@ -1,4 +1,12 @@
-// ── checkout.js — Pentasara ──
+const CHECKOUT_DATA = window.PENTASARA_CHECKOUT || {};
+const EVENTS = CHECKOUT_DATA.event ? [CHECKOUT_DATA.event] : [];
+const TICKETS = CHECKOUT_DATA.tickets || [];
+
+function resolveImageUrl(image, baseUrl) {
+    if (!image) return '';
+    if (image.startsWith('http://') || image.startsWith('https://')) return image;
+    return `${baseUrl}/${image.replace(/^\/+/, '')}`;
+}
 
 function initCheckout() {
     const params = new URLSearchParams(window.location.search);
@@ -20,19 +28,19 @@ function initCheckout() {
 
     const baseUrl = document.querySelector('meta[name="base-url"]')?.content || '';
 
-    // Render Event details
-    document.getElementById('event-thumb').src = event.image_url ? (event.image_url.startsWith('http') ? event.image_url : baseUrl + '/' + event.image_url) : baseUrl + '/assets/kecak.png';
-    document.getElementById('event-name').innerText = event.nama_event;
-    
-    // Format date nicely
-    const dateObj = new Date(event.event_datetime);
-    const formattedDate = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-    document.getElementById('event-date').innerText = formattedDate;
-    document.getElementById('event-venue').innerText = event.lokasi;
-    
+    // Render Event details — support both old (nama_event/image_url) and new (name/image) formats
+    const eventImage = event.image || event.image_url;
+    const eventName = event.name || event.nama_event;
+    const eventDate = event.date || (event.event_datetime ? new Date(event.event_datetime).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-');
+    const eventVenue = event.venue || event.lokasi;
+
+    document.getElementById('event-thumb').src = eventImage ? resolveImageUrl(eventImage, baseUrl) : baseUrl + '/assets/kecak.png';
+    document.getElementById('event-name').innerText = eventName;
+    document.getElementById('event-date').innerText = eventDate;
+    document.getElementById('event-venue').innerText = eventVenue;
     document.getElementById('modal-event-thumb').src = document.getElementById('event-thumb').src;
-    document.getElementById('modal-event-name').innerText = event.nama_event;
-    document.getElementById('modal-event-date').innerText = formattedDate;
+    document.getElementById('modal-event-name').innerText = eventName;
+    document.getElementById('modal-event-date').innerText = eventDate;
 
     if (ticketData) {
         const ticketEntries = ticketData.split(',').map(s => s.split(':'));
@@ -43,12 +51,13 @@ function initCheckout() {
             if (t) {
                 const qty = parseInt(q);
                 totalQty += qty;
-                const price = parseFloat(t.harga);
+                const price = parseFloat(t.harga || t.rawPrice);
+                const ticketName = t.kategori || t.type;
                 subtotal += (qty * price);
-                ticketListHtml += `<div class="flex justify-between text-[13px]"><span class="text-gray-400">Harga Tiket ${t.kategori} (${qty}x)</span><span class="font-bold text-[#2C1A0E]">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
-                modalTicketListHtml += `<div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl"><div><p class="font-bold text-[#2C1A0E]">${t.kategori}</p><p class="text-[10px] text-gray-400">${qty} Tiket x Rp ${price.toLocaleString('id-ID')}</p></div><span class="font-bold text-rust">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
+                ticketListHtml += `<div class="flex justify-between text-[13px]"><span class="text-gray-400">Harga Tiket ${ticketName} (${qty}x)</span><span class="font-bold text-[#2C1A0E]">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
+                modalTicketListHtml += `<div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl"><div><p class="font-bold text-[#2C1A0E]">${ticketName}</p><p class="text-[10px] text-gray-400">${qty} Tiket x Rp ${price.toLocaleString('id-ID')}</p></div><span class="font-bold text-rust">Rp ${(qty * price).toLocaleString('id-ID')}</span></div>`;
                 for (let i = 0; i < qty; i++) {
-                    ticketTypes.push(`${event.nama_event.toUpperCase()} – ${t.kategori.toUpperCase()}`);
+                    ticketTypes.push(`${eventName.toUpperCase()} – ${ticketName.toUpperCase()}`);
                 }
             }
         });

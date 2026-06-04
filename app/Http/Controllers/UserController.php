@@ -13,7 +13,10 @@ class UserController extends Controller
 
     public function index()
     {
-        return $this->success(User::all(), 'Daftar user berhasil diambil');
+        return $this->success(
+            User::with('orders')->get(),
+            'Daftar user berhasil diambil'
+        );
     }
 
     public function update(Request $request, $id)

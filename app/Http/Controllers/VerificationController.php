@@ -18,9 +18,9 @@ class VerificationController extends Controller
         $user = User::find($id);
 
         if (! $user || ! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
-            return view('emails.verification-failed', [
+            return response()->view('emails.verification-failed', [
                 'message' => 'Link verifikasi tidak valid.',
-            ]);
+            ], 403);
         }
 
         if ($user->hasVerifiedEmail()) {
@@ -43,7 +43,11 @@ class VerificationController extends Controller
     {
         $user = User::find($id);
 
-        if (! $user || ! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+        if (! $user) {
+            return $this->error('User tidak ditemukan.', 404);
+        }
+
+        if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
             return $this->error('Link verifikasi tidak valid.', 400);
         }
 

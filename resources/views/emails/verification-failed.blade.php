@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifikasi Gagal - Pentasera</title>
+    <title>Verifikasi Gagal — Pentasera</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -13,51 +13,81 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         .card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 48px;
+            background: white;
+            border-radius: 20px;
+            padding: 48px 40px;
             max-width: 480px;
-            width: 90%;
+            width: 100%;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .icon {
             width: 80px;
             height: 80px;
-            background: #ef4444;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 24px;
+            font-size: 40px;
+            animation: popIn 0.6s ease-out 0.3s both;
         }
-        .icon svg { width: 40px; height: 40px; fill: #fff; }
-        h1 { font-size: 24px; color: #1f2937; margin-bottom: 12px; }
-        p { color: #6b7280; font-size: 16px; line-height: 1.6; }
-        .btn {
-            display: inline-block;
-            margin-top: 24px;
-            padding: 12px 32px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: transform 0.2s;
+        @keyframes popIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
         }
-        .btn:hover { transform: translateY(-2px); }
+        h1 {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .error-box p {
+            color: #991b1b;
+            font-size: 14px;
+            margin: 0;
+        }
+        .footer {
+            color: #94a3b8;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-        </div>
+        <div class="icon">❌</div>
         <h1>Verifikasi Gagal</h1>
-        <p>{{ $message }}</p>
-        <a href="/" class="btn">Kembali ke Beranda</a>
+        <p>
+            {{ $message ?? 'Link verifikasi tidak valid atau sudah expired.' }}
+        </p>
+        <div class="error-box">
+            <p>📱 Buka aplikasi Pentasera dan minta kirim ulang email verifikasi melalui halaman login.</p>
+        </div>
+        <p class="footer">
+            &copy; {{ date('Y') }} Pentasera. All rights reserved.
+        </p>
     </div>
 </body>
 </html>

@@ -7,6 +7,7 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Event;
+use App\Models\Organizer;
 
 class EventController extends Controller
 {
@@ -38,6 +39,8 @@ class EventController extends Controller
             $query->whereDate('event_datetime', $date);
         }
 
+        $query->orderBy('event_datetime');
+
         if ($limit) {
             $events = $query->limit((int) $limit)->get();
         } else {
@@ -61,7 +64,7 @@ class EventController extends Controller
         ]);
 
         // Verify ownership: organizer must belong to this creator
-        $organizer = \App\Models\Organizer::findOrFail($request->organizer_id);
+        $organizer = Organizer::findOrFail($request->organizer_id);
         if ($request->user()->role !== 'admin' && $organizer->user_id !== $request->user()->id) {
             return $this->error('Anda tidak memiliki akses ke organizer ini', 403);
         }
@@ -84,12 +87,12 @@ class EventController extends Controller
 
         $event = Event::create($data);
 
-        return $this->success($event, 'Event berhasil dibuat', 201);
+        return $this->success($event->load(['organizer', 'tickets']), 'Event berhasil dibuat', 201);
     }
 
     public function show($id)
     {
-        $event = Event::with('tickets')->findOrFail($id);
+        $event = Event::with(['organizer', 'tickets'])->findOrFail($id);
         return $this->success($event, 'Detail event berhasil diambil');
     }
 

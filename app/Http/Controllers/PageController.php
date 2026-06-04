@@ -52,7 +52,7 @@ class PageController extends Controller
     {
         // Get categories from ALL published events (before filtering)
         $allPublished = Event::where('event_status', 'published')->get();
-        $categories = $allPublished->pluck('kategori_event')->unique()->filter()->values();
+        $categories = $allPublished->pluck('kategori_event')->unique()->filter()->sort()->values();
 
         // Build query with filters
         $query = Event::where('event_status', 'published')
@@ -83,7 +83,10 @@ class PageController extends Controller
             $q->orderBy('harga', 'asc');
         }]);
 
-        return view('order', compact('event'));
+        return view('order', [
+            'event' => $event,
+            'tickets' => $event->tickets,
+        ]);
     }
 
     /**
@@ -92,9 +95,18 @@ class PageController extends Controller
     public function checkout(Request $request)
     {
         $checkoutEvent = Event::with('tickets')->findOrFail($request->query('id'));
-        $checkoutTickets = $checkoutEvent->tickets;
 
-        return view('checkout', compact('checkoutEvent', 'checkoutTickets'));
+        return view('checkout', [
+            'checkoutEvent' => $this->checkoutEventPayload($checkoutEvent),
+            'checkoutTickets' => $checkoutEvent->tickets->map(fn ($ticket) => [
+                'id' => (string) $ticket->id,
+                'type' => $ticket->kategori,
+                'price' => $ticket->formatted_price ?? ('Rp ' . number_format($ticket->harga, 0, ',', '.')),
+                'rawPrice' => (int) $ticket->harga,
+                'kategori' => $ticket->kategori,
+                'harga' => $ticket->harga,
+            ])->values(),
+        ]);
     }
 
     /**
@@ -288,5 +300,23 @@ class PageController extends Controller
         $revenueFormatted = 'Rp ' . number_format($revenue, 0, ',', '.');
 
         return compact('capacity', 'sold', 'remaining', 'occupancy', 'revenue', 'revenueFormatted');
+    }
+
+    /**
+     * Build checkout event payload for blade view.
+     */
+    private function checkoutEventPayload(Event $event): array
+    {
+        return [
+            'id' => (string) $event->id,
+            'name' => $event->nama_event,
+            'nama_event' => $event->nama_event,
+            'date' => optional($event->event_datetime)->format('d M Y') ?? '-',
+            'venue' => $event->lokasi,
+            'lokasi' => $event->lokasi,
+            'image' => $event->image_src,
+            'image_url' => $event->image_url,
+            'event_datetime' => $event->event_datetime,
+        ];
     }
 }

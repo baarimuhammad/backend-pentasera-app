@@ -6,7 +6,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
 class VerifyEmailNotification extends Notification
@@ -14,39 +13,44 @@ class VerifyEmailNotification extends Notification
     use Queueable;
 
     /**
+     * Verification link expiry in minutes.
+     */
+    protected int $expiresInMinutes = 60;
+
+    /**
      * Get the notification's delivery channels.
      */
-    public function via($notifiable): array
+    public function via(object $notifiable): array
     {
         return ['mail'];
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Build the mail representation of the notification.
      */
-    public function toMail($notifiable): MailMessage
+    public function toMail(object $notifiable): MailMessage
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
         return (new MailMessage)
-            ->subject('Verifikasi Alamat Email Anda')
-            ->greeting('Halo ' . $notifiable->nama . '!')
-            ->line('Silakan klik tombol di bawah untuk memverifikasi alamat email Anda.')
-            ->action('Verifikasi Email', $verificationUrl)
-            ->line('Link ini akan kedaluwarsa dalam 60 menit.')
-            ->line('Jika Anda tidak membuat akun, abaikan email ini.');
+            ->subject('Verifikasi Email - Pentasera')
+            ->view('emails.verify-email', [
+                'user' => $notifiable,
+                'verificationUrl' => $verificationUrl,
+                'expiresInMinutes' => $this->expiresInMinutes,
+            ]);
     }
 
     /**
-     * Build the signed verification URL (expires in 60 minutes).
+     * Generate the signed verification URL (expires in configured minutes).
      */
-    protected function verificationUrl($notifiable): string
+    protected function verificationUrl(object $notifiable): string
     {
         return URL::temporarySignedRoute(
             'verification.verify',
-            Carbon::now()->addMinutes(60),
+            Carbon::now()->addMinutes($this->expiresInMinutes),
             [
-                'id'   => $notifiable->getKey(),
+                'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
             ]
         );
@@ -55,7 +59,7 @@ class VerifyEmailNotification extends Notification
     /**
      * Get the array representation of the notification.
      */
-    public function toArray($notifiable): array
+    public function toArray(object $notifiable): array
     {
         return [];
     }

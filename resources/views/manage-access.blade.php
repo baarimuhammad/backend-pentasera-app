@@ -459,27 +459,6 @@ function filterUsers() {
     });
 }
 
-function filterEvents() {
-    const query = document.getElementById('searchEventInput').value.toLowerCase();
-    document.querySelectorAll('#eventTableBody .event-row').forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(query) ? '' : 'none';
-    });
-}
-
-/* ── Toast ── */
-function showToast(message) {
-    const toast = document.getElementById('toastNotification');
-    document.getElementById('toastMessage').textContent = message;
-    toast.style.display = 'flex';
-    toast.style.animation = 'toastSlideIn 0.4s ease-out';
-    if (window.lucide) lucide.createIcons();
-    setTimeout(() => {
-        toast.style.animation = 'toastSlideOut 0.4s ease-in forwards';
-        setTimeout(() => { toast.style.display = 'none'; }, 400);
-    }, 3500);
-}
-
 // Close modal on Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeInviteModal();

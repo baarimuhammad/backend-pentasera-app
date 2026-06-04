@@ -17,6 +17,10 @@ class Event extends Model
         'kategori_event',
     ];
 
+    protected $casts = [
+        'event_datetime' => 'datetime',
+    ];
+
     protected $appends = ['image_src'];
 
     /**
@@ -24,9 +28,18 @@ class Event extends Model
      */
     public function getImageSrcAttribute(): string
     {
-        return $this->image_url
-            ? asset('storage/' . $this->image_url)
-            : asset('assets/hero-banner.jpg');
+        $path = $this->image_url ?: 'assets/hero-banner.jpg';
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        // Check if stored via Storage (e.g., event-banners/...)
+        if ($this->image_url && !str_starts_with($this->image_url, 'assets/')) {
+            return asset('storage/' . $this->image_url);
+        }
+
+        return asset($path);
     }
 
     public function organizer()
@@ -40,20 +53,56 @@ class Event extends Model
     }
 
     /**
+     * Accessor: lowest ticket price value.
+     */
+    public function getLowestTicketPriceAttribute(): ?float
+    {
+        if ($this->relationLoaded('tickets')) {
+            return $this->tickets->min('harga');
+        }
+
+        return $this->tickets()->min('harga');
+    }
+
+    /**
      * Accessor: formatted lowest ticket price (e.g. "Rp 50.000" or "Gratis").
      */
     public function getFormattedLowestTicketPriceAttribute(): string
     {
-        if (!$this->relationLoaded('tickets') || $this->tickets->isEmpty()) {
-            return 'Rp 0';
+        $price = $this->lowest_ticket_price;
+
+        if ($price === null) {
+            return 'Belum ada tiket';
         }
 
-        $lowest = $this->tickets->min('harga');
-
-        if ($lowest == 0) {
+        if ($price == 0) {
             return 'Gratis';
         }
 
-        return 'Rp ' . number_format($lowest, 0, ',', '.');
+        return 'Rp ' . number_format((float) $price, 0, ',', '.');
+    }
+
+    /**
+     * Accessor: total capacity across all tickets.
+     */
+    public function getTotalCapacityAttribute(): int
+    {
+        if ($this->relationLoaded('tickets')) {
+            return (int) $this->tickets->sum('kuota');
+        }
+
+        return (int) $this->tickets()->sum('kuota');
+    }
+
+    /**
+     * Accessor: total sold tickets.
+     */
+    public function getSoldTicketsAttribute(): int
+    {
+        if ($this->relationLoaded('tickets')) {
+            return (int) $this->tickets->sum(fn (Ticket $ticket) => $ticket->sold_quantity);
+        }
+
+        return (int) $this->tickets()->get()->sum(fn (Ticket $ticket) => $ticket->sold_quantity);
     }
 }

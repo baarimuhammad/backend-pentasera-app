@@ -7,6 +7,7 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\DetailOrder;
+use Illuminate\Support\Facades\DB;
 
 class DetailOrderController extends Controller
 {
@@ -22,20 +23,39 @@ class DetailOrderController extends Controller
 
         $ticket = Ticket::findOrFail($request->ticket_id);
 
+        if ($ticket->sisa_kuota < $request->jumlah) {
+            return response()->json([
+                'message' => 'Kuota tiket tidak mencukupi',
+            ], 422);
+        }
+
         $subtotal = $ticket->harga * $request->jumlah;
 
-        $detail = DetailOrder::create([
-            'order_id' => $request->order_id,
-            'ticket_id' => $request->ticket_id,
-            'jumlah' => $request->jumlah,
-            'subtotal' => $subtotal
-        ]);
+        $detail = DB::transaction(function () use ($request, $ticket, $subtotal) {
+            $detail = DetailOrder::create([
+                'order_id' => $request->order_id,
+                'ticket_id' => $request->ticket_id,
+                'jumlah' => $request->jumlah,
+                'subtotal' => $subtotal
+            ]);
 
-        return $this->success($detail, 'Detail order berhasil dibuat', 201);
+            $ticket->decrement('sisa_kuota', $request->jumlah);
+
+            return $detail;
+        });
+
+        return $this->success(
+            $detail->load(['order', 'ticket.event']),
+            'Detail order berhasil dibuat',
+            201
+        );
     }
 
     public function index()
     {
-        return $this->success(DetailOrder::all(), 'Daftar detail order berhasil diambil');
+        return $this->success(
+            DetailOrder::with(['order.user', 'ticket.event', 'eTickets'])->get(),
+            'Daftar detail order berhasil diambil'
+        );
     }
 }

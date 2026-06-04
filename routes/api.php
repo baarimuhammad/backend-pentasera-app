@@ -33,16 +33,16 @@ Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verifyF
 
 # Events & tickets publik (bisa dilihat tanpa login)
 Route::get('/events',       [EventController::class, 'index']);
-Route::get('/events/{id}',  [EventController::class, 'show']);
+Route::get('/events/{event}',  [EventController::class, 'show']);
 Route::get('/tickets',      [TicketController::class, 'index']);
-Route::get('/tickets/{id}', [TicketController::class, 'show']);
+Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
 Route::get('/organizers',   [OrganizerController::class, 'index']);
 Route::get('/organizers/{id}', [OrganizerController::class, 'show']);
 
 # ───────────────────────────────────────────
-# PROTECTED ROUTES (butuh token)
+# PROTECTED ROUTES (butuh token + email verified)
 # ───────────────────────────────────────────
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     # Auth
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     # Orders (buyer)
     Route::post('/orders',      [OrderController::class, 'store']);
     Route::get('/orders',       [OrderController::class, 'index']);
-    Route::get('/orders/{id}',  [OrderController::class, 'show']);
+    Route::get('/orders/{order}',  [OrderController::class, 'show']);
 
     # Transactions (buyer)
     Route::post('/transactions', [TransactionController::class, 'store'])
@@ -123,6 +123,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users',           [UserController::class, 'index']);
         Route::post('/users',          [UserController::class, 'store']);
         Route::patch('/users/{id}',    [UserController::class, 'update']);
-        Route::patch('/users/{user}',  [UserController::class, 'update']);
     });
 });

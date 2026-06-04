@@ -13,6 +13,11 @@ class DetailOrder extends Model
         'subtotal'
     ];
 
+    protected $casts = [
+        'jumlah' => 'integer',
+        'subtotal' => 'decimal:2',
+    ];
+
     public function order()
     {
         return $this->belongsTo(Order::class);

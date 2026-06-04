@@ -9,9 +9,10 @@ class Organizer extends Model
     protected $fillable = [
         'organizer_name',
         'deskripsi',
+        'logo_url',
+        'address',
         'contact_email',
         'contact_phone',
-        'address',
         'user_id',
     ];
 

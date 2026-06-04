@@ -16,12 +16,11 @@ class Order extends Model
         'order_code',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'expired_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'tanggal_order' => 'datetime',
+        'total_harga' => 'decimal:2',
+        'expired_at' => 'datetime',
+    ];
 
     public function user()
     {

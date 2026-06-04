@@ -18,4 +18,9 @@ class ETicket extends Model
     {
         return $this->belongsTo(DetailOrder::class);
     }
+
+    public function checkin()
+    {
+        return $this->hasOne(Checkin::class);
+    }
 }

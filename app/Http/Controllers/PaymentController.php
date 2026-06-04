@@ -14,25 +14,38 @@ class PaymentController extends Controller
 
     public function index()
     {
-        return $this->success(Payment::all(), 'Daftar pembayaran berhasil diambil');
+        return $this->success(
+            Payment::with('order.user')->latest('waktu_bayar')->get(),
+            'Daftar pembayaran berhasil diambil'
+        );
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'metode' => 'required|string|max:50',
+            'metode' => 'required|in:qris,ewallet,virtual_account,bank_transfer',
             'jumlah_bayar' => 'required|numeric|min:0'
         ]);
 
         $payment = Payment::create([
-            'order_id' => $request->order_id,
-            'metode' => $request->metode,
-            'jumlah_bayar' => $request->jumlah_bayar,
-            'status_pembayaran' => 'pending',
+            'order_id' => $validated['order_id'],
+            'metode' => $validated['metode'],
+            'jumlah_bayar' => $validated['jumlah_bayar'],
+            'status_pembayaran' => 'paid',
             'waktu_bayar' => now()
         ]);
 
-        return $this->success($payment, 'Payment berhasil dibuat', 201);
+        // Also update the order status to paid
+        $order = Order::findOrFail($validated['order_id']);
+        $order->update([
+            'status_order' => 'paid'
+        ]);
+
+        return $this->success(
+            $payment->load('order.user'),
+            'Payment berhasil dibuat',
+            201
+        );
     }
 }

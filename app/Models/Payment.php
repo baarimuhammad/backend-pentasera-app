@@ -14,6 +14,11 @@ class Payment extends Model
         'waktu_bayar'
     ];
 
+    protected $casts = [
+        'jumlah_bayar' => 'decimal:2',
+        'waktu_bayar' => 'datetime',
+    ];
+
     public function order()
     {
         return $this->belongsTo(Order::class);
