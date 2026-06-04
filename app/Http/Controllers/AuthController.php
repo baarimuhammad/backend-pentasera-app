@@ -15,7 +15,7 @@ class AuthController extends Controller
     use ApiResponseTrait;
 
     /**
-     * Register a new user and send verification email.
+     * Register a new user.
      */
     public function register(Request $request)
     {
@@ -34,37 +34,18 @@ class AuthController extends Controller
             'status' => 'aktif',
         ]);
 
-        // Kirim email verifikasi
-        try {
-            $user->sendEmailVerificationNotification();
-        } catch (Throwable $e) {
-            report($e);
-
-            return $this->success([
-                'requires_verification' => true,
-                'email_delivery_failed' => true,
-                'user' => [
-                    'id' => $user->id,
-                    'nama' => $user->nama,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                ],
-            ], 'Registrasi berhasil, tetapi email verifikasi gagal dikirim. Periksa konfigurasi SMTP lalu gunakan kirim ulang verifikasi.', 202);
-        }
-
         return $this->success([
-            'requires_verification' => true,
             'user' => [
                 'id' => $user->id,
                 'nama' => $user->nama,
                 'email' => $user->email,
                 'role' => $user->role,
             ],
-        ], 'Registrasi berhasil! Silakan cek email untuk verifikasi, lalu login.', 201);
+        ], 'Registrasi berhasil! Silakan login.', 201);
     }
 
     /**
-     * Login user — requires verified email.
+     * Login user.
      */
     public function login(Request $request)
     {
@@ -85,14 +66,6 @@ class AuthController extends Controller
             return $this->error('Akun kamu dinonaktifkan. Hubungi admin.', 403);
         }
 
-        // Cek apakah email sudah diverifikasi
-        if (! $user->hasVerifiedEmail()) {
-            return $this->error('Email belum diverifikasi. Silakan cek email Anda.', 403, [
-                'requires_verification' => true,
-                'email' => $user->email,
-            ]);
-        }
-
         // Hapus token lama, buat yang baru
         $user->tokens()->delete();
         $token = $user->createToken('pantasera-token')->plainTextToken;
@@ -104,7 +77,6 @@ class AuthController extends Controller
                 'nama'  => $user->nama,
                 'email' => $user->email,
                 'role'  => $user->role,
-                'email_verified' => true,
             ]
         ], 'Login berhasil');
     }

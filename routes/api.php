@@ -40,9 +40,9 @@ Route::get('/organizers',   [OrganizerController::class, 'index']);
 Route::get('/organizers/{id}', [OrganizerController::class, 'show']);
 
 # ───────────────────────────────────────────
-# PROTECTED ROUTES (butuh token + email verified)
+# PROTECTED ROUTES (butuh token)
 # ───────────────────────────────────────────
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     # Auth
     Route::post('/logout', [AuthController::class, 'logout']);
