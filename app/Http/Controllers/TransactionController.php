@@ -151,6 +151,17 @@ class TransactionController extends Controller
             return $this->error('Anda tidak memiliki akses ke order ini', 403);
         }
 
+        // Jika sudah paid, return success (idempotent behavior)
+        if ($order->status_order === 'paid') {
+            $eTickets = ETicket::whereIn('detail_order_id', 
+                $order->detailOrders->pluck('id')->toArray()
+            )->get();
+            return $this->success([
+                'order'     => $order->load(['detailOrders.ticket', 'payment']),
+                'e_tickets' => $eTickets,
+            ], 'Pembayaran sudah dikonfirmasi sebelumnya');
+        }
+
         if ($order->status_order !== 'pending') {
             return $this->error('Order tidak dapat dikonfirmasi. Status saat ini: ' . $order->status_order, 422);
         }

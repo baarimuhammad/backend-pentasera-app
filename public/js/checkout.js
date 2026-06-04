@@ -313,7 +313,7 @@ window.processPayment = async () => {
 
     try {
         const response = await apiPost('/transactions', body);
-        if (response && response.success) {
+        if (response && response.status === 'success') {
             sessionStorage.setItem('order_result', JSON.stringify(response.data));
             window.location.href = '/payment';
         } else {

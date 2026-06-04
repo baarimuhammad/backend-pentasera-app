@@ -262,7 +262,7 @@ async function doConfirmPayment() {
 
     try {
         const response = await apiPost(`/orders/${orderData.order_id}/confirm-payment`);
-        if (response && response.success) {
+        if (response && response.status === 'success') {
             // Show Success Modal
             document.getElementById('success-modal').classList.remove('hidden');
             if (typeof lucide !== 'undefined') lucide.createIcons();
