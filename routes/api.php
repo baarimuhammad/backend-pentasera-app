@@ -116,12 +116,14 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/events/{id}/checkins', [CheckinController::class, 'eventCheckins']);
     });
 
+    # User role update (bisa user sendiri atau admin)
+    Route::patch('/users/{id}', [UserController::class, 'update']);
+
     # ───────────────────────────────────────────
     # ADMIN ONLY (role:admin)
     # ───────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
         Route::get('/users',           [UserController::class, 'index']);
         Route::post('/users',          [UserController::class, 'store']);
-        Route::patch('/users/{id}',    [UserController::class, 'update']);
     });
 });

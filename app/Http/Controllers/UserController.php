@@ -25,6 +25,24 @@ class UserController extends Controller
             'role' => 'required|in:buyer,creator,admin',
         ]);
 
+        $currentUser = $request->user();
+
+        // Izinkan jika: user update dirinya sendiri, ATAU user adalah admin
+        if ($currentUser->id != $id && $currentUser->role !== 'admin') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Anda tidak memiliki akses untuk mengubah role pengguna lain',
+            ], 403);
+        }
+
+        // Non-admin tidak boleh set role ke admin
+        if ($currentUser->role !== 'admin' && $request->role === 'admin') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Anda tidak dapat mengatur role admin',
+            ], 403);
+        }
+
         $user = User::findOrFail($id);
         $user->update(['role' => $request->role]);
 
