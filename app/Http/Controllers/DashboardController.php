@@ -27,6 +27,7 @@ class DashboardController extends Controller
                 'total_events'        => 0,
                 'total_events_active' => 0,
                 'total_tickets_sold'  => 0,
+                'total_transactions'  => 0,
                 'total_revenue'       => 0,
                 'revenue_formatted'   => 'Rp 0',
                 'events'              => [],
@@ -50,6 +51,11 @@ class DashboardController extends Controller
             ->whereHas('order', fn($q) => $q->where('status_order', 'paid'))
             ->sum('jumlah');
 
+        // Total transactions = count of distinct paid orders referencing these tickets
+        $totalTransactions = Order::where('status_order', 'paid')
+            ->whereHas('detailOrders', fn($q) => $q->whereIn('ticket_id', $ticketIds))
+            ->count();
+
         // Total revenue = sum of orders.total_harga for paid orders that reference these tickets
         $totalRevenue = Order::where('status_order', 'paid')
             ->whereHas('detailOrders', fn($q) => $q->whereIn('ticket_id', $ticketIds))
@@ -61,6 +67,7 @@ class DashboardController extends Controller
             'total_events'        => $totalEvents,
             'total_events_active' => $totalEventsActive,
             'total_tickets_sold'  => $totalTicketsSold,
+            'total_transactions'  => $totalTransactions,
             'total_revenue'       => $totalRevenue,
             'revenue_formatted'   => $revenueFormatted,
         ], 'Dashboard stats berhasil diambil');
@@ -111,7 +118,7 @@ class DashboardController extends Controller
             ];
         });
 
-        return $this->success($result, 'Daftar event berhasil diambil');
+        return $this->success($result->values(), 'Daftar event berhasil diambil');
     }
 
     /**

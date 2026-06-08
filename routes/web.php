@@ -16,7 +16,7 @@ Route::get('/', [PageController::class, 'home']);
 Route::get('/auth', function () { return view('auth'); });
 
 // Events
-Route::get('/events', [PageController::class, 'events']);
+Route::get('/events', [PageController::class, 'events'])->name('events.page');
 Route::get('/order/{event}', [PageController::class, 'order']);
 Route::get('/checkout', [PageController::class, 'checkout']);
 Route::get('/payment', [PageController::class, 'payment']);

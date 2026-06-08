@@ -27,6 +27,11 @@ class EventController extends Controller
             $query->where('event_status', $status);
         }
 
+        // By default, only show upcoming events (not yet ended)
+        if (!$request->query('include_past')) {
+            $query->where('event_datetime', '>=', now());
+        }
+
         if ($kategori) {
             $query->where('kategori_event', $kategori);
         }

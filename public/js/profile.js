@@ -24,7 +24,8 @@
             return;
         }
 
-        const user = res.data || res;
+        // API returns { data: { user: {...} } }
+        const user = res.data?.user || res.data || res;
 
         // Fill user fields
         const inputNama = document.getElementById('inputNama');
@@ -40,7 +41,8 @@
             const avatarImage = document.getElementById('avatarImage');
             const avatarIcon = document.getElementById('avatarIcon');
             if (avatarImage) {
-                avatarImage.src = '/storage/' + user.avatar_url;
+                // Use avatar_full_url if available, otherwise construct the path
+                avatarImage.src = user.avatar_full_url || ('/storage/' + user.avatar_url);
                 avatarImage.style.display = 'block';
             }
             if (avatarIcon) {
@@ -48,20 +50,23 @@
             }
         }
 
+        // Update localStorage with fresh user data
+        localStorage.setItem('user', JSON.stringify(user));
+
         // If creator, load organizer data
         if (user.role === 'creator') {
-            await loadOrganizer();
+            await loadOrganizer(user);
         }
     }
 
     // ── Load organizer data for creators ──────────────────
-    async function loadOrganizer() {
+    async function loadOrganizer(currentUser) {
         const res = await apiGet('/organizers');
 
         if (!res || !res._ok) return;
 
         const organizers = res.data || [];
-        const user = getUser();
+        const user = currentUser || getUser();
 
         // Find organizer belonging to this user
         const myOrg = organizers.find(o => o.user_id === user?.id);
@@ -167,6 +172,9 @@
                 const user = getUser();
                 if (user && res.data?.avatar_url) {
                     user.avatar_url = res.data.avatar_url;
+                    if (res.data.avatar_full_url) {
+                        user.avatar_full_url = res.data.avatar_full_url;
+                    }
                     localStorage.setItem('user', JSON.stringify(user));
                 }
                 alert('Avatar berhasil diupload!');

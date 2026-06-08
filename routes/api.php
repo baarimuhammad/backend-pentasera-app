@@ -97,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:creator,admin')->group(function () {
         Route::post('/events',          [EventController::class, 'store']);
         Route::patch('/events/{id}',    [EventController::class, 'update']);
+        Route::post('/events/{id}/update', [EventController::class, 'update']);
         Route::delete('/events/{id}',   [EventController::class, 'destroy']);
         Route::post('/tickets',         [TicketController::class, 'store']);
         Route::patch('/tickets/{id}',   [TicketController::class, 'update']);

@@ -5,6 +5,15 @@
 @section('content')
 <div class="batik-bg min-h-screen">
     <div class="flex-1 max-w-7xl mx-auto w-full px-6 py-8 animate-fade-in">
+
+    {{-- Flash error message (e.g. redirected from ended event) --}}
+    @if(session('error'))
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl px-5 py-4 flex items-center gap-3 text-red-700">
+        <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 flex-shrink-0"></i>
+        <span class="text-sm font-medium">{{ session('error') }}</span>
+    </div>
+    @endif
+
     <div class="flex flex-col md:flex-row gap-8">
         <!-- Sidebar Filter -->
         <aside class="w-full md:w-80 space-y-6">

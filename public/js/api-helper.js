@@ -56,6 +56,21 @@ async function apiUpload(endpoint, formData) {
     return _handle(res);
 }
 
+async function apiUploadPatch(endpoint, formData) {
+    // Laravel method spoofing: send as POST with _method=PATCH
+    formData.append('_method', 'PATCH');
+
+    const headers = _authHeaders();
+    delete headers['Content-Type'];
+
+    const res = await fetch(API_BASE + endpoint, {
+        method: 'POST',
+        headers,
+        body: formData,
+    });
+    return _handle(res);
+}
+
 // ──────────────────────────────
 // User / Token utilities
 // ──────────────────────────────
@@ -135,6 +150,7 @@ window.apiPost = apiPost;
 window.apiPatch = apiPatch;
 window.apiDelete = apiDelete;
 window.apiUpload = apiUpload;
+window.apiUploadPatch = apiUploadPatch;
 window.getUser = getUser;
 window.getToken = getToken;
 window.isLoggedIn = isLoggedIn;

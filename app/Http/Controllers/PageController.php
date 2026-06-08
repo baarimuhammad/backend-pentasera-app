@@ -24,7 +24,22 @@ class PageController extends Controller
 
         $activeEvents = $events->filter(fn($e) => $e->event_datetime >= $now);
         $endedEvents  = $events->filter(fn($e) => $e->event_datetime < $now);
-        $topEvents    = $activeEvents->take(3);
+
+        // Top events: sorted by most tickets sold (best-selling)
+        $topEvents = Event::where('event_status', 'published')
+            ->where('event_datetime', '>=', $now)
+            ->with(['organizer', 'tickets'])
+            ->get()
+            ->map(function ($event) {
+                $ticketIds = $event->tickets->pluck('id');
+                $event->total_sold = (int) DetailOrder::whereIn('ticket_id', $ticketIds)
+                    ->whereHas('order', fn($q) => $q->where('status_order', 'paid'))
+                    ->sum('jumlah');
+                return $event;
+            })
+            ->sortByDesc('total_sold')
+            ->take(3)
+            ->values();
 
         return view('welcome', compact('activeEvents', 'endedEvents', 'topEvents'));
     }
@@ -54,10 +69,11 @@ class PageController extends Controller
         $allPublished = Event::where('event_status', 'published')->get();
         $categories = $allPublished->pluck('kategori_event')->unique()->filter()->sort()->values();
 
-        // Build query with filters
+        // Build query with filters — only show upcoming events (not yet ended)
         $query = Event::where('event_status', 'published')
+            ->where('event_datetime', '>=', now())
             ->with(['organizer', 'tickets'])
-            ->orderBy('event_datetime', 'desc');
+            ->orderBy('event_datetime', 'asc');
 
         if ($request->filled('kategori')) {
             $query->where('kategori_event', $request->kategori);
@@ -79,6 +95,12 @@ class PageController extends Controller
      */
     public function order(Event $event)
     {
+        // Block access if event has already ended
+        if ($event->event_datetime < now()) {
+            return redirect()->route('events.page')
+                ->with('error', 'Event ini sudah berakhir dan tidak bisa memesan tiket.');
+        }
+
         $event->load(['organizer', 'tickets' => function ($q) {
             $q->orderBy('harga', 'asc');
         }]);
@@ -95,6 +117,12 @@ class PageController extends Controller
     public function checkout(Request $request)
     {
         $checkoutEvent = Event::with('tickets')->findOrFail($request->query('id'));
+
+        // Block checkout if event has already ended
+        if ($checkoutEvent->event_datetime < now()) {
+            return redirect()->route('events.page')
+                ->with('error', 'Event ini sudah berakhir dan tidak bisa melakukan checkout.');
+        }
 
         return view('checkout', [
             'checkoutEvent' => $this->checkoutEventPayload($checkoutEvent),
@@ -138,7 +166,8 @@ class PageController extends Controller
             ->take(10)
             ->get();
 
-        return view('manage-event', compact('event', 'stats', 'recentOrders'));
+        return view('manage-event', compact('event', 'stats', 'recentOrders'))
+            ->with('transactions', $recentOrders);
     }
 
     /**

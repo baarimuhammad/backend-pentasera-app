@@ -382,18 +382,35 @@ async function saveEventChanges() {
     }
 
     try {
-        const data = {
-            nama_event: document.getElementById('manage-nama-event')?.value?.trim(),
-            kategori_event: document.getElementById('manage-kategori-event')?.value,
-            event_datetime: document.getElementById('manage-event-datetime')?.value,
-            lokasi: document.getElementById('manage-lokasi')?.value?.trim(),
-            deskripsi: document.getElementById('manage-deskripsi')?.value?.trim(),
-        };
+        const formData = new FormData();
 
-        const res = await apiPatch('/events/' + eventId, data);
+        const namaEvent = document.getElementById('manage-nama-event')?.value?.trim();
+        const kategoriEvent = document.getElementById('manage-kategori-event')?.value;
+        const eventDatetime = document.getElementById('manage-event-datetime')?.value;
+        const lokasi = document.getElementById('manage-lokasi')?.value?.trim();
+        const deskripsi = document.getElementById('manage-deskripsi')?.value?.trim();
+
+        if (namaEvent) formData.append('nama_event', namaEvent);
+        if (kategoriEvent) formData.append('kategori_event', kategoriEvent);
+        if (eventDatetime) formData.append('event_datetime', eventDatetime);
+        if (lokasi) formData.append('lokasi', lokasi);
+        if (deskripsi !== undefined) formData.append('deskripsi', deskripsi || '');
+
+        // Include banner image if a new file was selected
+        const bannerInput = document.getElementById('manage-banner-input');
+        if (bannerInput && bannerInput.files && bannerInput.files[0]) {
+            formData.append('image', bannerInput.files[0]);
+        }
+
+        const res = await apiUpload('/events/' + eventId + '/update', formData);
 
         if (res && res._ok) {
             showNotification('Perubahan event berhasil disimpan!', 'success');
+            // Update the banner preview if a new image was returned
+            if (res.data && res.data.image_src) {
+                const preview = document.getElementById('manage-banner-preview');
+                if (preview) preview.src = res.data.image_src;
+            }
         } else {
             const msg = res?.message || 'Gagal menyimpan perubahan';
             showNotification(msg, 'error');
