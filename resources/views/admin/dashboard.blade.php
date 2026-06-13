@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Admin Dashboard | Pentasera')
+@section('title', 'Event Pending | Admin Pentasera')
 
 @section('custom-nav'){{-- Admin uses its own sidebar --}}@endsection
 @section('custom-footer'){{-- No footer on admin pages --}}@endsection
@@ -17,8 +17,8 @@
     <main class="admin-main">
         <div class="admin-header">
             <div>
-                <div class="admin-breadcrumb"><a href="{{ url('/') }}">Home</a> / <span>Dashboard</span></div>
-                <h1>Dashboard Overview</h1>
+                <div class="admin-breadcrumb"><a href="{{ url('/') }}">Home</a> / <span>Event Pending</span></div>
+                <h1>Event Pending</h1>
                 <div class="admin-date" id="admin-date-display"></div>
             </div>
         </div>

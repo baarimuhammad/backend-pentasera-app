@@ -123,6 +123,9 @@
                             <td><span class="event-meta">${u.orders_count ?? 0}</span></td>
                             <td>
                                 <div class="admin-actions">
+                                    <button class="btn-admin-view" onclick="openDetailUserModal(${u.id})" title="Lihat Detail">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    </button>
                                     <button class="btn-admin-secondary" onclick="openEditUserModal(${u.id}, '${escapeHtml(u.nama)}', '${u.role}')" ${isSelf ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''} title="Ubah Role">
                                         <i data-lucide="pen-line" class="w-3.5 h-3.5"></i>
                                     </button>
@@ -267,6 +270,131 @@
         }
     };
 
+    // ─── Detail User Modal ───
+    window.openDetailUserModal = async function (userId) {
+        const modal = document.getElementById('detail-user-modal');
+        const loadingEl = document.getElementById('detail-loading');
+        const contentEl = document.getElementById('detail-content');
+
+        // Show modal with loading
+        if (modal) modal.classList.add('active');
+        if (loadingEl) loadingEl.style.display = 'flex';
+        if (contentEl) contentEl.style.display = 'none';
+
+        try {
+            const res = await apiGet(`/admin/users/${userId}/transactions`);
+            if (!res || !res._ok) {
+                showToast(res?.message || 'Gagal memuat data pengguna', 'error');
+                closeDetailUserModal();
+                return;
+            }
+
+            const data = res.data;
+            const u = data.user;
+            const transactions = data.transactions || [];
+
+            // ── Populate Profile ──
+            const avatarEl = document.getElementById('detail-avatar');
+            if (avatarEl) {
+                avatarEl.textContent = (u.nama || 'U').charAt(0).toUpperCase();
+                avatarEl.className = 'detail-avatar ' + (u.role || 'buyer');
+            }
+
+            const nameEl = document.getElementById('detail-name');
+            if (nameEl) nameEl.textContent = u.nama || '-';
+
+            const emailEl = document.getElementById('detail-email');
+            if (emailEl) emailEl.textContent = u.email || '-';
+
+            const roleBadge = document.getElementById('detail-role-badge');
+            if (roleBadge) {
+                roleBadge.textContent = u.role || '-';
+                roleBadge.className = 'role-badge ' + (u.role || '');
+            }
+
+            const phoneEl = document.getElementById('detail-phone');
+            if (phoneEl) phoneEl.textContent = u.no_hp || 'Tidak tersedia';
+
+            const statusEl = document.getElementById('detail-status');
+            if (statusEl) {
+                const isActive = u.status === 'aktif';
+                statusEl.innerHTML = `<span class="status-dot ${u.status}"></span>${isActive ? 'Aktif' : 'Nonaktif'}`;
+            }
+
+            const joinedEl = document.getElementById('detail-joined');
+            if (joinedEl) {
+                joinedEl.textContent = u.created_at
+                    ? new Date(u.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                    : '-';
+            }
+
+            const spentEl = document.getElementById('detail-total-spent');
+            if (spentEl) spentEl.textContent = data.total_spent_formatted || 'Rp 0';
+
+            // ── Populate Transactions ──
+            const countEl = document.getElementById('detail-tx-count');
+            if (countEl) countEl.textContent = transactions.length;
+
+            const tableEl = document.getElementById('detail-tx-table');
+            const bodyEl = document.getElementById('detail-tx-body');
+            const emptyEl = document.getElementById('detail-tx-empty');
+
+            if (transactions.length === 0) {
+                if (tableEl) tableEl.style.display = 'none';
+                if (emptyEl) emptyEl.style.display = 'flex';
+            } else {
+                if (emptyEl) emptyEl.style.display = 'none';
+                if (tableEl) tableEl.style.display = 'table';
+
+                if (bodyEl) {
+                    bodyEl.innerHTML = transactions.map(tx => {
+                        const txDate = tx.tanggal_order
+                            ? new Date(tx.tanggal_order).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                            : '-';
+
+                        const statusClass = tx.status_order === 'paid' ? 'paid'
+                            : tx.status_order === 'pending' ? 'pending'
+                            : tx.status_order === 'expired' ? 'expired'
+                            : 'other';
+
+                        const statusLabel = tx.status_order === 'paid' ? 'Lunas'
+                            : tx.status_order === 'pending' ? 'Pending'
+                            : tx.status_order === 'expired' ? 'Expired'
+                            : tx.status_order || '-';
+
+                        return `
+                            <tr>
+                                <td><span class="tx-code">${escapeHtml(tx.order_code)}</span></td>
+                                <td><span class="tx-event">${escapeHtml(tx.event_name)}</span></td>
+                                <td><span class="event-meta">${txDate}</span></td>
+                                <td><span class="event-meta">${tx.jumlah_tiket}</span></td>
+                                <td><span class="tx-amount">${escapeHtml(tx.total_formatted)}</span></td>
+                                <td><span class="tx-status ${statusClass}">${statusLabel}</span></td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Show content
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (contentEl) contentEl.style.display = 'block';
+
+            // Re-init Lucide icons in modal
+            if (window.lucide) window.lucide.createIcons();
+
+        } catch (err) {
+            console.error('Error loading user detail:', err);
+            showToast('Gagal menghubungi server', 'error');
+            closeDetailUserModal();
+        }
+    };
+
+    window.closeDetailUserModal = function () {
+        const modal = document.getElementById('detail-user-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
     // ─── Pagination ───
     window.goToPage = function (page) {
         if (page < 1) return;
@@ -299,7 +427,7 @@
     });
 
     // ─── Close modals ───
-    ['edit-user-modal', 'delete-user-modal'].forEach(id => {
+    ['edit-user-modal', 'delete-user-modal', 'detail-user-modal'].forEach(id => {
         const overlay = document.getElementById(id);
         if (overlay) {
             overlay.addEventListener('click', function (e) {
@@ -314,6 +442,7 @@
         if (e.key === 'Escape') {
             closeEditUserModal();
             closeDeleteUserModal();
+            closeDetailUserModal();
         }
     });
 

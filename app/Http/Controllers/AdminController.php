@@ -281,6 +281,60 @@ class AdminController extends Controller
     }
 
     /**
+     * GET /api/admin/users/{id}/transactions
+     * Ambil profil lengkap dan histori transaksi user.
+     */
+    public function userTransactions(Request $request, $id)
+    {
+        $user = User::withCount('orders')->findOrFail($id);
+
+        $orders = Order::where('user_id', $id)
+            ->with(['detailOrders.ticket.event'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($order) {
+                $eventNames = $order->detailOrders
+                    ->map(fn($d) => $d->ticket->event->nama_event ?? '-')
+                    ->unique()
+                    ->implode(', ');
+
+                $totalTickets = $order->detailOrders->sum('jumlah');
+
+                return [
+                    'id'              => $order->id,
+                    'order_code'      => $order->order_code ?? '-',
+                    'event_name'      => $eventNames,
+                    'tanggal_order'   => $order->tanggal_order,
+                    'jumlah_tiket'    => $totalTickets,
+                    'total_harga'     => $order->total_harga,
+                    'total_formatted' => 'Rp ' . number_format($order->total_harga, 0, ',', '.'),
+                    'status_order'    => $order->status_order,
+                ];
+            });
+
+        $totalSpent = Order::where('user_id', $id)
+            ->where('status_order', 'paid')
+            ->sum('total_harga');
+
+        return $this->success([
+            'user' => [
+                'id'         => $user->id,
+                'nama'       => $user->nama,
+                'email'      => $user->email,
+                'no_hp'      => $user->no_hp,
+                'role'       => $user->role,
+                'status'     => $user->status,
+                'avatar_url' => $user->avatar_url,
+                'created_at' => $user->created_at,
+                'orders_count' => $user->orders_count,
+            ],
+            'transactions'          => $orders,
+            'total_spent'           => $totalSpent,
+            'total_spent_formatted' => 'Rp ' . number_format($totalSpent, 0, ',', '.'),
+        ], 'Detail user dan histori transaksi berhasil diambil');
+    }
+
+    /**
      * DELETE /api/admin/users/{id}
      * Hapus user.
      */
@@ -426,5 +480,180 @@ class AdminController extends Controller
             'top_events'          => $topEvents,
             'recent_transactions' => $recentTransactions,
         ], 'Analytics data berhasil diambil');
+    }
+
+    // ═══════════════════════════════════════════
+    // EXPORT: CSV
+    // ═══════════════════════════════════════════
+
+    /**
+     * GET /admin/export/csv
+     * Generate and download a CSV report with transaction summary and revenue trend.
+     */
+    public function exportCsv()
+    {
+        $filename = 'laporan-pentasera-' . now()->format('Y-m-d_His') . '.csv';
+
+        // Gather data
+        $totalUsers = User::count();
+        $totalEvents = Event::count();
+        $totalTransactions = Order::where('status_order', 'paid')->count();
+        $totalRevenue = Order::where('status_order', 'paid')->sum('total_harga');
+
+        $revenueTrend = Order::select(
+                DB::raw("DATE_FORMAT(tanggal_order, '%Y-%m') as month"),
+                DB::raw('SUM(total_harga) as revenue'),
+                DB::raw('COUNT(*) as transactions')
+            )
+            ->where('status_order', 'paid')
+            ->where('tanggal_order', '>=', now()->subMonths(12))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $recentTransactions = Order::where('status_order', 'paid')
+            ->with(['user', 'detailOrders.ticket.event'])
+            ->orderBy('created_at', 'desc')
+            ->take(50)
+            ->get();
+
+        // Build CSV with PHP stream
+        $callback = function () use (
+            $totalUsers, $totalEvents, $totalTransactions, $totalRevenue,
+            $revenueTrend, $recentTransactions
+        ) {
+            $handle = fopen('php://output', 'w');
+
+            // BOM for UTF-8 compatibility in Excel
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // ── Section: Ringkasan ──
+            fputcsv($handle, ['LAPORAN PENTASERA - ' . now()->format('d M Y H:i')]);
+            fputcsv($handle, []);
+            fputcsv($handle, ['=== RINGKASAN OVERVIEW ===']);
+            fputcsv($handle, ['Metrik', 'Nilai']);
+            fputcsv($handle, ['Total Pengguna', $totalUsers]);
+            fputcsv($handle, ['Total Event', $totalEvents]);
+            fputcsv($handle, ['Total Transaksi', $totalTransactions]);
+            fputcsv($handle, ['Total Pendapatan', 'Rp ' . number_format($totalRevenue, 0, ',', '.')]);
+            fputcsv($handle, []);
+
+            // ── Section: Tren Pendapatan ──
+            fputcsv($handle, ['=== TREN PENDAPATAN (12 BULAN TERAKHIR) ===']);
+            fputcsv($handle, ['Bulan', 'Pendapatan (Rp)', 'Jumlah Transaksi']);
+            foreach ($revenueTrend as $row) {
+                fputcsv($handle, [
+                    $row->month,
+                    number_format($row->revenue, 0, ',', '.'),
+                    $row->transactions,
+                ]);
+            }
+            fputcsv($handle, []);
+
+            // ── Section: Transaksi Terakhir ──
+            fputcsv($handle, ['=== TRANSAKSI TERAKHIR ===']);
+            fputcsv($handle, ['Kode Order', 'Pembeli', 'Email', 'Event', 'Total (Rp)', 'Tanggal']);
+            foreach ($recentTransactions as $order) {
+                $eventNames = $order->detailOrders
+                    ->map(fn($d) => $d->ticket->event->nama_event ?? '-')
+                    ->unique()
+                    ->implode(', ');
+
+                fputcsv($handle, [
+                    $order->order_code ?? '-',
+                    $order->user->nama ?? '-',
+                    $order->user->email ?? '-',
+                    $eventNames,
+                    number_format($order->total_harga, 0, ',', '.'),
+                    $order->tanggal_order ? \Carbon\Carbon::parse($order->tanggal_order)->format('d M Y') : '-',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'no-cache, no-store, must-revalidate',
+        ]);
+    }
+
+    // ═══════════════════════════════════════════
+    // EXPORT: PRINT / PDF VIEW
+    // ═══════════════════════════════════════════
+
+    /**
+     * GET /admin/export/pdf
+     * Render a print-friendly page that can be printed to PDF via window.print().
+     */
+    public function analyticsReport()
+    {
+        // ── Overview ──
+        $totalUsers = User::count();
+        $totalEvents = Event::count();
+        $totalTransactions = Order::where('status_order', 'paid')->count();
+        $totalRevenue = Order::where('status_order', 'paid')->sum('total_harga');
+
+        // ── Revenue Trend ──
+        $revenueTrend = Order::select(
+                DB::raw("DATE_FORMAT(tanggal_order, '%Y-%m') as month"),
+                DB::raw('SUM(total_harga) as revenue'),
+                DB::raw('COUNT(*) as transactions')
+            )
+            ->where('status_order', 'paid')
+            ->where('tanggal_order', '>=', now()->subMonths(12))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // ── Top 5 Events ──
+        $topEvents = Event::with(['organizer.user', 'tickets'])
+            ->get()
+            ->map(function ($event) {
+                $ticketIds = $event->tickets->pluck('id');
+                $revenue = Order::where('status_order', 'paid')
+                    ->whereHas('detailOrders', fn($q) => $q->whereIn('ticket_id', $ticketIds))
+                    ->sum('total_harga');
+                $sold = DetailOrder::whereIn('ticket_id', $ticketIds)
+                    ->whereHas('order', fn($q) => $q->where('status_order', 'paid'))
+                    ->sum('jumlah');
+
+                return [
+                    'nama_event'    => $event->nama_event,
+                    'organizer'     => $event->organizer->nama_organizer ?? '-',
+                    'revenue'       => (int) $revenue,
+                    'tickets_sold'  => (int) $sold,
+                ];
+            })
+            ->sortByDesc('revenue')
+            ->take(5)
+            ->values();
+
+        // ── Recent Transactions ──
+        $recentTransactions = Order::where('status_order', 'paid')
+            ->with(['user', 'detailOrders.ticket.event'])
+            ->orderBy('created_at', 'desc')
+            ->take(20)
+            ->get()
+            ->map(function ($order) {
+                $eventNames = $order->detailOrders
+                    ->map(fn($d) => $d->ticket->event->nama_event ?? '-')
+                    ->unique()
+                    ->implode(', ');
+
+                return [
+                    'order_code'  => $order->order_code ?? '-',
+                    'buyer_name'  => $order->user->nama ?? '-',
+                    'event'       => $eventNames,
+                    'total'       => $order->total_harga,
+                    'date'        => $order->tanggal_order,
+                ];
+            });
+
+        return view('admin.analytics-print', compact(
+            'totalUsers', 'totalEvents', 'totalTransactions', 'totalRevenue',
+            'revenueTrend', 'topEvents', 'recentTransactions'
+        ));
     }
 }

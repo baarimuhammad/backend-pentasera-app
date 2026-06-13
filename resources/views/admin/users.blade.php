@@ -110,6 +110,98 @@
     </div>
 </div>
 
+<!-- User Detail Modal -->
+<div class="admin-modal-overlay" id="detail-user-modal">
+    <div class="admin-modal detail-modal">
+        <!-- Modal Header -->
+        <div class="detail-modal-header">
+            <h3><i data-lucide="user-circle" class="w-5 h-5"></i> Detail Pengguna</h3>
+            <button class="detail-modal-close" onclick="closeDetailUserModal()" title="Tutup">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="detail-loading" id="detail-loading">
+            <div class="spinner"></div>
+            <p>Memuat data pengguna...</p>
+        </div>
+
+        <!-- Detail Content (hidden until loaded) -->
+        <div class="detail-content" id="detail-content" style="display:none;">
+            <!-- Profile Card -->
+            <div class="detail-profile-card">
+                <div class="detail-avatar" id="detail-avatar">U</div>
+                <div class="detail-profile-info">
+                    <h4 id="detail-name">-</h4>
+                    <p class="detail-email" id="detail-email">-</p>
+                </div>
+                <span class="role-badge" id="detail-role-badge">-</span>
+            </div>
+
+            <!-- Profile Stats -->
+            <div class="detail-stats-row">
+                <div class="detail-stat-item">
+                    <i data-lucide="phone" class="w-4 h-4"></i>
+                    <div>
+                        <span class="detail-stat-label">No. Telepon</span>
+                        <span class="detail-stat-value" id="detail-phone">-</span>
+                    </div>
+                </div>
+                <div class="detail-stat-item">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <div>
+                        <span class="detail-stat-label">Status</span>
+                        <span class="detail-stat-value" id="detail-status">-</span>
+                    </div>
+                </div>
+                <div class="detail-stat-item">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <div>
+                        <span class="detail-stat-label">Bergabung</span>
+                        <span class="detail-stat-value" id="detail-joined">-</span>
+                    </div>
+                </div>
+                <div class="detail-stat-item">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                    <div>
+                        <span class="detail-stat-label">Total Belanja</span>
+                        <span class="detail-stat-value accent" id="detail-total-spent">Rp 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Section -->
+            <div class="detail-transactions-section">
+                <h4><i data-lucide="receipt" class="w-4 h-4"></i> Riwayat Transaksi <span class="detail-tx-count" id="detail-tx-count">0</span></h4>
+
+                <div class="detail-table-wrap">
+                    <table class="admin-table detail-table" id="detail-tx-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>ID Transaksi</th>
+                                <th>Nama Event</th>
+                                <th>Tanggal</th>
+                                <th>Tiket</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-tx-body">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty transactions state -->
+                <div class="detail-tx-empty" id="detail-tx-empty" style="display:none;">
+                    <i data-lucide="inbox" class="w-6 h-6"></i>
+                    <p>Belum ada riwayat transaksi.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast Container -->
 <div id="admin-toast-container"></div>
 @endsection

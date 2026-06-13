@@ -437,6 +437,33 @@
     document.addEventListener('DOMContentLoaded', function () {
         loadAnalytics();
         if (window.lucide) window.lucide.createIcons();
+
+        // ── Export Dropdown Toggle ──
+        const exportBtn = document.getElementById('btn-export-toggle');
+        const exportMenu = document.getElementById('export-dropdown-menu');
+
+        if (exportBtn && exportMenu) {
+            exportBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                exportMenu.classList.toggle('open');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!exportMenu.contains(e.target) && !exportBtn.contains(e.target)) {
+                    exportMenu.classList.remove('open');
+                }
+            });
+
+            // Close dropdown after clicking an export option
+            exportMenu.querySelectorAll('.export-dropdown-item').forEach(function (item) {
+                item.addEventListener('click', function () {
+                    setTimeout(function () {
+                        exportMenu.classList.remove('open');
+                    }, 150);
+                });
+            });
+        }
     });
 
 })();

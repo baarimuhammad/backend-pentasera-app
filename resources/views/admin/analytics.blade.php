@@ -20,6 +20,29 @@
                 <div class="admin-breadcrumb"><a href="{{ url('/') }}">Home</a> / <a href="{{ url('/admin/dashboard') }}">Admin</a> / <span>Laporan & Analitik</span></div>
                 <h1>Laporan & Analitik</h1>
             </div>
+            <div class="export-dropdown-wrap" id="export-dropdown-wrap">
+                <button class="btn-admin-primary" id="btn-export-toggle" type="button">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Ekspor Laporan
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </button>
+                <div class="export-dropdown-menu" id="export-dropdown-menu">
+                    <a href="{{ url('/admin/export/csv') }}" class="export-dropdown-item" id="export-csv-link">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        <div>
+                            <div class="export-item-title">Ekspor ke CSV</div>
+                            <div class="export-item-desc">Download data dalam format spreadsheet</div>
+                        </div>
+                    </a>
+                    <a href="{{ url('/admin/export/pdf') }}" target="_blank" class="export-dropdown-item" id="export-pdf-link">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <div>
+                            <div class="export-item-title">Ekspor ke PDF</div>
+                            <div class="export-item-desc">Buka halaman cetak untuk print / save PDF</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- Overview Stats -->

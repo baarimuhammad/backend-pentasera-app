@@ -138,6 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Admin: Manage Users
         Route::get('/admin/users',                  [AdminController::class, 'users']);
+        Route::get('/admin/users/{id}/transactions',[AdminController::class, 'userTransactions']);
         Route::get('/admin/users/{id}',             [AdminController::class, 'showUser']);
         Route::patch('/admin/users/{id}',           [AdminController::class, 'updateUser']);
         Route::delete('/admin/users/{id}',          [AdminController::class, 'deleteUser']);
