@@ -20,9 +20,9 @@ class DashboardController extends Controller
      */
     public function stats(Request $request)
     {
-        $organizer = Organizer::where('user_id', $request->user()->id)->first();
+        $organizerIds = Organizer::where('user_id', $request->user()->id)->pluck('id');
 
-        if (!$organizer) {
+        if ($organizerIds->isEmpty()) {
             return $this->success([
                 'total_events'        => 0,
                 'total_events_active' => 0,
@@ -34,7 +34,7 @@ class DashboardController extends Controller
             ], 'Dashboard stats (belum ada organizer)');
         }
 
-        $events = Event::where('organizer_id', $organizer->id)
+        $events = Event::whereIn('organizer_id', $organizerIds)
             ->with('tickets')
             ->orderBy('event_datetime', 'desc')
             ->get();
@@ -43,7 +43,7 @@ class DashboardController extends Controller
         $totalEvents       = $events->count();
         $totalEventsActive = $events->filter(fn($e) => $e->event_status === 'published' && $e->event_datetime >= $now)->count();
 
-        // Collect all ticket IDs owned by this organizer
+        // Collect all ticket IDs owned by this user's organizers
         $ticketIds = $events->flatMap(fn($e) => $e->tickets->pluck('id'));
 
         // Total tickets sold = sum of detail_orders.jumlah for paid orders referencing these tickets
@@ -79,13 +79,13 @@ class DashboardController extends Controller
      */
     public function myEvents(Request $request)
     {
-        $organizer = Organizer::where('user_id', $request->user()->id)->first();
+        $organizerIds = Organizer::where('user_id', $request->user()->id)->pluck('id');
 
-        if (!$organizer) {
+        if ($organizerIds->isEmpty()) {
             return $this->success([], 'Belum ada event');
         }
 
-        $events = Event::where('organizer_id', $organizer->id)
+        $events = Event::whereIn('organizer_id', $organizerIds)
             ->with('tickets')
             ->orderBy('event_datetime', 'desc')
             ->get();

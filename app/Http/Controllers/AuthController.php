@@ -103,7 +103,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-        if ($user->role === 'creator') {
+        if (in_array($user->role, ['creator', 'admin'])) {
             $user->load('organizer');
         }
 

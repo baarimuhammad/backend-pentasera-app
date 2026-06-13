@@ -27,9 +27,6 @@
                 <a href="{{ url('/my-events') }}" class="nav-item creator-only">
                     <i data-lucide="calendar" class="w-5 h-5"></i> Event Saya
                 </a>
-                <a href="{{ url('/manage-access') }}" class="nav-item creator-only">
-                    <i data-lucide="users" class="w-5 h-5"></i> Kelola Akses
-                </a>
                 <a href="{{ url('/my-tickets') }}" class="nav-item user-only">
                     <i data-lucide="ticket" class="w-5 h-5"></i> Tiket Saya
                 </a>
@@ -99,7 +96,7 @@
                     <a href="{{ url('/my-events') }}" class="stat-link">Lihat →</a>
                 </div>
                 <div class="stat-value" id="dash-stat-events">0</div>
-                <div class="stat-unit">Event Aktif</div>
+                <div class="stat-unit" id="dash-stat-events-active">0 event aktif</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">

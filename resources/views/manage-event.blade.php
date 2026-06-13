@@ -25,9 +25,6 @@
                 <a href="{{ url('/my-events') }}" class="nav-item active creator-only">
                     <i data-lucide="calendar" class="w-5 h-5"></i> Event Saya
                 </a>
-                <a href="{{ url('/manage-access') }}" class="nav-item creator-only">
-                    <i data-lucide="users" class="w-5 h-5"></i> Kelola Akses
-                </a>
                 <a href="{{ url('/my-tickets') }}" class="nav-item user-only">
                     <i data-lucide="ticket" class="w-5 h-5"></i> Tiket Saya
                 </a>
@@ -376,6 +373,7 @@
     window.__eventData = @json($event);
     window.__eventStats = @json($stats);
     window.__recentOrders = @json($recentOrders);
+    window.__chartData = @json($chartData);
 </script>
 <script src="{{ asset('js/manage-event.js') }}"></script>
 @endpush

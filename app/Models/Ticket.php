@@ -12,12 +12,16 @@ class Ticket extends Model
         'harga',
         'kuota',
         'sisa_kuota',
+        'sale_start',
+        'sale_end',
     ];
 
     protected $casts = [
         'harga' => 'decimal:2',
         'kuota' => 'integer',
         'sisa_kuota' => 'integer',
+        'sale_start' => 'datetime',
+        'sale_end' => 'datetime',
     ];
 
     public function event()

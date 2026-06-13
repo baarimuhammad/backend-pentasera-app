@@ -112,9 +112,7 @@
                             <a href="{{ url('/my-events') }}" class="dropdown-item creator-only">
                                 <i data-lucide="calendar"></i> Event Saya
                             </a>
-                            <a href="{{ url('/manage-access') }}" class="dropdown-item creator-only">
-                                <i data-lucide="users"></i> Kelola Akses
-                            </a>
+
                             <a href="{{ url('/my-tickets') }}" class="dropdown-item user-only">
                                 <i data-lucide="ticket"></i> Tiket Saya
                             </a>
@@ -210,7 +208,9 @@
 
             if (loggedIn && user) {
                 const isCreator = user.role === 'creator';
+                const isAdmin = user.role === 'admin';
                 document.body.classList.toggle('is-creator', isCreator);
+                document.body.classList.toggle('is-admin', isAdmin);
 
                 // User name & avatar
                 const nameEl = document.getElementById('nav-user-name');
@@ -225,9 +225,21 @@
 
                 // Role label
                 const roleLabel = document.getElementById('dropdown-role-label');
-                if (roleLabel) roleLabel.innerText = isCreator ? 'Pembeli' : 'Penyelenggara';
+                if (roleLabel) {
+                    if (isAdmin) {
+                        roleLabel.innerText = 'Admin';
+                    } else {
+                        roleLabel.innerText = isCreator ? 'Pembeli' : 'Penyelenggara';
+                    }
+                }
+
+                // Hide role-switch header for admin
+                if (isAdmin) {
+                    const dropdownHeader = document.querySelector('.dropdown-header');
+                    if (dropdownHeader) dropdownHeader.style.display = 'none';
+                }
             } else {
-                document.body.classList.remove('is-creator');
+                document.body.classList.remove('is-creator', 'is-admin');
             }
         }
 

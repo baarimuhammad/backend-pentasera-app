@@ -49,21 +49,48 @@ function checkAuthState() {
 
     if (loggedIn && user) {
         const isCreator = user.role === 'creator';
+        const isAdmin = user.role === 'admin';
         document.body.classList.toggle('is-creator', isCreator);
+        document.body.classList.toggle('is-admin', isAdmin);
+
+        // Admin auto-redirect: if on a non-admin page, redirect to admin dashboard
+        if (isAdmin && !window.location.pathname.startsWith('/admin/') && !window.location.pathname.startsWith('/profile') && !window.location.pathname.startsWith('/settings') && !window.location.pathname.startsWith('/pusat-bantuan')) {
+            window.location.href = '/admin/dashboard';
+            return;
+        }
 
         const roleLabel = document.getElementById('dropdown-role-label');
-        if (roleLabel) roleLabel.innerText = isCreator ? 'Pembeli' : 'Penyelenggara';
+        if (roleLabel) {
+            if (isAdmin) {
+                roleLabel.innerText = 'Admin';
+            } else {
+                roleLabel.innerText = isCreator ? 'Pembeli' : 'Penyelenggara';
+            }
+        }
     } else {
-        document.body.classList.remove('is-creator');
+        document.body.classList.remove('is-creator', 'is-admin');
     }
 
-    // Update sidebar switch button text dynamically
-    const switchBtns = document.querySelectorAll('.switch-mode-btn span');
+    // Update sidebar switch button text dynamically — hide for admin
+    const switchBtns = document.querySelectorAll('.switch-mode-btn');
     if (switchBtns.length && user) {
         const isCreator = user && user.role === 'creator';
-        switchBtns.forEach(span => {
-            span.innerText = isCreator ? 'Beralih ke Pembeli' : 'Beralih ke Penyelenggara';
+        const isAdmin = user && user.role === 'admin';
+        switchBtns.forEach(btn => {
+            if (isAdmin) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = '';
+                const span = btn.querySelector('span');
+                if (span) span.innerText = isCreator ? 'Beralih ke Pembeli' : 'Beralih ke Penyelenggara';
+            }
         });
+    }
+
+    // Hide role-switch dropdown header for admin
+    if (user && user.role === 'admin') {
+        const dropdownHeader = document.querySelector('.dropdown-header');
+        if (dropdownHeader) dropdownHeader.style.display = 'none';
     }
 
     if (window.lucide) window.lucide.createIcons();
@@ -72,6 +99,11 @@ function checkAuthState() {
 async function toggleRole() {
     const user = typeof getUser === 'function' ? getUser() : null;
     if (!user) return;
+    // Admin cannot switch roles
+    if (user.role === 'admin') {
+        alert('Akun admin tidak dapat beralih mode.');
+        return;
+    }
     const targetRole = user.role === 'creator' ? 'buyer' : 'creator';
     try {
         const res = await apiPatch('/profile', { role: targetRole });
@@ -91,6 +123,11 @@ async function toggleRole() {
 async function toggleRoleAndRedirect() {
     const user = typeof getUser === 'function' ? getUser() : null;
     if (!user) return;
+    // Admin cannot switch roles
+    if (user.role === 'admin') {
+        alert('Akun admin tidak dapat beralih mode.');
+        return;
+    }
     const targetRole = user.role === 'creator' ? 'buyer' : 'creator';
     try {
         const res = await apiPatch('/profile', { role: targetRole });

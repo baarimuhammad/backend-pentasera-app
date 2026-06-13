@@ -296,18 +296,18 @@
     // Submit Event (API)
     // ============================================
     async function submitEvent(status) {
-        const namaEvent     = document.getElementById('input-nama-event')?.value.trim();
+        const namaEvent = document.getElementById('input-nama-event')?.value.trim();
         const kategoriEvent = document.getElementById('input-kategori-event')?.value;
         const penyelenggara = document.getElementById('input-penyelenggara')?.value.trim();
-        const datetime      = document.getElementById('input-datetime')?.value;
-        const lokasi        = document.getElementById('input-lokasi')?.value.trim();
-        const deskripsi     = document.getElementById('input-deskripsi')?.value.trim();
-        const bannerFile    = document.getElementById('banner-input')?.files[0];
+        const datetime = document.getElementById('input-datetime')?.value;
+        const lokasi = document.getElementById('input-lokasi')?.value.trim();
+        const deskripsi = document.getElementById('input-deskripsi')?.value.trim();
+        const bannerFile = document.getElementById('banner-input')?.files[0];
 
         // Validate required fields
         if (!namaEvent) { alert('Nama event wajib diisi!'); return; }
-        if (!datetime)  { alert('Tanggal & waktu wajib diisi!'); return; }
-        if (!lokasi)    { alert('Lokasi wajib diisi!'); return; }
+        if (!datetime) { alert('Tanggal & waktu wajib diisi!'); return; }
+        if (!lokasi) { alert('Lokasi wajib diisi!'); return; }
 
         // Show loading
         const btnDraft = document.getElementById('btn-save-draft');
@@ -402,7 +402,13 @@
                 }
             }
 
-            alert('Event berhasil dibuat!');
+            // Check if event went to pending_approval
+            const createdStatus = eventRes.data.event_status;
+            if (createdStatus === 'pending_approval') {
+                alert('Event berhasil dibuat! Event Anda akan ditinjau oleh admin sebelum dipublikasikan.');
+            } else {
+                alert('Event berhasil dibuat!');
+            }
             window.location.href = '/my-events';
 
         } catch (err) {

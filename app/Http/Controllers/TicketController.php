@@ -29,7 +29,9 @@ class TicketController extends Controller
             'event_id' => 'required|exists:events,id',
             'kategori' => 'required|string|max:50',
             'harga' => 'required|numeric',
-            'kuota' => 'required|integer|min:1'
+            'kuota' => 'required|integer|min:1',
+            'sale_start' => 'nullable|date',
+            'sale_end' => 'nullable|date|after_or_equal:sale_start',
         ]);
 
         $ticket = Ticket::create([
@@ -37,7 +39,9 @@ class TicketController extends Controller
             'kategori' => $validated['kategori'],
             'harga' => $validated['harga'],
             'kuota' => $validated['kuota'],
-            'sisa_kuota' => $validated['kuota']
+            'sisa_kuota' => $validated['kuota'],
+            'sale_start' => $validated['sale_start'] ?? null,
+            'sale_end' => $validated['sale_end'] ?? null,
         ]);
 
         return $this->success(
@@ -71,9 +75,11 @@ class TicketController extends Controller
             'kategori'  => 'sometimes|string|max:50',
             'harga'     => 'sometimes|numeric',
             'kuota'     => 'sometimes|integer|min:1',
+            'sale_start' => 'nullable|date',
+            'sale_end'   => 'nullable|date|after_or_equal:sale_start',
         ]);
 
-        $data = $request->only(['kategori', 'harga', 'kuota']);
+        $data = $request->only(['kategori', 'harga', 'kuota', 'sale_start', 'sale_end']);
 
         // If kuota is being updated, adjust sisa_kuota proportionally
         if (isset($data['kuota'])) {

@@ -19,6 +19,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\SettingsController;
 
+use App\Http\Controllers\AdminController;
+
 # ───────────────────────────────────────────
 # PUBLIC ROUTES (tanpa token)
 # ───────────────────────────────────────────
@@ -126,5 +128,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::get('/users',           [UserController::class, 'index']);
         Route::post('/users',          [UserController::class, 'store']);
+
+        // Admin: Event Approval
+        Route::get('/admin/pending-events',         [AdminController::class, 'pendingEvents']);
+        Route::post('/admin/events/{id}/approve',   [AdminController::class, 'approveEvent']);
+        Route::post('/admin/events/{id}/reject',    [AdminController::class, 'rejectEvent']);
+        Route::get('/admin/events',                 [AdminController::class, 'allEvents']);
+        Route::get('/admin/stats',                  [AdminController::class, 'stats']);
+
+        // Admin: Manage Users
+        Route::get('/admin/users',                  [AdminController::class, 'users']);
+        Route::get('/admin/users/{id}',             [AdminController::class, 'showUser']);
+        Route::patch('/admin/users/{id}',           [AdminController::class, 'updateUser']);
+        Route::delete('/admin/users/{id}',          [AdminController::class, 'deleteUser']);
+
+        // Admin: Analytics
+        Route::get('/admin/analytics',              [AdminController::class, 'analytics']);
     });
 });

@@ -15,12 +15,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Seed default Admin user
+        if (!User::where('email', 'admin@pentasera.com')->exists()) {
+            User::create([
+                'nama' => 'Admin Pentasera',
+                'email' => 'admin@pentasera.com',
+                'password' => bcrypt('admin123'),
+                'role' => 'admin',
+                'status' => 'aktif',
+                'no_hp' => '081234567890',
+                'email_verified_at' => now(),
+            ]);
+        }
 
-        User::factory()->create([
-            'nama' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        if (!User::where('email', 'test@example.com')->exists()) {
+            User::factory()->create([
+                'nama' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+        }
 
         $this->call(EventSeeder::class);
     }

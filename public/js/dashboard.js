@@ -18,7 +18,9 @@
                 const elTickets = document.getElementById('dash-stat-tickets');
                 const elRevenue = document.getElementById('dash-stat-revenue');
 
-                if (elEvents)  elEvents.textContent = d.total_events_active;
+                if (elEvents)  elEvents.textContent = d.total_events;
+                const elEventsActive = document.getElementById('dash-stat-events-active');
+                if (elEventsActive) elEventsActive.textContent = d.total_events_active + ' event aktif';
                 if (elTickets) elTickets.textContent = Number(d.total_tickets_sold).toLocaleString('id-ID');
                 if (elRevenue) elRevenue.textContent = d.revenue_formatted;
             }

@@ -1780,3 +1780,10 @@ input[name="gender"]:checked + div {
     background-color: rgba(184, 76, 43, 0.1) !important;
     color: var(--rust-deep) !important;
 }
+
+/* Admin Role Visibility Rules */
+.is-admin .creator-only,
+.is-admin .user-only {
+    display: none !important;
+}
+

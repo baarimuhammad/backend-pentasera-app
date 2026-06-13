@@ -154,9 +154,11 @@ class PageController extends Controller
 
         $stats = $this->calculateStats($event);
 
-        // Last 10 paid orders whose detail_orders reference this event's tickets
-        $ticketIds = $event->tickets->pluck('id');
+        // Tickets for the distribution chart in penjualan tab
+        $tickets = $event->tickets;
+        $ticketIds = $tickets->pluck('id');
 
+        // Recent orders for the JS window.__recentOrders
         $recentOrders = Order::where('status_order', 'paid')
             ->whereHas('detailOrders', function ($q) use ($ticketIds) {
                 $q->whereIn('ticket_id', $ticketIds);
@@ -166,8 +168,37 @@ class PageController extends Controller
             ->take(10)
             ->get();
 
-        return view('manage-event', compact('event', 'stats', 'recentOrders'))
-            ->with('transactions', $recentOrders);
+        // Transactions as DetailOrder items (for the penjualan partial & modals)
+        // The template accesses $transaction->order->user, $transaction->ticket, $transaction->subtotal
+        $transactions = DetailOrder::whereIn('ticket_id', $ticketIds)
+            ->whereHas('order', fn($q) => $q->where('status_order', 'paid'))
+            ->with(['order.user', 'ticket'])
+            ->orderBy('created_at', 'desc')
+            ->take(20)
+            ->get();
+
+        // Daily sales data for the chart (last 30 days)
+        $dailySales = Order::where('status_order', 'paid')
+            ->whereHas('detailOrders', fn($q) => $q->whereIn('ticket_id', $ticketIds))
+            ->where('created_at', '>=', now()->subDays(30))
+            ->selectRaw('DATE(tanggal_order) as date, COUNT(*) as orders, SUM(total_harga) as revenue')
+            ->groupByRaw('DATE(tanggal_order)')
+            ->orderBy('date')
+            ->get();
+
+        // Fill in missing days with zero values for a smooth chart
+        $chartData = collect();
+        for ($i = 29; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $existing = $dailySales->firstWhere('date', $date);
+            $chartData->push([
+                'date' => $date,
+                'orders' => $existing ? (int) $existing->orders : 0,
+                'revenue' => $existing ? (float) $existing->revenue : 0,
+            ]);
+        }
+
+        return view('manage-event', compact('event', 'stats', 'recentOrders', 'tickets', 'transactions', 'chartData'));
     }
 
     /**
@@ -206,13 +237,25 @@ class PageController extends Controller
         });
 
         // Daily sales (last 30 days)
-        $dailySales = Order::where('status_order', 'paid')
+        $dailySalesRaw = Order::where('status_order', 'paid')
             ->whereHas('detailOrders', fn($q) => $q->whereIn('ticket_id', $ticketIds))
             ->where('created_at', '>=', now()->subDays(30))
             ->selectRaw('DATE(tanggal_order) as date, COUNT(*) as orders, SUM(total_harga) as revenue')
             ->groupByRaw('DATE(tanggal_order)')
             ->orderBy('date')
             ->get();
+
+        // Fill in missing days with zero values for a smooth chart
+        $dailySales = collect();
+        for ($i = 29; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $existing = $dailySalesRaw->firstWhere('date', $date);
+            $dailySales->push([
+                'date' => $date,
+                'orders' => $existing ? (int) $existing->orders : 0,
+                'revenue' => $existing ? (float) $existing->revenue : 0,
+            ]);
+        }
 
         // Recent transactions (last 20 paid orders)
         $recentTransactions = Order::where('status_order', 'paid')
@@ -240,51 +283,13 @@ class PageController extends Controller
         return view('event-report', compact('event', 'stats', 'ticketsBreakdown', 'dailySales', 'recentTransactions'));
     }
 
-    /**
-     * Manage Access page — all events for dropdown.
-     */
-    public function manageAccess()
-    {
-        $events = Event::orderBy('event_datetime', 'desc')->get();
-
-        return view('manage-access', compact('events'));
-    }
 
     /**
-     * My Events page — only shows events belonging to the logged-in creator's organizer.
+     * My Events page — data loads via API (token-based auth).
      */
     public function myEvents()
     {
-        $activeEvents = collect();
-        $draftEvents  = collect();
-        $pastEvents   = collect();
-
-        $organizer = Organizer::where('user_id', auth()->id())->first();
-
-        if ($organizer) {
-            $events = Event::where('organizer_id', $organizer->id)
-                ->with('tickets')
-                ->orderBy('event_datetime', 'desc')
-                ->get();
-
-            $now = now();
-
-            $activeEvents = $events->filter(function ($event) use ($now) {
-                return $event->event_status === 'published'
-                    && $event->event_datetime >= $now;
-            });
-
-            $draftEvents = $events->filter(function ($event) {
-                return $event->event_status === 'draft';
-            });
-
-            $pastEvents = $events->filter(function ($event) use ($now) {
-                return $event->event_status === 'published'
-                    && $event->event_datetime < $now;
-            });
-        }
-
-        return view('my-events', compact('activeEvents', 'draftEvents', 'pastEvents'));
+        return view('my-events');
     }
 
     /**
@@ -311,15 +316,19 @@ class PageController extends Controller
     private function calculateStats(Event $event): array
     {
         $capacity  = $event->tickets->sum('kuota');
-        $sold      = $event->tickets->sum(fn($t) => $t->kuota - $t->sisa_kuota);
+        $ticketIds = $event->tickets->pluck('id');
+
+        // Calculate sold from actual paid orders (accurate source of truth)
+        $sold = (int) DetailOrder::whereIn('ticket_id', $ticketIds)
+            ->whereHas('order', fn($q) => $q->where('status_order', 'paid'))
+            ->sum('jumlah');
+
         $remaining = $capacity - $sold;
         $occupancy = $capacity > 0
             ? number_format(($sold / $capacity) * 100, 1) . '%'
             : '0%';
 
         // Revenue from paid orders that reference this event's tickets
-        $ticketIds = $event->tickets->pluck('id');
-
         $revenue = Order::where('status_order', 'paid')
             ->whereHas('detailOrders', function ($q) use ($ticketIds) {
                 $q->whereIn('ticket_id', $ticketIds);
@@ -328,7 +337,8 @@ class PageController extends Controller
 
         $revenueFormatted = 'Rp ' . number_format($revenue, 0, ',', '.');
 
-        return compact('capacity', 'sold', 'remaining', 'occupancy', 'revenue', 'revenueFormatted');
+        return compact('capacity', 'sold', 'remaining', 'occupancy', 'revenue', 'revenueFormatted')
+            + ['revenue_formatted' => $revenueFormatted];
     }
 
     /**

@@ -80,29 +80,52 @@ function renderSalesChart() {
         .attr('viewBox', `0 0 ${width} ${height}`)
         .attr('preserveAspectRatio', 'none');
 
-    const data = [15,28,25,35,30,45,40,55,50,48,60,65,75,70,85,80,78,90,95,110,105,120,115,130,125,145,140,155,150,148];
+    // Use real sales data from server, fallback to zeros if not available
+    const chartData = window.__chartData || [];
+    const data = chartData.map(d => d.revenue || 0);
+
+    // If all values are zero, show a flat line at the bottom
+    const maxVal = d3.max(data) || 1;
 
     const xScale = d3.scaleLinear().domain([0, data.length - 1]).range([padding, width - padding]);
-    const yScale = d3.scaleLinear().domain([0, d3.max(data)]).range([height - padding, padding]);
+    const yScale = d3.scaleLinear().domain([0, maxVal]).range([height - padding, padding]);
 
     const line = d3.line().x((d, i) => xScale(i)).y(d => yScale(d)).curve(d3.curveMonotoneX);
     const area = d3.area().x((d, i) => xScale(i)).y0(height).y1(d => yScale(d)).curve(d3.curveMonotoneX);
 
     const gradient = svg.append('defs').append('linearGradient')
-        .attr('id', 'chart-gradient').attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
-    gradient.append('stop').attr('offset','0%').attr('stop-color','#BD3B2E').attr('stop-opacity',0.1);
-    gradient.append('stop').attr('offset','100%').attr('stop-color','#BD3B2E').attr('stop-opacity',0);
+        .attr('id', 'chart-gradient').attr('x1', '0%').attr('y1', '0%').attr('x2', '0%').attr('y2', '100%');
+    gradient.append('stop').attr('offset', '0%').attr('stop-color', '#BD3B2E').attr('stop-opacity', 0.1);
+    gradient.append('stop').attr('offset', '100%').attr('stop-color', '#BD3B2E').attr('stop-opacity', 0);
 
-    svg.append('path').datum(data).attr('fill','url(#chart-gradient)').attr('d', area);
-    svg.append('path').datum(data).attr('fill','none').attr('stroke','#BD3B2E').attr('stroke-width',3).attr('d', line);
+    svg.append('path').datum(data).attr('fill', 'url(#chart-gradient)').attr('d', area);
+    svg.append('path').datum(data).attr('fill', 'none').attr('stroke', '#BD3B2E').attr('stroke-width', 3).attr('d', line);
 
-    const pointsToShow = [0,7,14,21,28,29];
+    // Show dots at weekly intervals + last point
+    const pointsToShow = [0, 7, 14, 21, Math.min(28, data.length - 1), data.length - 1]
+        .filter((v, i, a) => a.indexOf(v) === i); // deduplicate
     svg.selectAll('.dot')
-        .data(data.filter((d, i) => pointsToShow.includes(i)))
-        .enter().append('circle').attr('class','dot')
-        .attr('cx', (d, i) => xScale(pointsToShow[i]))
-        .attr('cy', d => yScale(d))
-        .attr('r', 4).attr('fill','white').attr('stroke','#BD3B2E').attr('stroke-width',2);
+        .data(pointsToShow.map(i => ({ value: data[i], index: i })))
+        .enter().append('circle').attr('class', 'dot')
+        .attr('cx', d => xScale(d.index))
+        .attr('cy', d => yScale(d.value))
+        .attr('r', 4).attr('fill', 'white').attr('stroke', '#BD3B2E').attr('stroke-width', 2);
+
+    // Populate x-axis date labels
+    const labelsContainer = document.getElementById('chart-x-labels');
+    if (labelsContainer && chartData.length > 0) {
+        labelsContainer.innerHTML = '';
+        const labelIndices = [0, 7, 14, 21, chartData.length - 1]
+            .filter((v, i, a) => a.indexOf(v) === i);
+        labelIndices.forEach(idx => {
+            const dateStr = chartData[idx]?.date || '';
+            const d = new Date(dateStr);
+            const label = isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+            const span = document.createElement('span');
+            span.textContent = label;
+            labelsContainer.appendChild(span);
+        });
+    }
 }
 
 // ── Tab Switching ──
@@ -110,9 +133,9 @@ function switchManageTab(tabId) {
     document.querySelectorAll('.event-tab').forEach(tab => {
         tab.classList.remove('active');
         const t = tab.innerText.toLowerCase();
-        if ((tabId==='info' && t.includes('informasi')) ||
-            (tabId==='tiket' && t.includes('tiket')) ||
-            (tabId==='penjualan' && t.includes('laporan'))) {
+        if ((tabId === 'info' && t.includes('informasi')) ||
+            (tabId === 'tiket' && t.includes('tiket')) ||
+            (tabId === 'penjualan' && t.includes('laporan'))) {
             tab.classList.add('active');
         }
     });
@@ -218,17 +241,17 @@ function switchModalTab(tab) {
     if (!detailTab || !salesTab || !detailContent || !salesContent) return;
 
     if (tab === 'detail') {
-        detailTab.classList.add('border-rust','text-rust');
-        detailTab.classList.remove('border-transparent','text-gray-400');
-        salesTab.classList.remove('border-rust','text-rust');
-        salesTab.classList.add('border-transparent','text-gray-400');
+        detailTab.classList.add('border-rust', 'text-rust');
+        detailTab.classList.remove('border-transparent', 'text-gray-400');
+        salesTab.classList.remove('border-rust', 'text-rust');
+        salesTab.classList.add('border-transparent', 'text-gray-400');
         detailContent.classList.remove('hidden');
         salesContent.classList.add('hidden');
     } else {
-        salesTab.classList.add('border-rust','text-rust');
-        salesTab.classList.remove('border-transparent','text-gray-400');
-        detailTab.classList.remove('border-rust','text-rust');
-        detailTab.classList.add('border-transparent','text-gray-400');
+        salesTab.classList.add('border-rust', 'text-rust');
+        salesTab.classList.remove('border-transparent', 'text-gray-400');
+        detailTab.classList.remove('border-rust', 'text-rust');
+        detailTab.classList.add('border-transparent', 'text-gray-400');
         salesContent.classList.remove('hidden');
         detailContent.classList.add('hidden');
     }
@@ -580,10 +603,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const modal = document.getElementById('modal-tiket');
     if (modal) {
-        modal.addEventListener('input', function(e) {
+        modal.addEventListener('input', function (e) {
             if (e.target.matches('input, textarea')) validateTicketForm();
         });
-        modal.addEventListener('change', function(e) {
+        modal.addEventListener('change', function (e) {
             if (e.target.matches('input, textarea, select')) validateTicketForm();
         });
     }

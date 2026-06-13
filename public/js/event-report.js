@@ -21,22 +21,13 @@ function renderReportChart() {
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("preserveAspectRatio", "xMidYMid meet");
 
-    // Use real daily_sales data if available, otherwise fallback
+    // Use real daily_sales data from PHP (window.__dailySales)
     const rawData = window.__dailySales || [];
-    let data;
-    let dateLabels;
-
-    if (rawData.length > 0) {
-        data = rawData.map(d => parseInt(d.orders) || 0);
-        dateLabels = rawData.map(d => {
-            const dt = new Date(d.date);
-            return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
-        });
-    } else {
-        // Fallback dummy data
-        data = [10, 25, 45, 30, 60, 85, 92, 110, 140, 120, 180, 210, 190, 250, 310, 380, 420, 482];
-        dateLabels = data.map((_, i) => `Hari ${i + 1}`);
-    }
+    let data = rawData.map(d => parseInt(d.orders) || 0);
+    let dateLabels = rawData.map(d => {
+        const dt = new Date(d.date);
+        return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+    });
 
     if (data.length === 0) {
         svg.append("text")

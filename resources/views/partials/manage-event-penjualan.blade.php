@@ -71,8 +71,7 @@
             <div class="h-80 w-full relative">
                 <div id="chart-container" class="absolute inset-0 w-full h-full"></div>
             </div>
-            <div class="flex justify-between items-center mt-10 text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">
-                <span>01 JAN</span><span>07 JAN</span><span>14 JAN</span><span>21 JAN</span><span>28 JAN</span><span>30 JAN</span>
+            <div id="chart-x-labels" class="flex justify-between items-center mt-10 text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">
             </div>
         </div>
 

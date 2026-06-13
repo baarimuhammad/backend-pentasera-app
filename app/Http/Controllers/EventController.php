@@ -65,7 +65,7 @@ class EventController extends Controller
             'event_datetime'=> 'required|date',
             'kategori_event'=> 'nullable|string|max:100',
             'image'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'event_status'  => 'sometimes|in:draft,published',
+            'event_status'  => 'sometimes|in:draft,published,pending_approval',
         ]);
 
         // Verify ownership: organizer must belong to this creator
@@ -74,13 +74,21 @@ class EventController extends Controller
             return $this->error('Anda tidak memiliki akses ke organizer ini', 403);
         }
 
+        // Tentukan status event
+        $status = $request->input('event_status', 'draft');
+
+        // Non-admin: jika ingin publish, otomatis masuk pending_approval
+        if ($request->user()->role !== 'admin' && $status === 'published') {
+            $status = 'pending_approval';
+        }
+
         $data = [
             'organizer_id'  => $request->organizer_id,
             'nama_event'    => $request->nama_event,
             'deskripsi'     => $request->deskripsi,
             'lokasi'        => $request->lokasi,
             'event_datetime'=> $request->event_datetime,
-            'event_status'  => $request->input('event_status', 'draft'),
+            'event_status'  => $status,
             'kategori_event'=> $request->kategori_event,
         ];
 
@@ -92,7 +100,11 @@ class EventController extends Controller
 
         $event = Event::create($data);
 
-        return $this->success($event->load(['organizer', 'tickets']), 'Event berhasil dibuat', 201);
+        $message = $status === 'pending_approval'
+            ? 'Event berhasil dibuat dan menunggu persetujuan admin'
+            : 'Event berhasil dibuat';
+
+        return $this->success($event->load(['organizer', 'tickets']), $message, 201);
     }
 
     public function show($id)
@@ -115,7 +127,7 @@ class EventController extends Controller
             'deskripsi'     => 'nullable|string',
             'lokasi'        => 'sometimes|string|max:150',
             'event_datetime'=> 'sometimes|date',
-            'event_status'  => 'sometimes|in:draft,published,cancelled',
+            'event_status'  => 'sometimes|in:draft,pending_approval,published,cancelled',
             'kategori_event'=> 'nullable|string|max:100',
             'image'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
@@ -123,6 +135,11 @@ class EventController extends Controller
         $data = $request->only([
             'nama_event', 'deskripsi', 'lokasi', 'event_datetime', 'event_status', 'kategori_event'
         ]);
+
+        // Non-admin: jika mencoba set published, otomatis ke pending_approval
+        if ($request->user()->role !== 'admin' && isset($data['event_status']) && $data['event_status'] === 'published') {
+            $data['event_status'] = 'pending_approval';
+        }
 
         // Handle image upload
         if ($request->hasFile('image')) {

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\AdminController;
 
 // Email Verification (web — signed URL)
 Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verifyFromEmail'])
@@ -21,13 +22,17 @@ Route::get('/order/{event}', [PageController::class, 'order']);
 Route::get('/checkout', [PageController::class, 'checkout']);
 Route::get('/payment', [PageController::class, 'payment']);
 
-// Dashboard & Management (Creator Only — auth dibekukan sementara)
+// Dashboard & Management (Creator Only)
 Route::get('/dashboard', [PageController::class, 'dashboard']);
 Route::get('/my-events', [PageController::class, 'myEvents']);
 Route::get('/create-event', [PageController::class, 'createEvent']);
-Route::get('/manage-access', [PageController::class, 'manageAccess']);
 Route::get('/manage-event/{event}', [PageController::class, 'manageEvent']);
 Route::get('/event-report/{event}', [PageController::class, 'eventReport']);
+
+// Admin Dashboard
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+Route::get('/admin/users', [AdminController::class, 'manageUsersPage']);
+Route::get('/admin/analytics', [AdminController::class, 'analyticsPage']);
 
 // Auth Support
 Route::get('/reset-password', function () { return view('reset-password'); });
