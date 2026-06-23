@@ -27,6 +27,13 @@ class User extends Authenticatable
         'avatar_url',
     ];
 
+    protected $appends = ['avatar_full_url'];
+
+    public function getAvatarFullUrlAttribute(): ?string
+    {
+        return $this->avatar_url ? asset('storage/' . $this->avatar_url) : null;
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

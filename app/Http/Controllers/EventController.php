@@ -169,4 +169,34 @@ class EventController extends Controller
 
         return $this->success(null, 'Event berhasil dihapus');
     }
+
+    public function uploadImage(Request $request, $id)
+{
+    $request->validate([
+        'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+    ]);
+
+    $event = Event::findOrFail($id);
+
+    // Pastikan hak akses (opsional, sesuaikan dengan logic kepemilikan Anda)
+    $organizer = $event->organizer;
+    if ($request->user()->role !== 'admin' && $organizer->user_id !== $request->user()->id) {
+        return $this->error('Anda tidak memiliki akses', 403);
+    }
+
+    if ($request->hasFile('image')) {
+        // Hapus gambar lama jika ada
+        if ($event->image_url) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($event->image_url);
+        }
+        // Simpan gambar baru
+        $path = $request->file('image')->store('event-banners', 'public');
+        $event->update(['image_url' => $path]);
+
+        return $this->success($event->fresh(), 'Gambar event berhasil diperbarui');
+    }
+
+    return $this->error('File gambar tidak ditemukan', 400);
+}
+
 }

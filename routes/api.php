@@ -98,6 +98,7 @@ Route::middleware('auth:sanctum')->group(function () {
     # ───────────────────────────────────────────
     Route::middleware('role:creator,admin')->group(function () {
         Route::post('/events',          [EventController::class, 'store']);
+        Route::post('/events/{id}/image', [EventController::class, 'uploadImage']);
         Route::patch('/events/{id}',    [EventController::class, 'update']);
         Route::post('/events/{id}/update', [EventController::class, 'update']);
         Route::delete('/events/{id}',   [EventController::class, 'destroy']);
