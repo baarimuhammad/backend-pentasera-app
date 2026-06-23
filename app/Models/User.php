@@ -31,7 +31,16 @@ class User extends Authenticatable
 
     public function getAvatarFullUrlAttribute(): ?string
     {
-        return $this->avatar_url ? asset('storage/' . $this->avatar_url) : null;
+        if (!$this->avatar_url) return null;
+
+        // If already a full URL, return as-is
+        if (str_starts_with($this->avatar_url, 'http://') || str_starts_with($this->avatar_url, 'https://')) {
+            return $this->avatar_url;
+        }
+
+        // Use APP_URL from env (set to Railway URL in production)
+        $appUrl = rtrim(config('app.url'), '/');
+        return $appUrl . '/storage/' . $this->avatar_url;
     }
 
     /**

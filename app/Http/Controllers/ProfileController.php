@@ -94,7 +94,7 @@ class ProfileController extends Controller
 
         return $this->success([
             'avatar_url' => $path,
-            'avatar_full_url' => asset('storage/' . $path),
+            'avatar_full_url' => rtrim(config('app.url'), '/') . '/storage/' . $path,
         ], 'Avatar berhasil diupload');
     }
 }

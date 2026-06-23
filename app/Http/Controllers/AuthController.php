@@ -42,7 +42,9 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'no_hp' => $user->no_hp,
                 'avatar_url' => $user->avatar_url,
-                'avatar_full_url' => $user->avatar_url ? asset('storage/' . $user->avatar_url) : null,
+                'avatar_full_url' => $user->avatar_url
+                    ? rtrim(config('app.url'), '/') . '/storage/' . $user->avatar_url
+                    : null,
                 'created_at' => $user->created_at,
             ],
         ], 'Registrasi berhasil! Silakan login.', 201);
@@ -83,7 +85,9 @@ class AuthController extends Controller
                 'role'  => $user->role,
                 'no_hp' => $user->no_hp,
                 'avatar_url' => $user->avatar_url,
-                'avatar_full_url' => $user->avatar_url ? asset('storage/' . $user->avatar_url) : null,
+                'avatar_full_url' => $user->avatar_url
+                    ? rtrim(config('app.url'), '/') . '/storage/' . $user->avatar_url
+                    : null,
                 'created_at' => $user->created_at,
             ]
         ], 'Login berhasil');
@@ -118,7 +122,9 @@ class AuthController extends Controller
                 'status' => $user->status,
                 'no_hp' => $user->no_hp,
                 'avatar_url' => $user->avatar_url,
-                'avatar_full_url' => $user->avatar_url ? asset('storage/' . $user->avatar_url) : null,
+                'avatar_full_url' => $user->avatar_url
+                    ? rtrim(config('app.url'), '/') . '/storage/' . $user->avatar_url
+                    : null,
                 'email_verified' => $user->hasVerifiedEmail(),
                 'email_verified_at' => $user->email_verified_at,
                 'created_at' => $user->created_at,
