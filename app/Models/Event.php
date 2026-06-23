@@ -39,12 +39,14 @@ class Event extends Model
             return $path;
         }
 
+        $appUrl = rtrim(config('app.url'), '/');
+
         // Check if stored via Storage (e.g., event-banners/...)
         if ($this->image_url && !str_starts_with($this->image_url, 'assets/')) {
-            return asset('storage/' . $this->image_url);
+            return $appUrl . '/storage/' . $this->image_url;
         }
 
-        return asset($path);
+        return $appUrl . '/' . $path;
     }
 
     public function organizer()

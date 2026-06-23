@@ -176,8 +176,8 @@ class EventController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('event-banners', 'public');
-            $data['image_url'] = $path;
+            $storedPath = $request->file('image')->store('pentasera/event-banners', 'cloudinary');
+            $data['image_url'] = Storage::disk('cloudinary')->url($storedPath);
         }
 
         $event = Event::create($data);
@@ -240,12 +240,8 @@ class EventController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($event->image_url) {
-                Storage::disk('public')->delete($event->image_url);
-            }
-            $path = $request->file('image')->store('event-banners', 'public');
-            $data['image_url'] = $path;
+            $storedPath = $request->file('image')->store('pentasera/event-banners', 'cloudinary');
+            $data['image_url'] = Storage::disk('cloudinary')->url($storedPath);
         }
 
         $event->update($data);
@@ -266,4 +262,31 @@ class EventController extends Controller
 
         return $this->success(null, 'Event berhasil dihapus');
     }
+
+    public function uploadImage(Request $request, $id)
+{
+    $request->validate([
+        'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+    ]);
+
+    $event = Event::findOrFail($id);
+
+    // Pastikan hak akses (opsional, sesuaikan dengan logic kepemilikan Anda)
+    $organizer = $event->organizer;
+    if ($request->user()->role !== 'admin' && $organizer->user_id !== $request->user()->id) {
+        return $this->error('Anda tidak memiliki akses', 403);
+    }
+
+    if ($request->hasFile('image')) {
+        // Simpan gambar baru ke Cloudinary
+        $storedPath = $request->file('image')->store('pentasera/event-banners', 'cloudinary');
+        $uploadedFileUrl = Storage::disk('cloudinary')->url($storedPath);
+        $event->update(['image_url' => $uploadedFileUrl]);
+
+        return $this->success($event->fresh(), 'Gambar event berhasil diperbarui');
+    }
+
+    return $this->error('File gambar tidak ditemukan', 400);
+}
+
 }

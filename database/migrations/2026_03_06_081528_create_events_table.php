@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
             $table->string('lokasi', 150);
             $table->dateTime('event_datetime');
-            $table->enum('event_status', ['draft', 'published', 'ended', 'cancelled'])->default('draft');
+            $table->string('event_status')->default('draft'); // string untuk kompatibilitas MySQL, PostgreSQL, dan SQLite
             $table->timestamps();
         });
     }

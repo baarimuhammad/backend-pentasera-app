@@ -27,6 +27,22 @@ class User extends Authenticatable
         'avatar_url',
     ];
 
+    protected $appends = ['avatar_full_url'];
+
+    public function getAvatarFullUrlAttribute(): ?string
+    {
+        if (!$this->avatar_url) return null;
+
+        // If already a full URL, return as-is
+        if (str_starts_with($this->avatar_url, 'http://') || str_starts_with($this->avatar_url, 'https://')) {
+            return $this->avatar_url;
+        }
+
+        // Use APP_URL from env (set to Railway URL in production)
+        $appUrl = rtrim(config('app.url'), '/');
+        return $appUrl . '/storage/' . $this->avatar_url;
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
