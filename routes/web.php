@@ -35,6 +35,7 @@ Route::get('/admin/users', [AdminController::class, 'manageUsersPage']);
 Route::get('/admin/analytics', [AdminController::class, 'analyticsPage']);
 Route::get('/admin/export/csv', [AdminController::class, 'exportCsv']);
 Route::get('/admin/export/pdf', [AdminController::class, 'analyticsReport']);
+Route::get('/admin/event-review/{id}', [AdminController::class, 'eventReviewPage']);
 
 // Auth Support
 Route::get('/reset-password', function () { return view('reset-password'); });

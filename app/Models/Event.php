@@ -15,10 +15,15 @@ class Event extends Model
         'event_status',
         'image_url',
         'kategori_event',
+        'max_ticket_per_transaction',
+        'one_email_one_transaction',
+        'single_identity_per_ticket',
     ];
 
     protected $casts = [
-        'event_datetime' => 'datetime',
+        'event_datetime'             => 'datetime',
+        'one_email_one_transaction'  => 'boolean',
+        'single_identity_per_ticket' => 'boolean',
     ];
 
     protected $appends = ['image_src'];

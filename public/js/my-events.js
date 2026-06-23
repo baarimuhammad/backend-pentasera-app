@@ -47,6 +47,10 @@
             ev.event_status === 'published' && new Date(ev.event_datetime) >= now
         );
 
+        const pendingEvents = events.filter(ev =>
+            ev.event_status === 'pending_approval'
+        );
+
         const draftEvents = events.filter(ev =>
             ev.event_status === 'draft'
         );
@@ -57,15 +61,17 @@
 
         // Update counts
         updateCount('count-aktif', activeEvents.length);
+        updateCount('count-pending', pendingEvents.length);
         updateCount('count-draft', draftEvents.length);
         updateCount('count-lalu', pastEvents.length);
 
         // Update sidebar badge
         const badge = document.getElementById('sidebar-event-count');
-        if (badge) badge.textContent = activeEvents.length + draftEvents.length;
+        if (badge) badge.textContent = activeEvents.length + pendingEvents.length + draftEvents.length;
 
         // Render grids
         renderActiveGrid(activeEvents);
+        renderPendingGrid(pendingEvents);
         renderDraftGrid(draftEvents);
         renderPastGrid(pastEvents);
 
@@ -149,6 +155,61 @@
         `;
 
         grid.innerHTML = html;
+    }
+
+    /**
+     * Render Pending Approval Events tab.
+     */
+    function renderPendingGrid(events) {
+        const grid = document.getElementById('grid-pending');
+        if (!grid) return;
+
+        if (events.length === 0) {
+            grid.innerHTML = `
+                <div class="text-center py-10 text-gray-400 col-span-full">
+                    <i data-lucide="clock" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                    <p class="font-bold">Tidak ada event menunggu approval</p>
+                    <p class="text-sm mt-1">Event yang dikirim untuk review akan muncul di sini</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = events.map(ev => {
+            const dateStr = formatDate(ev.event_datetime);
+
+            return `
+                <div class="event-dashboard-card" data-name="${escHtml(ev.nama_event)}">
+                    <div class="event-card-img" style="filter: saturate(0.7);">
+                        <img src="${ev.image_src}" alt="${escHtml(ev.nama_event)}" onerror="this.src='/assets/hero-banner.jpg'">
+                        <span class="event-status-badge" style="background: #d97706;">Menunggu Approval</span>
+                    </div>
+                    <div class="event-card-body">
+                        <h3 class="event-card-title">${escHtml(ev.nama_event)}</h3>
+                        <div class="event-card-meta">
+                            <div class="meta-item">
+                                <label>Tanggal Event</label>
+                                <span>${dateStr}</span>
+                            </div>
+                            <div class="meta-item">
+                                <label>Status</label>
+                                <span>Menunggu Review Admin</span>
+                            </div>
+                        </div>
+                        <div class="event-card-footer">
+                            <div class="status-indicator" style="color: #d97706;">
+                                <div class="status-dot" style="background: #d97706;"></div>
+                                <span>PENDING</span>
+                            </div>
+                            <a href="/manage-event/${ev.id}" class="kelola-link">
+                                Lihat Detail
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     /**
@@ -264,7 +325,7 @@
      * Show error in all grids.
      */
     function showError(message) {
-        ['grid-aktif', 'grid-draft', 'grid-lalu'].forEach(id => {
+        ['grid-aktif', 'grid-pending', 'grid-draft', 'grid-lalu'].forEach(id => {
             const grid = document.getElementById(id);
             if (grid) {
                 grid.innerHTML = `
@@ -307,6 +368,7 @@
             tab.classList.remove('active');
             const text = tab.innerText.toLowerCase();
             if ((tabId === 'aktif' && text.includes('aktif')) ||
+                (tabId === 'pending' && text.includes('approval')) ||
                 (tabId === 'draft' && text.includes('draft')) ||
                 (tabId === 'lalu'  && text.includes('lalu'))) {
                 tab.classList.add('active');

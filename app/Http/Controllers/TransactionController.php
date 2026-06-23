@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DetailOrder;
 use App\Models\ETicket;
+use App\Models\Event;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Ticket;
@@ -33,6 +34,46 @@ class TransactionController extends Controller
             'buyer_info.no_ktp'        => 'required|string|max:20',
             'metode_pembayaran'        => 'required|in:gopay,ovo,dana,shopeepay,qris,bni,bca,mandiri,bri',
         ]);
+
+        // ── Enforce event settings ──────────────────────────────────
+        // Determine the event from the first ticket
+        $firstTicket = Ticket::findOrFail($validated['items'][0]['ticket_id']);
+        $event = $firstTicket->event;
+
+        if (!$event) {
+            return $this->error('Event tidak ditemukan', 404);
+        }
+
+        // 1. Max Ticket Per Transaction
+        $totalQty = array_sum(array_column($validated['items'], 'jumlah'));
+        $maxPerTx = $event->max_ticket_per_transaction ?? 5;
+        if ($totalQty > $maxPerTx) {
+            return $this->error(
+                "Maksimal {$maxPerTx} tiket per transaksi. Anda mencoba membeli {$totalQty} tiket.",
+                422
+            );
+        }
+
+        // 2. One Email, One Transaction
+        if ($event->one_email_one_transaction) {
+            $buyerEmail = $validated['buyer_info']['email'];
+            $ticketIds = $event->tickets->pluck('id')->toArray();
+
+            // Check if this email already has a paid/pending order for this event
+            $existingOrder = Order::where('user_id', auth()->id())
+                ->whereIn('status_order', ['paid', 'pending'])
+                ->whereHas('detailOrders', function ($q) use ($ticketIds) {
+                    $q->whereIn('ticket_id', $ticketIds);
+                })
+                ->exists();
+
+            if ($existingOrder) {
+                return $this->error(
+                    'Satu email hanya boleh melakukan satu kali transaksi untuk event ini.',
+                    422
+                );
+            }
+        }
 
         try {
             $result = DB::transaction(function () use ($validated, $request) {

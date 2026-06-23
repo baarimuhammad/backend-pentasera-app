@@ -170,6 +170,8 @@ function openModal(id, type) {
         document.getElementById('ticket-desc').value = '';
         document.getElementById('ticket-start-date').value = '';
         document.getElementById('ticket-end-date').value = '';
+        document.getElementById('ticket-start-time').value = '09:00';
+        document.getElementById('ticket-end-time').value = '18:00';
 
         if (type === 'free') {
             if (priceField) priceField.classList.add('hidden');
@@ -179,7 +181,7 @@ function openModal(id, type) {
             if (btnCreate) btnCreate.textContent = 'Simpan Tiket Berbayar';
         }
 
-        // If editing, pre-fill from the existing row
+        // If editing, pre-fill from the existing row and ticket data
         if (currentAction === 'edit' && editingRow) {
             const cells = editingRow.querySelectorAll('td');
             if (cells.length >= 5) {
@@ -189,6 +191,29 @@ function openModal(id, type) {
                     document.getElementById('ticket-price').value = cells[1].textContent.trim();
                 }
             }
+
+            // Pre-fill sale dates and times from ticket data in window.__eventData
+            const ticketId = editingRow.dataset.ticketId;
+            if (ticketId && window.__eventData && window.__eventData.tickets) {
+                const ticketData = window.__eventData.tickets.find(t => String(t.id) === String(ticketId));
+                if (ticketData) {
+                    if (ticketData.sale_start) {
+                        const startDt = new Date(ticketData.sale_start);
+                        if (!isNaN(startDt.getTime())) {
+                            document.getElementById('ticket-start-date').value = startDt.toISOString().slice(0, 10);
+                            document.getElementById('ticket-start-time').value = startDt.toTimeString().slice(0, 5);
+                        }
+                    }
+                    if (ticketData.sale_end) {
+                        const endDt = new Date(ticketData.sale_end);
+                        if (!isNaN(endDt.getTime())) {
+                            document.getElementById('ticket-end-date').value = endDt.toISOString().slice(0, 10);
+                            document.getElementById('ticket-end-time').value = endDt.toTimeString().slice(0, 5);
+                        }
+                    }
+                }
+            }
+
             if (btnCreate) btnCreate.textContent = type === 'free' ? 'Simpan Perubahan' : 'Simpan Perubahan';
         }
 
@@ -275,14 +300,15 @@ function handleTicketAction(action, category, btnEl) {
         editingRow = null;
     }
 
-    section.classList.remove('hidden');
+    // For edit mode, directly open the modal to reduce confusion
     if (action === 'edit') {
-        if (title) title.textContent = 'Ubah Kategori Tiket';
-        if (btnText) btnText.textContent = 'Lanjut Ubah Detail Tiket';
-    } else {
-        if (title) title.textContent = 'Tambah Kategori Tiket';
-        if (btnText) btnText.textContent = 'Lanjut Atur Detail Tiket';
+        openModal('modal-tiket', category);
+        return;
     }
+
+    section.classList.remove('hidden');
+    if (title) title.textContent = 'Tambah Kategori Tiket';
+    if (btnText) btnText.textContent = 'Lanjut Atur Detail Tiket';
     setTicketCategory(category);
     setTimeout(() => { section.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
 }
@@ -353,7 +379,56 @@ function validateTicketForm() {
     if (btnCreate) {
         const hasStart = startDate && startDate.value;
         const hasEnd = endDate && endDate.value;
-        const isAllValid = isDetailValid && hasStart && hasEnd;
+        const startTime = document.getElementById('ticket-start-time');
+        const endTime = document.getElementById('ticket-end-time');
+        const hasStartTime = startTime && startTime.value;
+        const hasEndTime = endTime && endTime.value;
+
+        // Validate that start is in the future and end is after start
+        let dateValid = true;
+        let dateErrorMsg = '';
+        const dateErrorEl = document.getElementById('manage-date-validation-error');
+        const now = new Date();
+        if (hasStart && hasStartTime) {
+            const startDT = new Date(startDate.value + 'T' + startTime.value);
+            if (startDT <= now) {
+                dateValid = false;
+                dateErrorMsg = 'Waktu mulai harus lebih dari waktu sekarang';
+            }
+        }
+        if (dateValid && hasStart && hasEnd && hasStartTime && hasEndTime) {
+            const startDateTime = startDate.value + 'T' + startTime.value;
+            const endDateTime = endDate.value + 'T' + endTime.value;
+            if (endDateTime <= startDateTime) {
+                dateValid = false;
+                dateErrorMsg = 'Waktu berakhir harus lebih lambat dari waktu mulai';
+            }
+        }
+        if (dateValid && hasEnd && hasEndTime) {
+            const endDT = new Date(endDate.value + 'T' + endTime.value);
+            if (endDT <= now) {
+                dateValid = false;
+                dateErrorMsg = 'Waktu berakhir harus lebih dari waktu sekarang';
+            }
+        }
+
+        if (!dateValid) {
+            if (!dateErrorEl) {
+                const errorDiv = document.createElement('div');
+                errorDiv.id = 'manage-date-validation-error';
+                errorDiv.className = 'flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl mt-4 text-red-600 text-xs font-bold';
+                errorDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> ' + dateErrorMsg;
+                const salesContent = document.getElementById('modal-content-sales');
+                const spaceDiv = salesContent ? salesContent.querySelector('.space-y-8') : null;
+                if (spaceDiv) spaceDiv.appendChild(errorDiv);
+            } else {
+                dateErrorEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> ' + dateErrorMsg;
+            }
+        } else {
+            if (dateErrorEl) dateErrorEl.remove();
+        }
+
+        const isAllValid = isDetailValid && hasStart && hasEnd && hasStartTime && hasEndTime && dateValid;
 
         if (isAllValid) {
             btnCreate.disabled = false;
@@ -419,6 +494,23 @@ async function saveEventChanges() {
         if (lokasi) formData.append('lokasi', lokasi);
         if (deskripsi !== undefined) formData.append('deskripsi', deskripsi || '');
 
+        // Pengaturan Tambahan
+        const maxTicketInput = document.getElementById('manage-max-ticket');
+        const oneEmailInput = document.getElementById('manage-one-email');
+        const singleIdentityInput = document.getElementById('manage-single-identity');
+
+        if (maxTicketInput) {
+            let maxVal = parseInt(maxTicketInput.value) || 5;
+            maxVal = Math.max(1, Math.min(5, maxVal));
+            formData.append('max_ticket_per_transaction', maxVal);
+        }
+        if (oneEmailInput) {
+            formData.append('one_email_one_transaction', oneEmailInput.checked ? '1' : '0');
+        }
+        if (singleIdentityInput) {
+            formData.append('single_identity_per_ticket', singleIdentityInput.checked ? '1' : '0');
+        }
+
         // Include banner image if a new file was selected
         const bannerInput = document.getElementById('manage-banner-input');
         if (bannerInput && bannerInput.files && bannerInput.files[0]) {
@@ -460,6 +552,35 @@ async function saveTicket() {
     const priceRaw = isFree ? 0 : parseInt(document.getElementById('ticket-price').value.replace(/[^0-9]/g, '')) || 0;
     const priceText = isFree ? 'Gratis' : `Rp ${priceRaw.toLocaleString('id-ID')}`;
 
+    // Get sale dates + times and combine them
+    const saleStartDate = document.getElementById('ticket-start-date')?.value || null;
+    const saleEndDate = document.getElementById('ticket-end-date')?.value || null;
+    const saleStartTime = document.getElementById('ticket-start-time')?.value || null;
+    const saleEndTime = document.getElementById('ticket-end-time')?.value || null;
+
+    if (!saleStartDate || !saleEndDate || !saleStartTime || !saleEndTime) {
+        showNotification('Tanggal dan jam penjualan tiket wajib diisi!', 'error');
+        return;
+    }
+
+    const saleStart = `${saleStartDate} ${saleStartTime}:00`;
+    const saleEnd = `${saleEndDate} ${saleEndTime}:00`;
+
+    // Validate datetimes
+    const nowStr = new Date().toISOString().slice(0, 16).replace('T', ' ') + ':00';
+    if (saleStart <= nowStr) {
+        showNotification('Waktu mulai harus lebih dari waktu sekarang', 'error');
+        return;
+    }
+    if (saleEnd <= saleStart) {
+        showNotification('Waktu berakhir harus lebih lambat dari waktu mulai', 'error');
+        return;
+    }
+    if (saleEnd <= nowStr) {
+        showNotification('Waktu berakhir harus lebih dari waktu sekarang', 'error');
+        return;
+    }
+
     // Show loading
     if (btnCreate) {
         btnCreate.disabled = true;
@@ -471,11 +592,15 @@ async function saveTicket() {
             // Edit existing ticket via API
             const ticketId = editingRow.dataset.ticketId;
             if (ticketId) {
-                const res = await apiPatch('/tickets/' + ticketId, {
+                const updateData = {
                     kategori: name,
                     harga: priceRaw,
                     kuota: qty,
-                });
+                };
+                if (saleStart) updateData.sale_start = saleStart;
+                if (saleEnd) updateData.sale_end = saleEnd;
+
+                const res = await apiPatch('/tickets/' + ticketId, updateData);
 
                 if (res && res._ok) {
                     // Update DOM
@@ -495,12 +620,16 @@ async function saveTicket() {
         } else {
             // Add new ticket via API
             const eventId = getEventId();
-            const res = await apiPost('/tickets', {
+            const createData = {
                 event_id: parseInt(eventId),
                 kategori: name,
                 harga: priceRaw,
                 kuota: qty,
-            });
+            };
+            if (saleStart) createData.sale_start = saleStart;
+            if (saleEnd) createData.sale_end = saleEnd;
+
+            const res = await apiPost('/tickets', createData);
 
             if (res && res._ok) {
                 const ticket = res.data;

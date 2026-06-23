@@ -34,6 +34,7 @@ Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verifyF
     ->name('api.verification.verify');
 
 # Events & tickets publik (bisa dilihat tanpa login)
+Route::get('/events/search',   [EventController::class, 'search']);
 Route::get('/events',       [EventController::class, 'index']);
 Route::get('/events/{event}',  [EventController::class, 'show']);
 Route::get('/tickets',      [TicketController::class, 'index']);
@@ -131,6 +132,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Admin: Event Approval
         Route::get('/admin/pending-events',         [AdminController::class, 'pendingEvents']);
+        Route::get('/admin/pending-events/{id}',    [AdminController::class, 'pendingEventDetail']);
         Route::post('/admin/events/{id}/approve',   [AdminController::class, 'approveEvent']);
         Route::post('/admin/events/{id}/reject',    [AdminController::class, 'rejectEvent']);
         Route::get('/admin/events',                 [AdminController::class, 'allEvents']);

@@ -82,7 +82,7 @@
             <h3 class="font-bold text-lg mb-6">Pilih Kategori Tiket</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                 <!-- Paid Ticket Card -->
-                <div onclick="openTicketModal('paid', event)" class="group relative bg-gray-50/50 border border-gray-100 rounded-[2rem] p-8 hover:bg-white hover:border-rust hover:shadow-2xl hover:shadow-rust/10 transition-all duration-500 cursor-pointer overflow-hidden">
+                <div onclick="openTicketModal('paid')" class="group relative bg-gray-50/50 border border-gray-100 rounded-[2rem] p-8 hover:bg-white hover:border-rust hover:shadow-2xl hover:shadow-rust/10 transition-all duration-500 cursor-pointer overflow-hidden">
                     <div class="relative z-10 flex items-center justify-between">
                         <div class="flex items-center gap-5">
                             <div class="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-rust group-hover:bg-rust group-hover:text-white transition-all duration-500">
@@ -101,7 +101,7 @@
                 </div>
 
                 <!-- Free Ticket Card -->
-                <div onclick="openTicketModal('free', event)" class="group relative bg-gray-50/50 border border-gray-100 rounded-[2rem] p-8 hover:bg-white hover:border-rust hover:shadow-2xl hover:shadow-rust/10 transition-all duration-500 cursor-pointer overflow-hidden">
+                <div onclick="openTicketModal('free')" class="group relative bg-gray-50/50 border border-gray-100 rounded-[2rem] p-8 hover:bg-white hover:border-rust hover:shadow-2xl hover:shadow-rust/10 transition-all duration-500 cursor-pointer overflow-hidden">
                     <div class="relative z-10 flex items-center justify-between">
                         <div class="flex items-center gap-5">
                             <div class="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-rust group-hover:bg-rust group-hover:text-white transition-all duration-500">
@@ -175,9 +175,9 @@
                             <p class="text-xs text-gray-400 mt-1">Batasi jumlah tiket sekali checkout (Maksimal 5)</p>
                         </div>
                         <div class="flex items-center gap-4 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
-                            <button class="w-10 h-10 flex items-center justify-center text-gray-400 hover:bg-rust/10 hover:text-rust rounded-xl transition-all"><i data-lucide="minus" class="w-4 h-4"></i></button>
-                            <span class="text-lg font-bold text-ink w-6 text-center">5</span>
-                            <button class="w-10 h-10 flex items-center justify-center text-gray-400 hover:bg-rust/10 hover:text-rust rounded-xl transition-all"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                            <button type="button" id="max-ticket-minus" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:bg-rust/10 hover:text-rust rounded-xl transition-all"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                            <span id="max-ticket-value" class="text-lg font-bold text-ink w-6 text-center">5</span>
+                            <button type="button" id="max-ticket-plus" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:bg-rust/10 hover:text-rust rounded-xl transition-all"><i data-lucide="plus" class="w-4 h-4"></i></button>
                         </div>
                     </div>
 
@@ -187,7 +187,7 @@
                             <p class="text-xs text-gray-400 mt-1">Cegah pembelian berulang dengan email yang sama</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer">
+                            <input type="checkbox" id="toggle-one-email" class="sr-only peer">
                             <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rust shadow-inner"></div>
                         </label>
                     </div>
@@ -198,7 +198,7 @@
                             <p class="text-xs text-gray-400 mt-1">Wajib mengisi identitas berbeda untuk setiap tiket</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked class="sr-only peer">
+                            <input type="checkbox" id="toggle-single-identity" checked class="sr-only peer">
                             <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rust shadow-inner"></div>
                         </label>
                     </div>

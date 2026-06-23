@@ -324,10 +324,10 @@
                             <div class="flex items-center justify-between bg-gray-50/50 px-6 py-6 rounded-[2rem] border border-gray-100 group hover:bg-white hover:border-rust/20 transition-all h-auto">
                                 <div>
                                     <p class="text-base font-bold text-ink mb-1">Jumlah maks. tiket per transaksi</p>
-                                    <p class="text-xs text-gray-400">Batasi jumlah tiket yang dapat dibeli sekali checkout</p>
+                                    <p class="text-xs text-gray-400">Batasi jumlah tiket yang dapat dibeli sekali checkout (Maksimal 5)</p>
                                 </div>
                                 <div class="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
-                                    <input type="number" value="5" min="1" max="5" class="w-20 py-3 text-center text-xl font-black text-rust outline-none">
+                                    <input type="number" id="manage-max-ticket" value="{{ $event->max_ticket_per_transaction ?? 5 }}" min="1" max="5" class="w-20 py-3 text-center text-xl font-black text-rust outline-none">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -337,7 +337,7 @@
                                         <p class="text-[10px] text-gray-400">Mencegah pembelian berulang</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" class="sr-only peer">
+                                        <input type="checkbox" id="manage-one-email" class="sr-only peer" {{ ($event->one_email_one_transaction ?? false) ? 'checked' : '' }}>
                                         <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rust shadow-inner"></div>
                                     </label>
                                 </div>
@@ -347,7 +347,7 @@
                                         <p class="text-[10px] text-gray-400">Identitas berbeda per tiket</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
+                                        <input type="checkbox" id="manage-single-identity" class="sr-only peer" {{ ($event->single_identity_per_ticket ?? true) ? 'checked' : '' }}>
                                         <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rust shadow-inner"></div>
                                     </label>
                                 </div>

@@ -24,6 +24,13 @@
                 <form method="GET" action="{{ url('/events') }}" id="filter-form">
                     <div class="space-y-6">
                         <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Cari Nama Event</label>
+                            <div class="relative">
+                                <input type="text" name="q" id="q-filter" value="{{ request('q') }}" placeholder="Ketik nama event..." class="w-full bg-cream/30 border border-gold/20 rounded-lg py-3 px-4 text-sm focus:outline-none focus:border-rust/50 transition-all">
+                                <i data-lucide="search" class="absolute right-4 top-1/2 -translate-y-1/2 text-gold w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div>
                             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Cari Lokasi</label>
                             <div class="relative">
                                 <input type="text" name="lokasi" id="lokasi-filter" value="{{ request('lokasi') }}" placeholder="Semua Lokasi" class="w-full bg-cream/30 border border-gold/20 rounded-lg py-3 px-4 text-sm focus:outline-none focus:border-rust/50 transition-all">

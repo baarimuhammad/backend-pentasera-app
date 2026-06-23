@@ -58,11 +58,14 @@
             <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara Logo" class="logo-img">
             <span class="logo-text">PENTASARA</span>
         </a>
-        <div class="search-bar">
-            <input type="text" placeholder="Cari nama event....">
-            <button class="search-btn">
-                <i data-lucide="search" class="w-4 h-4"></i>
-            </button>
+        <div class="search-container" id="search-container">
+            <form action="{{ url('/events') }}" method="GET" class="search-bar" id="navbar-search-form">
+                <input type="text" name="q" placeholder="Cari event, lokasi, atau kategori..." value="{{ request('q') }}" autocomplete="off" id="navbar-search-input">
+                <button type="submit" class="search-btn">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                </button>
+            </form>
+            <div class="live-search-dropdown" id="live-search-dropdown"></div>
         </div>
         <ul class="nav-links" style="display:flex">
             <li><a href="{{ url('/tentang-kami') }}">About Us</a></li>

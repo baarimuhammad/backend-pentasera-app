@@ -75,6 +75,10 @@ class PageController extends Controller
             ->with(['organizer', 'tickets'])
             ->orderBy('event_datetime', 'asc');
 
+        // Search by event name (from navbar search bar)
+        if ($request->filled('q')) {
+            $query->where('nama_event', 'like', '%' . $request->q . '%');
+        }
         if ($request->filled('kategori')) {
             $query->where('kategori_event', $request->kategori);
         }

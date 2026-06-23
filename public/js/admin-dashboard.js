@@ -140,7 +140,7 @@
                                 <div class="event-info">
                                     ${thumbHtml}
                                     <div>
-                                        <div class="event-name">${escapeHtml(ev.nama_event)}</div>
+                                        <a href="/admin/event-review/${ev.id}" class="event-name" style="color: var(--admin-accent); text-decoration: none; cursor: pointer;" title="Lihat detail event">${escapeHtml(ev.nama_event)}</a>
                                         <div class="event-creator">${escapeHtml(ev.creator_name)} · ${escapeHtml(ev.organizer_name)}</div>
                                     </div>
                                 </div>
@@ -159,6 +159,9 @@
                             </td>
                             <td>
                                 <div class="admin-actions">
+                                    <a href="/admin/event-review/${ev.id}" class="btn-approve" title="Review Detail" style="text-decoration: none;">
+                                        <i data-lucide="eye" class="w-4 h-4"></i> Review
+                                    </a>
                                     <button class="btn-approve" onclick="approveEvent(${ev.id})" title="Setujui">
                                         <i data-lucide="check" class="w-4 h-4"></i> Approve
                                     </button>

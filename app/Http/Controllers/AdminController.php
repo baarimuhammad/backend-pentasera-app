@@ -113,6 +113,60 @@ class AdminController extends Controller
     }
 
     /**
+     * GET /api/admin/pending-events/{id}
+     * Detail satu event pending untuk review admin.
+     */
+    public function pendingEventDetail(Request $request, $id)
+    {
+        $event = Event::with(['organizer.user', 'tickets'])
+            ->findOrFail($id);
+
+        $tickets = $event->tickets->map(function ($ticket) {
+            return [
+                'id'              => $ticket->id,
+                'kategori'        => $ticket->kategori,
+                'harga'           => (float) $ticket->harga,
+                'harga_formatted' => $ticket->harga > 0
+                    ? 'Rp ' . number_format($ticket->harga, 0, ',', '.')
+                    : 'Gratis',
+                'kuota'           => $ticket->kuota,
+                'sale_start'      => $ticket->sale_start,
+                'sale_end'        => $ticket->sale_end,
+            ];
+        });
+
+        return $this->success([
+            'id'                  => $event->id,
+            'nama_event'          => $event->nama_event,
+            'deskripsi'           => $event->deskripsi,
+            'lokasi'              => $event->lokasi,
+            'event_datetime'      => $event->event_datetime,
+            'event_status'        => $event->event_status,
+            'kategori_event'      => $event->kategori_event,
+            'image_src'           => $event->image_src,
+            'max_ticket_per_transaction'   => $event->max_ticket_per_transaction,
+            'one_email_one_transaction'    => $event->one_email_one_transaction,
+            'single_identity_per_ticket'   => $event->single_identity_per_ticket,
+            'created_at'          => $event->created_at,
+            'organizer_name'      => $event->organizer->nama_organizer ?? '-',
+            'creator_name'        => $event->organizer->user->nama ?? '-',
+            'creator_email'       => $event->organizer->user->email ?? '-',
+            'creator_avatar'      => $event->organizer->user->avatar_url ?? null,
+            'tickets'             => $tickets,
+            'total_tickets'       => $tickets->count(),
+            'total_capacity'      => $tickets->sum('kuota'),
+        ], 'Detail event berhasil diambil');
+    }
+
+    /**
+     * Render admin event review page (web).
+     */
+    public function eventReviewPage($id)
+    {
+        return view('admin.event-review', ['eventId' => $id]);
+    }
+
+    /**
      * POST /api/admin/events/{id}/approve
      * Approve event — ubah status ke published.
      */

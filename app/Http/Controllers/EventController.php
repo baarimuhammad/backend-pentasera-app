@@ -55,17 +55,96 @@ class EventController extends Controller
         return $this->success($events, 'Daftar event berhasil diambil');
     }
 
+    /**
+     * Live search — returns grouped results (events, locations, categories)
+     * for the navbar live-search dropdown.
+     */
+    public function search(Request $request)
+    {
+        $q = trim($request->query('q', ''));
+
+        if (strlen($q) < 2) {
+            return $this->success([
+                'events' => [],
+                'locations' => [],
+                'categories' => [],
+            ], 'Query terlalu pendek');
+        }
+
+        $baseQuery = Event::where('event_status', 'published')
+            ->where('event_datetime', '>=', now())
+            ->with(['organizer', 'tickets']);
+
+        // 1. Events matched by name
+        $eventMatches = (clone $baseQuery)
+            ->where('nama_event', 'LIKE', "%{$q}%")
+            ->orderBy('event_datetime')
+            ->limit(5)
+            ->get()
+            ->map(fn($e) => [
+                'id'    => $e->id,
+                'nama'  => $e->nama_event,
+                'lokasi'=> $e->lokasi,
+                'tanggal' => $e->event_datetime->isoFormat('DD MMM YYYY'),
+                'image' => $e->image_src,
+                'harga' => $e->formatted_lowest_ticket_price,
+            ]);
+
+        // 2. Unique locations that match
+        $locationMatches = Event::where('event_status', 'published')
+            ->where('event_datetime', '>=', now())
+            ->where('lokasi', 'LIKE', "%{$q}%")
+            ->select('lokasi')
+            ->distinct()
+            ->limit(4)
+            ->pluck('lokasi')
+            ->map(fn($loc) => [
+                'lokasi' => $loc,
+                'count'  => Event::where('event_status', 'published')
+                    ->where('event_datetime', '>=', now())
+                    ->where('lokasi', 'LIKE', "%{$loc}%")
+                    ->count(),
+            ]);
+
+        // 3. Unique categories that match
+        $categoryMatches = Event::where('event_status', 'published')
+            ->where('event_datetime', '>=', now())
+            ->where('kategori_event', 'LIKE', "%{$q}%")
+            ->select('kategori_event')
+            ->distinct()
+            ->limit(4)
+            ->pluck('kategori_event')
+            ->filter()
+            ->map(fn($cat) => [
+                'kategori' => $cat,
+                'count'    => Event::where('event_status', 'published')
+                    ->where('event_datetime', '>=', now())
+                    ->where('kategori_event', $cat)
+                    ->count(),
+            ])
+            ->values();
+
+        return $this->success([
+            'events'     => $eventMatches,
+            'locations'  => $locationMatches,
+            'categories' => $categoryMatches,
+        ], 'Hasil pencarian');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
-            'organizer_id'  => 'required|exists:organizers,id',
-            'nama_event'    => 'required|string|max:150',
-            'deskripsi'     => 'nullable|string',
-            'lokasi'        => 'required|string|max:150',
-            'event_datetime'=> 'required|date',
-            'kategori_event'=> 'nullable|string|max:100',
-            'image'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'event_status'  => 'sometimes|in:draft,published,pending_approval',
+            'organizer_id'              => 'required|exists:organizers,id',
+            'nama_event'                => 'required|string|max:150',
+            'deskripsi'                 => 'nullable|string',
+            'lokasi'                    => 'required|string|max:150',
+            'event_datetime'            => 'required|date',
+            'kategori_event'            => 'nullable|string|max:100',
+            'image'                     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'event_status'              => 'sometimes|in:draft,published,pending_approval',
+            'max_ticket_per_transaction'=> 'sometimes|integer|min:1|max:5',
+            'one_email_one_transaction' => 'sometimes|in:0,1,true,false',
+            'single_identity_per_ticket'=> 'sometimes|in:0,1,true,false',
         ]);
 
         // Verify ownership: organizer must belong to this creator
@@ -83,13 +162,16 @@ class EventController extends Controller
         }
 
         $data = [
-            'organizer_id'  => $request->organizer_id,
-            'nama_event'    => $request->nama_event,
-            'deskripsi'     => $request->deskripsi,
-            'lokasi'        => $request->lokasi,
-            'event_datetime'=> $request->event_datetime,
-            'event_status'  => $status,
-            'kategori_event'=> $request->kategori_event,
+            'organizer_id'              => $request->organizer_id,
+            'nama_event'                => $request->nama_event,
+            'deskripsi'                 => $request->deskripsi,
+            'lokasi'                    => $request->lokasi,
+            'event_datetime'            => $request->event_datetime,
+            'event_status'              => $status,
+            'kategori_event'            => $request->kategori_event,
+            'max_ticket_per_transaction'=> (int) $request->input('max_ticket_per_transaction', 5),
+            'one_email_one_transaction' => filter_var($request->input('one_email_one_transaction', false), FILTER_VALIDATE_BOOLEAN),
+            'single_identity_per_ticket'=> filter_var($request->input('single_identity_per_ticket', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
         // Handle image upload
@@ -123,18 +205,33 @@ class EventController extends Controller
         }
 
         $request->validate([
-            'nama_event'    => 'sometimes|string|max:150',
-            'deskripsi'     => 'nullable|string',
-            'lokasi'        => 'sometimes|string|max:150',
-            'event_datetime'=> 'sometimes|date',
-            'event_status'  => 'sometimes|in:draft,pending_approval,published,cancelled',
-            'kategori_event'=> 'nullable|string|max:100',
-            'image'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'nama_event'                => 'sometimes|string|max:150',
+            'deskripsi'                 => 'nullable|string',
+            'lokasi'                    => 'sometimes|string|max:150',
+            'event_datetime'            => 'sometimes|date',
+            'event_status'              => 'sometimes|in:draft,pending_approval,published,cancelled',
+            'kategori_event'            => 'nullable|string|max:100',
+            'image'                     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'max_ticket_per_transaction'=> 'sometimes|integer|min:1|max:5',
+            'one_email_one_transaction' => 'sometimes|in:0,1,true,false',
+            'single_identity_per_ticket'=> 'sometimes|in:0,1,true,false',
         ]);
 
         $data = $request->only([
-            'nama_event', 'deskripsi', 'lokasi', 'event_datetime', 'event_status', 'kategori_event'
+            'nama_event', 'deskripsi', 'lokasi', 'event_datetime', 'event_status', 'kategori_event',
+            'max_ticket_per_transaction', 'one_email_one_transaction', 'single_identity_per_ticket',
         ]);
+
+        // Cast boolean fields
+        if (isset($data['one_email_one_transaction'])) {
+            $data['one_email_one_transaction'] = filter_var($data['one_email_one_transaction'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($data['single_identity_per_ticket'])) {
+            $data['single_identity_per_ticket'] = filter_var($data['single_identity_per_ticket'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($data['max_ticket_per_transaction'])) {
+            $data['max_ticket_per_transaction'] = (int) $data['max_ticket_per_transaction'];
+        }
 
         // Non-admin: jika mencoba set published, otomatis ke pending_approval
         if ($request->user()->role !== 'admin' && isset($data['event_status']) && $data['event_status'] === 'published') {

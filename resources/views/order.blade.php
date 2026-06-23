@@ -6,13 +6,10 @@
 <main id="app" class="flex-1 max-w-7xl mx-auto w-full px-6 py-8 animate-fade-in">
     <div class="flex flex-col lg:flex-row gap-8" id="order-content">
         <div class="flex-1 space-y-8">
-            <div class="rounded-2xl overflow-hidden shadow-2xl relative h-[400px]">
-                <img src="{{ $event->image_src }}" alt="{{ $event->nama_event }}" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div class="absolute bottom-8 left-8">
-                    <h1 class="font-display font-bold text-3xl text-white drop-shadow-lg uppercase tracking-widest">{{ $event->nama_event }}</h1>
-                </div>
+            <div class="rounded-2xl overflow-hidden shadow-2xl">
+                <img src="{{ $event->image_src }}" alt="{{ $event->nama_event }}" class="w-full h-[400px] object-cover">
             </div>
+            <h1 class="font-display font-bold text-2xl text-ink uppercase tracking-widest mt-4">{{ $event->nama_event }}</h1>
 
             <div class="bg-white rounded-xl shadow-md border border-gold/10 overflow-hidden">
                 <div class="flex border-b border-gold/10">
@@ -22,25 +19,55 @@
                 
                 <div id="content-tiket" class="p-8 space-y-6">
                     @forelse($tickets as $t)
-                    <div class="ticket-item border border-gold/20 rounded-xl p-6 flex justify-between items-center transition-all">
+                    @php
+                        $now = now();
+                        $isStarted = is_null($t->sale_start) || $now->greaterThanOrEqualTo($t->sale_start);
+                        $isEnded = !is_null($t->sale_end) && $now->greaterThan($t->sale_end);
+                        $isSoldOut = $t->sisa_kuota <= 0;
+                        $canBuy = $isStarted && !$isEnded && !$isSoldOut;
+                    @endphp
+                    <div class="ticket-item border {{ $canBuy ? 'border-gold/20' : 'border-gray-200 opacity-75' }} rounded-xl p-6 flex justify-between items-center transition-all">
                         <div class="flex-1 pr-4">
-                            <div class="flex items-center gap-2 mb-1">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
                                 <h4 class="font-bold text-ink">{{ $t->kategori }}</h4>
-                                @if($t->sisa_kuota <= 5)
+
+                                {{-- Status badges --}}
+                                @if(!$isStarted)
+                                    <span class="px-2 py-0.5 bg-gray-200 text-gray-600 text-[10px] font-bold rounded uppercase">Belum Dimulai</span>
+                                @elseif($isEnded)
+                                    <span class="px-2 py-0.5 bg-pink-100 text-pink-600 text-[10px] font-bold rounded uppercase">Penjualan Berakhir</span>
+                                @elseif($isSoldOut)
+                                    <span class="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded uppercase">Habis Terjual</span>
+                                @elseif($t->sisa_kuota <= 5)
                                     <span class="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded uppercase">Limited (Sisa {{ $t->sisa_kuota }})</span>
                                 @elseif($t->sisa_kuota <= 20)
                                     <span class="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded uppercase">Limited</span>
                                 @endif
                             </div>
-                            <p class="text-xs text-gray-500 leading-relaxed">Sisa kuota {{ $t->sisa_kuota }} dari {{ $t->kuota }} tiket.</p>
+
+                            {{-- Info text based on status --}}
+                            @if(!$isStarted)
+                                <p class="text-xs text-gray-500 leading-relaxed">
+                                    Penjualan dibuka: {{ \Carbon\Carbon::parse($t->sale_start)->translatedFormat('d F Y \\p\\u\\k\\u\\l H:i') }}
+                                </p>
+                            @elseif($isEnded)
+                                <p class="text-xs text-gray-400 leading-relaxed italic">Penjualan tiket ini telah berakhir.</p>
+                            @elseif($isSoldOut)
+                                <p class="text-xs text-gray-400 leading-relaxed italic">Tiket telah habis terjual.</p>
+                            @else
+                                <p class="text-xs text-gray-500 leading-relaxed">Sisa kuota {{ $t->sisa_kuota }} dari {{ $t->kuota }} tiket.</p>
+                            @endif
                         </div>
                         <div class="flex flex-col items-end gap-3">
-                            <div class="font-bold text-rust-deep text-lg">{{ $t->formatted_price }}</div>
-                            <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                                <button onclick="updateQty('{{ $t->id }}', -1, {{ (int) $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600 font-bold">-</button>
-                                <span id="qty-{{ $t->id }}" class="w-10 text-center font-bold text-ink">0</span>
-                                <button onclick="updateQty('{{ $t->id }}', 1, {{ (int) $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md bg-rust text-white hover:bg-rust-deep shadow-sm transition-all font-bold">+</button>
-                            </div>
+                            <div class="font-bold {{ $canBuy ? 'text-rust-deep' : 'text-gray-400' }} text-lg">{{ $t->formatted_price }}</div>
+
+                            @if($canBuy)
+                                <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                                    <button onclick="updateQty('{{ $t->id }}', -1, {{ (int) $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600 font-bold">-</button>
+                                    <span id="qty-{{ $t->id }}" class="w-10 text-center font-bold text-ink">0</span>
+                                    <button onclick="updateQty('{{ $t->id }}', 1, {{ (int) $t->harga }})" class="qty-btn w-8 h-8 flex items-center justify-center rounded-md bg-rust text-white hover:bg-rust-deep shadow-sm transition-all font-bold">+</button>
+                                </div>
+                            @endif
                         </div>
                     </div>
                     @empty
@@ -127,6 +154,7 @@
     let quantities = {};
     let prices = {};
     let ticketNames = @json($tickets->pluck('kategori', 'id'));
+    const maxTicketPerTransaction = {{ $event->max_ticket_per_transaction ?? 5 }};
 
     function setTab(tab) {
         const isTiket = tab === 'tiket';
@@ -137,18 +165,34 @@
         document.getElementById('tab-deskripsi-btn').className = !isTiket ? 'flex-1 py-4 text-sm font-bold text-rust border-b-2 border-rust bg-cream/30' : 'flex-1 py-4 text-sm font-bold text-gray-400';
     }
 
+    function getTotalQty() {
+        let total = 0;
+        for (let tid in quantities) {
+            total += (quantities[tid] || 0);
+        }
+        return total;
+    }
+
     function updateQty(tid, delta, price) {
         if (!quantities[tid]) quantities[tid] = 0;
         
-        // Find max available
+        // Find max available for this ticket category
         let maxQuota = 10;
         @foreach($event->tickets as $t)
         if (tid == '{{ $t->id }}') maxQuota = {{ $t->sisa_kuota }};
         @endforeach
 
-        if (delta > 0 && quantities[tid] >= maxQuota) {
-            alert('Kuota tiket tidak mencukupi atau batas maksimal tercapai');
-            return;
+        if (delta > 0) {
+            // Check per-ticket quota
+            if (quantities[tid] >= maxQuota) {
+                alert('Kuota tiket tidak mencukupi');
+                return;
+            }
+            // Check max ticket per transaction limit
+            if (getTotalQty() >= maxTicketPerTransaction) {
+                alert('Batas maksimal ' + maxTicketPerTransaction + ' tiket per transaksi telah tercapai');
+                return;
+            }
         }
 
         quantities[tid] = Math.max(0, quantities[tid] + delta);

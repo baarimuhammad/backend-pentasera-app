@@ -148,7 +148,261 @@ async function toggleRoleAndRedirect() {
 
 window.addEventListener('DOMContentLoaded', () => {
     checkAuthState();
-    
+
+    // ── Live Search Dropdown ────────────────────────────────
+    (function initLiveSearch() {
+        const input = document.getElementById('navbar-search-input');
+        const dropdown = document.getElementById('live-search-dropdown');
+        const form = document.getElementById('navbar-search-form');
+        const container = document.getElementById('search-container');
+
+        if (!input || !dropdown) return;
+
+        let debounceTimer = null;
+        let abortController = null;
+        let activeIndex = -1; // for keyboard nav
+        let currentQuery = '';
+
+        // Debounced fetch
+        input.addEventListener('input', function () {
+            const q = this.value.trim();
+            currentQuery = q;
+            clearTimeout(debounceTimer);
+
+            if (q.length < 2) {
+                hideDropdown();
+                return;
+            }
+
+            showLoading();
+
+            debounceTimer = setTimeout(() => {
+                fetchResults(q);
+            }, 300);
+        });
+
+        // Show on focus if there's already text
+        input.addEventListener('focus', function () {
+            const q = this.value.trim();
+            if (q.length >= 2 && dropdown.innerHTML && !dropdown.classList.contains('active')) {
+                showDropdown();
+            }
+        });
+
+        // Keyboard navigation
+        input.addEventListener('keydown', function (e) {
+            if (!dropdown.classList.contains('active')) return;
+
+            const items = dropdown.querySelectorAll('.lsd-item, .lsd-item-simple');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                updateActiveItem(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, -1);
+                updateActiveItem(items);
+            } else if (e.key === 'Enter') {
+                if (activeIndex >= 0 && activeIndex < items.length) {
+                    e.preventDefault();
+                    items[activeIndex].click();
+                }
+                // If no item selected, let the form submit normally
+            } else if (e.key === 'Escape') {
+                hideDropdown();
+                input.blur();
+            }
+        });
+
+        // Click outside → close
+        document.addEventListener('click', function (e) {
+            if (container && !container.contains(e.target)) {
+                hideDropdown();
+            }
+        });
+
+        // Prevent form submit from also triggering when item is clicked
+        if (form) {
+            form.addEventListener('submit', function () {
+                hideDropdown();
+            });
+        }
+
+        async function fetchResults(q) {
+            // Abort previous request
+            if (abortController) abortController.abort();
+            abortController = new AbortController();
+
+            try {
+                const res = await fetch('/api/events/search?q=' + encodeURIComponent(q), {
+                    signal: abortController.signal,
+                    headers: { 'Accept': 'application/json' },
+                });
+                const json = await res.json();
+
+                if (!json || !json.data) {
+                    renderEmpty(q);
+                    return;
+                }
+
+                const { events, locations, categories } = json.data;
+                const hasResults = (events && events.length) ||
+                                   (locations && locations.length) ||
+                                   (categories && categories.length);
+
+                if (!hasResults) {
+                    renderEmpty(q);
+                } else {
+                    renderResults(events || [], locations || [], categories || [], q);
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') return; // Ignored
+                console.error('Live search error:', err);
+                renderEmpty(q);
+            }
+        }
+
+        function renderResults(events, locations, categories, q) {
+            let html = '';
+
+            // Events section
+            if (events.length) {
+                html += `<div class="lsd-section">
+                    <div class="lsd-section-header">
+                        <i data-lucide="calendar" class="lsd-section-icon"></i>
+                        Events
+                    </div>`;
+                events.forEach(ev => {
+                    html += `<a href="/order/${ev.id}" class="lsd-item lsd-item-event">
+                        <img src="${ev.image}" alt="" class="lsd-thumb" loading="lazy">
+                        <div class="lsd-item-info">
+                            <div class="lsd-item-title">${highlightText(ev.nama, q)}</div>
+                            <div class="lsd-item-meta">
+                                <span><i data-lucide="calendar" class="w-3 h-3"></i> ${ev.tanggal}</span>
+                                <span><i data-lucide="map-pin" class="w-3 h-3"></i> ${ev.lokasi}</span>
+                            </div>
+                        </div>
+                        <div class="lsd-item-price">${ev.harga}</div>
+                    </a>`;
+                });
+                html += '</div>';
+            }
+
+            // Locations section
+            if (locations.length) {
+                html += `<div class="lsd-section">
+                    <div class="lsd-section-header">
+                        <i data-lucide="map-pin" class="lsd-section-icon"></i>
+                        Lokasi
+                    </div>`;
+                locations.forEach(loc => {
+                    html += `<a href="/events?lokasi=${encodeURIComponent(loc.lokasi)}" class="lsd-item-simple">
+                        <div class="lsd-simple-icon loc-icon">
+                            <i data-lucide="map-pin"></i>
+                        </div>
+                        <div class="lsd-simple-text">
+                            <div class="lsd-simple-name">${highlightText(loc.lokasi, q)}</div>
+                            <div class="lsd-simple-count">${loc.count} event tersedia</div>
+                        </div>
+                    </a>`;
+                });
+                html += '</div>';
+            }
+
+            // Categories section
+            if (categories.length) {
+                html += `<div class="lsd-section">
+                    <div class="lsd-section-header">
+                        <i data-lucide="tag" class="lsd-section-icon"></i>
+                        Kategori
+                    </div>`;
+                categories.forEach(cat => {
+                    html += `<a href="/events?kategori=${encodeURIComponent(cat.kategori)}" class="lsd-item-simple">
+                        <div class="lsd-simple-icon cat-icon">
+                            <i data-lucide="tag"></i>
+                        </div>
+                        <div class="lsd-simple-text">
+                            <div class="lsd-simple-name">${highlightText(cat.kategori, q)}</div>
+                            <div class="lsd-simple-count">${cat.count} event tersedia</div>
+                        </div>
+                    </a>`;
+                });
+                html += '</div>';
+            }
+
+            // Footer: "See all results" link
+            html += `<div class="lsd-footer">
+                <a href="/events?q=${encodeURIComponent(q)}">Lihat semua hasil untuk "${escapeHtml(q)}" →</a>
+            </div>`;
+
+            dropdown.innerHTML = html;
+            activeIndex = -1;
+            showDropdown();
+
+            // Re-initialize Lucide icons inside dropdown
+            if (window.lucide) window.lucide.createIcons({ nodes: [dropdown] });
+        }
+
+        function renderEmpty(q) {
+            dropdown.innerHTML = `
+                <div class="lsd-empty">
+                    <div class="lsd-empty-icon">
+                        <i data-lucide="search-x"></i>
+                    </div>
+                    <div class="lsd-empty-title">Tidak Ditemukan</div>
+                    <div class="lsd-empty-desc">Tidak ada event, lokasi, atau kategori yang cocok dengan "${escapeHtml(q)}"</div>
+                </div>`;
+            activeIndex = -1;
+            showDropdown();
+            if (window.lucide) window.lucide.createIcons({ nodes: [dropdown] });
+        }
+
+        function showLoading() {
+            dropdown.innerHTML = `
+                <div class="lsd-loading">
+                    <div class="lsd-spinner"></div>
+                    Mencari...
+                </div>`;
+            showDropdown();
+        }
+
+        function showDropdown() {
+            dropdown.classList.add('active');
+        }
+
+        function hideDropdown() {
+            dropdown.classList.remove('active');
+            activeIndex = -1;
+        }
+
+        function updateActiveItem(items) {
+            items.forEach(item => item.classList.remove('lsd-active'));
+            if (activeIndex >= 0 && activeIndex < items.length) {
+                items[activeIndex].classList.add('lsd-active');
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        function highlightText(text, query) {
+            if (!query) return escapeHtml(text);
+            const escaped = escapeHtml(text);
+            const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+            return escaped.replace(regex, '<span class="lsd-highlight">$1</span>');
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function escapeRegex(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+    })();
+
     // Limit ticket qty
     const qtyInput = document.querySelector('input[type="number"][max="5"]');
     if (qtyInput) {
@@ -162,6 +416,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // --- Create Event Logic ---
 
 let ticketsData = [];
+let editingTicketId = null;
 
 function switchTab(tab) {
     const ticketsTab = document.getElementById('tab-tickets');
@@ -188,13 +443,17 @@ function switchTab(tab) {
     }
 }
 
-function openTicketModal(type, event) {
+function openTicketModal(type, eventOrTicket) {
     const modal = document.getElementById('ticket-modal');
     const modalContent = modal ? modal.querySelector('.animate-fade-in-up') : null;
     const priceField = document.getElementById('price-field');
     const btnCreate = document.getElementById('btn-create-ticket');
     
     if (!modal || !modalContent) return;
+
+    // Determine if we're editing an existing ticket (object with id, name, etc.)
+    const isEditing = eventOrTicket && typeof eventOrTicket === 'object' && eventOrTicket.id && eventOrTicket.name;
+    editingTicketId = isEditing ? eventOrTicket.id : null;
     
     // Reset modal content styles to let CSS handle centering
     modalContent.style.position = '';
@@ -208,10 +467,40 @@ function openTicketModal(type, event) {
     
     if (type === 'free') {
         if (priceField) priceField.classList.add('hidden');
-        if (btnCreate) btnCreate.textContent = 'Buat Tiket Gratis';
+        if (btnCreate) btnCreate.textContent = isEditing ? 'Simpan Perubahan' : 'Buat Tiket Gratis';
     } else {
         if (priceField) priceField.classList.remove('hidden');
-        if (btnCreate) btnCreate.textContent = 'Buat Tiket Berbayar';
+        if (btnCreate) btnCreate.textContent = isEditing ? 'Simpan Perubahan' : 'Buat Tiket Berbayar';
+    }
+
+    // Reset inputs first
+    modal.querySelectorAll('input').forEach(input => {
+        if (input.type === 'number') input.value = '0';
+        else if (input.type === 'date' || input.type === 'time') input.value = '';
+        else input.value = '';
+    });
+    modal.querySelectorAll('textarea').forEach(ta => ta.value = '');
+
+    // If editing, pre-fill fields
+    if (isEditing) {
+        const ticketData = eventOrTicket;
+        const nameInput = modal.querySelector('input[placeholder*="Nama"], input[placeholder*="Maksimal"], input[placeholder*="Early Bird"], input[placeholder*="Contoh"]');
+        const qtyInput = modal.querySelector('input[type="number"]');
+        const priceInput = priceField ? priceField.querySelector('input') : null;
+
+        if (nameInput) nameInput.value = ticketData.name || '';
+        if (qtyInput) qtyInput.value = ticketData.quantity || 0;
+        if (type === 'paid' && priceInput) {
+            priceInput.value = 'Rp ' + (ticketData.price || 0).toLocaleString('id-ID');
+        }
+
+        // Pre-fill sale dates
+        const dateInputs = modal.querySelectorAll('#modal-content-sales input[type="date"]');
+        const timeInputs = modal.querySelectorAll('#modal-content-sales input[type="time"]');
+        if (ticketData.saleStartDate && dateInputs[0]) dateInputs[0].value = ticketData.saleStartDate;
+        if (ticketData.saleStartTime && timeInputs[0]) timeInputs[0].value = ticketData.saleStartTime;
+        if (ticketData.saleEndDate && dateInputs[1]) dateInputs[1].value = ticketData.saleEndDate;
+        if (ticketData.saleEndTime && timeInputs[1]) timeInputs[1].value = ticketData.saleEndTime;
     }
     
     switchModalTab('detail');
@@ -239,7 +528,7 @@ function createTicket() {
     const modal = document.getElementById('ticket-modal');
     if (!modal) return;
 
-    const nameInput = modal.querySelector('input[placeholder*="Nama"], input[placeholder*="Maksimal"]');
+    const nameInput = modal.querySelector('input[placeholder*="Nama"], input[placeholder*="Maksimal"], input[placeholder*="Early Bird"], input[placeholder*="Contoh"]');
     const qtyInput = modal.querySelector('input[type="number"]');
     const priceField = document.getElementById('price-field');
     const priceInput = priceField ? priceField.querySelector('input') : null;
@@ -249,17 +538,48 @@ function createTicket() {
     const quantity = qtyInput ? parseInt(qtyInput.value) : 0;
     const price = isFree ? 0 : (priceInput ? parseInt(priceInput.value.replace(/[^0-9]/g, '')) : 0);
 
+    // Capture sale date/time
+    const dateInputs = modal.querySelectorAll('#modal-content-sales input[type="date"]');
+    const timeInputs = modal.querySelectorAll('#modal-content-sales input[type="time"]');
+    const saleStartDate = dateInputs[0] ? dateInputs[0].value : '';
+    const saleStartTime = timeInputs[0] ? timeInputs[0].value : '';
+    const saleEndDate = dateInputs[1] ? dateInputs[1].value : '';
+    const saleEndTime = timeInputs[1] ? timeInputs[1].value : '';
+
     const ticket = {
-        id: Date.now(),
+        id: editingTicketId || Date.now(),
         type: isFree ? 'free' : 'paid',
         name,
         quantity,
-        price
+        price,
+        saleStartDate,
+        saleStartTime,
+        saleEndDate,
+        saleEndTime
     };
 
-    ticketsData.push(ticket);
+    if (editingTicketId) {
+        const idx = ticketsData.findIndex(t => t.id === editingTicketId);
+        if (idx !== -1) ticketsData[idx] = ticket;
+        editingTicketId = null;
+    } else {
+        ticketsData.push(ticket);
+    }
+
     renderTickets();
     closeTicketModal();
+}
+
+function formatTicketDate(dateStr, timeStr) {
+    if (!dateStr) return '-';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const parts = dateStr.split('-');
+    const day = parseInt(parts[2]);
+    const month = months[parseInt(parts[1]) - 1];
+    const year = parts[0];
+    let result = `${day} ${month} ${year}`;
+    if (timeStr) result += `, ${timeStr}`;
+    return result;
 }
 
 function renderTickets() {
@@ -269,23 +589,59 @@ function renderTickets() {
 
     if (ticketsData.length > 0) {
         container.classList.remove('hidden');
-        list.innerHTML = ticketsData.map(ticket => `
-            <div class="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-2xl group hover:border-rust transition-all shadow-sm">
-                <div class="flex items-center gap-5">
-                    <div class="w-12 h-12 ${ticket.type === 'free' ? 'bg-green-50 text-green-500' : 'bg-rust/10 text-rust'} rounded-xl flex items-center justify-center">
-                        <i data-lucide="${ticket.type === 'free' ? 'gift' : 'banknote'}" class="w-6 h-6"></i>
+        list.innerHTML = ticketsData.map(ticket => {
+            const saleStart = formatTicketDate(ticket.saleStartDate, ticket.saleStartTime);
+            const saleEnd = formatTicketDate(ticket.saleEndDate, ticket.saleEndTime);
+            const typeBadge = ticket.type === 'free'
+                ? '<span class="inline-block px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Gratis</span>'
+                : '<span class="inline-block px-2 py-0.5 bg-rust/10 text-rust text-[10px] font-bold rounded-full uppercase tracking-wider">Berbayar</span>';
+
+            return `
+            <div class="group p-5 bg-white border border-gray-100 rounded-2xl hover:border-rust/30 hover:shadow-md transition-all duration-300 shadow-sm">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-start gap-4 flex-1 min-w-0">
+                        <div class="w-11 h-11 ${ticket.type === 'free' ? 'bg-green-50 text-green-500' : 'bg-rust/10 text-rust'} rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ticket.type === 'free' ? '<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>' : '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/><path d="M6 14h.01"/><path d="M10 14h.01"/>'}</svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                <span class="font-bold text-ink text-base truncate">${ticket.name}</span>
+                                ${typeBadge}
+                            </div>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mb-2">
+                                <span class="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                                    ${ticket.quantity} tiket
+                                </span>
+                                <span class="flex items-center gap-1 font-semibold text-ink">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                    ${ticket.type === 'free' ? 'Gratis' : 'Rp ' + ticket.price.toLocaleString('id-ID')}
+                                </span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-[11px] text-gray-400">
+                                <span class="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    <span class="font-medium text-gray-500">Mulai:</span> ${saleStart}
+                                </span>
+                                <span class="hidden sm:inline text-gray-300">→</span>
+                                <span class="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    <span class="font-medium text-gray-500">Berakhir:</span> ${saleEnd}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h5 class="font-bold text-ink">${ticket.name}</h5>
-                        <p class="text-xs text-gray-400">${ticket.quantity} Tiket • ${ticket.type === 'free' ? 'Gratis' : 'Rp ' + ticket.price.toLocaleString('id-ID')}</p>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button onclick="editTicket(${ticket.id})" class="w-9 h-9 rounded-xl bg-white border border-gray-100 hover:bg-rust/10 hover:border-rust/30 flex items-center justify-center text-gray-400 hover:text-rust transition-all shadow-sm" title="Edit tiket">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </button>
+                        <button onclick="removeTicket(${ticket.id})" class="w-9 h-9 rounded-xl bg-white border border-gray-100 hover:bg-red-50 hover:border-red-200 flex items-center justify-center text-gray-400 hover:text-red-500 transition-all shadow-sm" title="Hapus tiket">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        </button>
                     </div>
                 </div>
-                <button onclick="removeTicket(${ticket.id})" class="text-gray-300 hover:text-red-500 transition-colors p-2">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-            </div>
-        `).join('');
-        lucide.createIcons();
+            </div>`;
+        }).join('');
     } else {
         container.classList.add('hidden');
     }
@@ -296,11 +652,17 @@ function removeTicket(id) {
     renderTickets();
 }
 
+function editTicket(id) {
+    const ticket = ticketsData.find(t => t.id === id);
+    if (!ticket) return;
+    openTicketModal(ticket.type || 'paid', ticket);
+}
+
 function validateTicketForm() {
     const modal = document.getElementById('ticket-modal');
     if (!modal) return;
 
-    const nameInput = modal.querySelector('input[placeholder*="Nama"], input[placeholder*="Maksimal"]');
+    const nameInput = modal.querySelector('input[placeholder*="Nama"], input[placeholder*="Maksimal"], input[placeholder*="Early Bird"], input[placeholder*="Contoh"]');
     const qtyInput = modal.querySelector('input[type="number"]');
     const priceField = document.getElementById('price-field');
     const priceInput = priceField ? priceField.querySelector('input') : null;
@@ -407,6 +769,7 @@ window.closeTicketModal = closeTicketModal;
 window.switchModalTab = switchModalTab;
 window.removeTicket = removeTicket;
 window.createTicket = createTicket;
+window.editTicket = editTicket;
 
 // --- Support Pages Logic ---
 

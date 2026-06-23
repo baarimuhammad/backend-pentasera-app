@@ -75,6 +75,7 @@
 
         <div class="event-tabs">
             <div class="event-tab active" onclick="switchMyEventTab('aktif')">Event Aktif <span id="count-aktif" class="ml-1 text-xs opacity-70"></span></div>
+            <div class="event-tab" onclick="switchMyEventTab('pending')">Menunggu Approval <span id="count-pending" class="ml-1 text-xs opacity-70"></span></div>
             <div class="event-tab" onclick="switchMyEventTab('draft')">Event Draft <span id="count-draft" class="ml-1 text-xs opacity-70"></span></div>
             <div class="event-tab" onclick="switchMyEventTab('lalu')">Event Lalu <span id="count-lalu" class="ml-1 text-xs opacity-70"></span></div>
         </div>
@@ -96,6 +97,18 @@
                     <div class="animate-pulse">
                         <div class="w-12 h-12 mx-auto mb-3 bg-gray-200 rounded-full"></div>
                         <p class="font-bold">Memuat event aktif...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Menunggu Approval -->
+        <div id="tab-pending" class="event-tab-content">
+            <div class="event-dashboard-grid" id="grid-pending">
+                <div class="text-center py-10 text-gray-400 col-span-full loading-placeholder">
+                    <div class="animate-pulse">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-gray-200 rounded-full"></div>
+                        <p class="font-bold">Memuat event pending...</p>
                     </div>
                 </div>
             </div>

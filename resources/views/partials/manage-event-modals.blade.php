@@ -155,14 +155,9 @@
                                 <input id="ticket-start-date" type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                                 <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
-                            <div class="w-32 relative group/select">
-                                <div class="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
-                                        <span>09:00</span>
-                                    </div>
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-300 group-hover/select:text-rust transition-colors"></i>
-                                </div>
+                            <div class="w-32 relative group">
+                                <input id="ticket-start-time" type="time" value="09:00" class="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold text-ink focus:border-rust outline-none transition-all">
+                                <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
                         </div>
                     </div>
@@ -173,14 +168,9 @@
                                 <input id="ticket-end-date" type="date" class="w-full bg-gray-50/50 border-b-2 border-gray-100 py-2.5 px-1 text-sm focus:border-rust outline-none transition-all font-bold text-ink">
                                 <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
-                            <div class="w-32 relative group/select">
-                                <div class="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 flex items-center justify-between text-ink font-bold text-sm cursor-pointer hover:bg-white transition-all">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
-                                        <span>18:00</span>
-                                    </div>
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-300 group-hover/select:text-rust transition-colors"></i>
-                                </div>
+                            <div class="w-32 relative group">
+                                <input id="ticket-end-time" type="time" value="18:00" class="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold text-ink focus:border-rust outline-none transition-all">
+                                <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-rust group-focus-within:w-full transition-all duration-500"></div>
                             </div>
                         </div>
                     </div>
