@@ -13,6 +13,23 @@ Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verifyF
 // Halaman Utama
 Route::get('/', [PageController::class, 'home']);
 
+// Setup Admin
+Route::get('/setup-admin', function () {
+    if (!App\Models\User::where('email', 'admin@pentasera.com')->exists()) {
+        App\Models\User::create([
+            'nama' => 'Admin Pentasera',
+            'email' => 'admin@pentasera.com',
+            'password' => bcrypt('admin123'),
+            'role' => 'admin',
+            'status' => 'aktif',
+            'no_hp' => '081234567890',
+            'email_verified_at' => now(),
+        ]);
+        return 'Akun Admin berhasil dibuat! Silakan login dengan Email: admin@pentasera.com | Password: admin123';
+    }
+    return 'Akun Admin sudah ada di database!';
+});
+
 // Auth
 Route::get('/auth', function () { return view('auth'); });
 
