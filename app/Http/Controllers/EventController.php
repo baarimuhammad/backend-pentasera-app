@@ -94,10 +94,8 @@ class EventController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            $uploadedFileUrl = cloudinary()->upload($request->file('image')->getRealPath(), [
-                'folder' => 'pentasera/event-banners'
-            ])->getSecurePath();
-            $data['image_url'] = $uploadedFileUrl;
+            $storedPath = $request->file('image')->store('pentasera/event-banners', 'cloudinary');
+            $data['image_url'] = Storage::disk('cloudinary')->url($storedPath);
         }
 
         $event = Event::create($data);
@@ -145,10 +143,8 @@ class EventController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            $uploadedFileUrl = cloudinary()->upload($request->file('image')->getRealPath(), [
-                'folder' => 'pentasera/event-banners'
-            ])->getSecurePath();
-            $data['image_url'] = $uploadedFileUrl;
+            $storedPath = $request->file('image')->store('pentasera/event-banners', 'cloudinary');
+            $data['image_url'] = Storage::disk('cloudinary')->url($storedPath);
         }
 
         $event->update($data);
@@ -186,9 +182,8 @@ class EventController extends Controller
 
     if ($request->hasFile('image')) {
         // Simpan gambar baru ke Cloudinary
-        $uploadedFileUrl = cloudinary()->upload($request->file('image')->getRealPath(), [
-            'folder' => 'pentasera/event-banners'
-        ])->getSecurePath();
+        $storedPath = $request->file('image')->store('pentasera/event-banners', 'cloudinary');
+        $uploadedFileUrl = Storage::disk('cloudinary')->url($storedPath);
         $event->update(['image_url' => $uploadedFileUrl]);
 
         return $this->success($event->fresh(), 'Gambar event berhasil diperbarui');

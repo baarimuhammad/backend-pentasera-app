@@ -82,10 +82,9 @@ class ProfileController extends Controller
 
         $user = auth()->user();
 
-        // Upload to Cloudinary
-        $uploadedFileUrl = cloudinary()->upload($request->file('avatar')->getRealPath(), [
-            'folder' => 'pentasera/avatars'
-        ])->getSecurePath();
+        // Upload to Cloudinary via Laravel Storage disk
+        $storedPath = $request->file('avatar')->store('pentasera/avatars', 'cloudinary');
+        $uploadedFileUrl = Storage::disk('cloudinary')->url($storedPath);
 
         $user->avatar_url = $uploadedFileUrl;
         $user->save();
