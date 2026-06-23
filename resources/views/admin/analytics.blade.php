@@ -9,7 +9,22 @@
 @endpush
 
 @section('content')
-<div class="admin-dashboard-container">
+<div class="admin-dashboard-container" id="admin-dashboard-container">
+    <!-- Admin Mobile Top Bar -->
+    <div class="admin-mobile-bar">
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Open sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <span class="logo-text" style="font-size:14px; letter-spacing:2px; color: var(--admin-accent); font-weight: bold;">PENTASERA</span>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="admin-sidebar-overlay" id="admin-sidebar-overlay"></div>
+
     <!-- Admin Sidebar -->
     @include('admin.partials.sidebar', ['activePage' => 'analytics'])
 
@@ -175,4 +190,31 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="{{ asset('js/admin-analytics.js') }}?v={{ time() }}"></script>
+<script>
+(function() {
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
+    const sidebar   = document.getElementById('admin-sidebar');
+    const overlay   = document.getElementById('admin-sidebar-overlay');
+
+    function openSidebar() {
+        if (sidebar)  sidebar.classList.add('open');
+        if (overlay)  overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        if (sidebar)  sidebar.classList.remove('open');
+        if (overlay)  overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+    if (overlay)   overlay.addEventListener('click', closeSidebar);
+
+    if (sidebar) {
+        sidebar.querySelectorAll('a.nav-item').forEach(function(link) {
+            link.addEventListener('click', closeSidebar);
+        });
+    }
+})();
+</script>
 @endpush

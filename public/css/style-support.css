@@ -1011,7 +1011,7 @@ section {
     RESPONSIVE DESIGN
    ========================================================================== */
 @media (max-width: 1024px) {
-    h1 { font-size: 46px; }
+    h1 { font-size: 46px !important; }
     .manifesto-grid { grid-template-columns: 1fr; }
     .story-container, .legal-container, .help-container, .contact-grid { flex-direction: column; display: block; }
     .story-visual, .story-text, .legal-sidebar, .help-sidebar, .contact-info { width: 100%; margin-bottom: 50px; }
@@ -1022,10 +1022,452 @@ section {
     .discussion-image::before { background: linear-gradient(to bottom, var(--cream), transparent); width: 100%; height: 40%; }
 }
 
-@media (max-width: 600px) {
-    h1 { font-size: 34px; }
-    .navbar { flex-direction: column; gap: 20px; }
-    .nav-links { gap: 15px; flex-wrap: wrap; justify-content: center; }
-    .legal-main-card, .contact-form-card { padding: 35px; }
-    .cta-card { padding: 60px 30px; }
+@media (max-width: 768px) {
+    /* Hero Section */
+    .hero-section {
+        padding: 50px 6% 30px;
+    }
+
+    .hero-section h1,
+    h1 {
+        font-size: 36px !important;
+        line-height: 1.15 !important;
+    }
+
+    .hero-section .hero-desc,
+    .hero-desc {
+        font-size: 14px;
+    }
+
+    .hero-section .subtitle,
+    .subtitle {
+        font-size: 11px !important;
+        letter-spacing: 2px !important;
+    }
+
+    /* Manifesto Grid */
+    .manifesto-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 4% 40px;
+    }
+
+    .manifesto-img {
+        height: 300px;
+        padding: 30px;
+    }
+
+    .manifesto-content h3 {
+        font-size: 22px;
+    }
+
+    /* Vision Card */
+    .vision-card {
+        padding: 35px 28px;
+    }
+
+    .vision-card h3 {
+        font-size: 20px;
+    }
+
+    .stats .number {
+        font-size: 40px;
+    }
+
+    /* Story Container */
+    .story-container {
+        padding: 40px 5%;
+        gap: 40px;
+    }
+
+    .story-bg-image {
+        height: 350px;
+    }
+
+    .story-text h2 {
+        font-size: 30px;
+    }
+
+    /* Values */
+    .values-section {
+        padding: 50px 4%;
+    }
+
+    .values-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-top: 30px;
+    }
+
+    .value-card {
+        padding: 35px 28px;
+    }
+
+    /* Contact Grid */
+    .contact-grid {
+        grid-template-columns: 1fr !important;
+        gap: 30px !important;
+        padding: 20px 4% 60px !important;
+    }
+
+    .contact-form-card {
+        padding: 30px !important;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .map-placeholder {
+        height: 220px !important;
+    }
+
+    /* Legal Container */
+    .legal-container {
+        padding: 0 4% 60px;
+        gap: 30px;
+    }
+
+    .legal-sidebar {
+        width: 100%;
+    }
+
+    .legal-main-card {
+        padding: 35px;
+    }
+
+    .content-section {
+        margin-bottom: 40px;
+    }
+
+    .section-header h3 {
+        font-size: 22px !important;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Help Container */
+    .help-header {
+        padding: 40px 5%;
+    }
+
+    .help-header h1 {
+        font-size: 36px !important;
+    }
+
+    .help-container {
+        padding: 20px 4% 60px;
+        gap: 30px;
+        flex-direction: column;
+    }
+
+    .help-sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 10px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .help-sidebar::-webkit-scrollbar { display: none; }
+
+    .cat-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 14px 18px !important;
+        font-size: 13px;
+    }
+
+    .faq-question {
+        padding: 18px 20px;
+        font-size: 16px;
+    }
+
+    .faq-answer {
+        font-size: 13px;
+    }
+
+    .faq-item.active .faq-answer {
+        padding: 0 20px 20px;
+    }
+
+    .help-search-large {
+        padding: 14px 24px;
+    }
+
+    .help-search-large input {
+        font-size: 14px;
+        margin-left: 10px;
+    }
+
+    /* Discussion Section */
+    .discussion-section {
+        padding: 40px 20px !important;
+        margin-top: 50px !important;
+        border-radius: 24px !important;
+        flex-direction: column !important;
+        gap: 30px !important;
+    }
+
+    .discussion-content {
+        width: 100% !important;
+        padding: 0 !important;
+        text-align: center;
+    }
+
+    .discussion-content h2 {
+        font-size: 32px;
+    }
+
+    .discussion-image {
+        width: 100% !important;
+        height: 280px;
+    }
+
+    .discussion-image::before {
+        display: none;
+    }
+
+    /* CTA Section */
+    .cta-section, .help-cta-section {
+        padding: 40px 4%;
+    }
+
+    .cta-card, .help-cta-card {
+        padding: 50px 24px;
+    }
+
+    .wayang-art {
+        display: none;
+    }
+
+    /* Terms Top Grid */
+    .terms-top-grid {
+        grid-template-columns: 1fr;
+        padding: 0 4%;
+    }
+
+    .terms-card-beige, .terms-card-brown {
+        padding: 30px;
+    }
+
+    /* Legal Header */
+    .legal-header {
+        padding: 40px 5% 30px;
+    }
+
+    .legal-header h1 {
+        font-size: 38px !important;
+    }
+
+    /* Terms Section */
+    .terms-section {
+        padding-left: 20px;
+        margin-bottom: 40px;
+    }
+
+    .terms-section h2 {
+        font-size: 24px !important;
+    }
+
+    .commitment-box {
+        padding: 30px;
+        margin: 40px 0;
+    }
+
+    .commitment-box p {
+        font-size: 16px;
+    }
+
+    .sub-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Navbar (support pages) */
+    .navbar {
+        padding: 16px 4%;
+    }
+
+    .navbar-legal {
+        padding: 16px 4%;
+    }
+
+    .nav-right-search {
+        gap: 12px;
+    }
+
+    .search-box-small input {
+        width: 100px;
+    }
+
+    /* Footer (support pages) */
+    .footer {
+        padding: 40px 4%;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .terms-footer-action {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
 }
+
+@media (max-width: 480px) {
+    .hero-section h1,
+    h1 {
+        font-size: 28px !important;
+    }
+
+    .hero-section {
+        padding: 30px 4% 20px;
+    }
+
+    .hero-desc {
+        font-size: 13px;
+    }
+
+    /* Contact */
+    .contact-form-card {
+        padding: 24px !important;
+    }
+
+    .info-card {
+        padding: 22px !important;
+    }
+
+    /* Manifesto */
+    .manifesto-img {
+        height: 250px;
+        padding: 24px;
+    }
+
+    .manifesto-content h3 {
+        font-size: 18px;
+    }
+
+    /* Vision */
+    .vision-card {
+        padding: 28px 20px;
+    }
+
+    .stats .number {
+        font-size: 32px;
+    }
+
+    /* Story */
+    .story-bg-image {
+        height: 260px;
+    }
+
+    .story-text h2 {
+        font-size: 24px;
+    }
+
+    /* Values */
+    .value-card {
+        padding: 28px 20px;
+    }
+
+    /* FAQ */
+    .faq-question {
+        padding: 14px 16px;
+        font-size: 14px;
+    }
+
+    .faq-item.active .faq-answer {
+        padding: 0 16px 16px;
+    }
+
+    .help-search-large {
+        padding: 12px 18px;
+    }
+
+    .help-search-large input {
+        font-size: 13px;
+    }
+
+    /* Legal */
+    .legal-main-card {
+        padding: 24px;
+    }
+
+    .legal-header h1 {
+        font-size: 30px !important;
+    }
+
+    .section-header h3 {
+        font-size: 20px !important;
+    }
+
+    .terms-section h2 {
+        font-size: 20px !important;
+    }
+
+    .commitment-box {
+        padding: 24px;
+    }
+
+    .commitment-box p {
+        font-size: 14px;
+    }
+
+    /* Discussion */
+    .discussion-content h2 {
+        font-size: 26px;
+    }
+
+    .discussion-image {
+        height: 220px;
+    }
+
+    /* CTA */
+    .cta-card, .help-cta-card {
+        padding: 40px 18px;
+    }
+
+    .btn-dark-round, .btn-white-round {
+        padding: 14px 28px;
+        font-size: 13px;
+    }
+
+    /* Terms */
+    .terms-card-beige, .terms-card-brown {
+        padding: 24px;
+    }
+
+    .terms-card-beige h4, .terms-card-brown h4 {
+        font-size: 18px;
+    }
+
+    .terms-footer-action h3 {
+        font-size: 22px;
+    }
+
+    .footer-btns {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-gray-round {
+        text-align: center;
+    }
+
+    /* Navbar */
+    .logo {
+        font-size: 20px;
+    }
+
+    .navbar-legal .back-link {
+        font-size: 13px;
+    }
+}
+

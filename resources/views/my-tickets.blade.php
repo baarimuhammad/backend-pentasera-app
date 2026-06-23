@@ -150,9 +150,24 @@
 @endpush
 
 @section('content')
-<div class="dashboard-container">
+<div class="dashboard-container" id="dashboard-container">
+    <!-- Mobile Top Bar (hamburger, visible only on < 1024px) -->
+    <div class="dashboard-mobile-bar">
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Open sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <span class="logo-text" style="font-size:14px; letter-spacing:2px; color:#4A3000;">PENTASERA</span>
+    </div>
+
+    <!-- Sidebar Overlay (mobile backdrop) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <!-- Sidebar -->
-    <aside class="dashboard-sidebar">
+    <aside class="dashboard-sidebar" id="dashboard-sidebar">
         <div class="sidebar-logo">
             <img src="{{ asset('assets/logo pentasera.png') }}" alt="Pentasara" class="w-10 h-10 object-contain">
             <span class="logo-text text-sm">PENTASARA</span>
@@ -286,5 +301,31 @@
     document.getElementById('ticketModal').addEventListener('click', (e) => {
         if (e.target === document.getElementById('ticketModal')) closeTicket();
     });
+
+    (function() {
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        const sidebar   = document.getElementById('dashboard-sidebar');
+        const overlay   = document.getElementById('sidebar-overlay');
+
+        function openSidebar() {
+            if (sidebar)  sidebar.classList.add('active');
+            if (overlay)  overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSidebar() {
+            if (sidebar)  sidebar.classList.remove('active');
+            if (overlay)  overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+        if (overlay)   overlay.addEventListener('click', closeSidebar);
+
+        if (sidebar) {
+            sidebar.querySelectorAll('a.nav-item').forEach(function(link) {
+                link.addEventListener('click', closeSidebar);
+            });
+        }
+    })();
 </script>
 @endpush

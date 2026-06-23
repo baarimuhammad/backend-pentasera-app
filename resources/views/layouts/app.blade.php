@@ -67,7 +67,7 @@
             </form>
             <div class="live-search-dropdown" id="live-search-dropdown"></div>
         </div>
-        <ul class="nav-links" style="display:flex">
+        <ul class="nav-links">
             <li><a href="{{ url('/tentang-kami') }}">About Us</a></li>
             <li><a href="{{ url('/events') }}">Events</a></li>
             <li><a href="{{ url('/hubungi-kami') }}">Contact</a></li>
@@ -133,7 +133,53 @@
                 </div>
             </div>
         </div>
+
+        <!-- Hamburger Menu Button (mobile only) -->
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
     </nav>
+
+    <!-- Mobile Nav Overlay -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+
+    <!-- Mobile Nav Drawer -->
+    <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+        <div class="mobile-nav-header">
+            <span class="logo-text">PENTASARA</span>
+            <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="{{ url('/') }}"><i data-lucide="home"></i> Beranda</a></li>
+            <li><a href="{{ url('/tentang-kami') }}"><i data-lucide="info"></i> About Us</a></li>
+            <li><a href="{{ url('/events') }}"><i data-lucide="calendar"></i> Events</a></li>
+            <li><a href="{{ url('/hubungi-kami') }}"><i data-lucide="mail"></i> Contact</a></li>
+            <div class="mobile-nav-divider"></div>
+            {{-- Logged-in actions --}}
+            <li class="logged-in-only creator-only"><a href="{{ url('/create-event') }}"><i data-lucide="plus-circle"></i> Buat Event</a></li>
+            <li class="logged-in-only user-only"><a href="{{ url('/my-tickets') }}"><i data-lucide="ticket"></i> Tiket Saya</a></li>
+            <li class="logged-in-only creator-only"><a href="{{ url('/dashboard') }}"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+            <li class="logged-in-only creator-only"><a href="{{ url('/my-events') }}"><i data-lucide="calendar-check"></i> Event Saya</a></li>
+            <div class="mobile-nav-divider logged-in-only"></div>
+            <li class="logged-in-only"><a href="{{ url('/profile') }}"><i data-lucide="user"></i> Profil</a></li>
+            <li class="logged-in-only"><a href="{{ url('/settings') }}"><i data-lucide="settings"></i> Pengaturan</a></li>
+            <li class="logged-in-only"><a href="#" onclick="logout(); return false;"><i data-lucide="log-out"></i> Keluar</a></li>
+        </ul>
+
+        <div class="mobile-nav-footer logged-out-only">
+            <button class="btn-daftar" onclick="location.href='{{ url('/auth?tab=signup') }}'">Daftar</button>
+            <button class="btn-masuk" onclick="location.href='{{ url('/auth') }}'">Masuk</button>
+        </div>
+    </div>
     @endif
 
     @yield('custom-nav')
@@ -251,6 +297,37 @@
             document.addEventListener('DOMContentLoaded', syncNavbar);
         } else {
             syncNavbar();
+        }
+    })();
+    </script>
+
+    {{-- Mobile hamburger menu toggle --}}
+    <script>
+    (function() {
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileOverlay = document.getElementById('mobile-nav-overlay');
+        const mobileDrawer = document.getElementById('mobile-nav-drawer');
+        const mobileClose = document.getElementById('mobile-nav-close');
+
+        function openMobileNav() {
+            if (mobileOverlay) mobileOverlay.classList.add('active');
+            if (mobileDrawer) mobileDrawer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileNav() {
+            if (mobileOverlay) mobileOverlay.classList.remove('active');
+            if (mobileDrawer) mobileDrawer.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        if (hamburgerBtn) hamburgerBtn.addEventListener('click', openMobileNav);
+        if (mobileClose) mobileClose.addEventListener('click', closeMobileNav);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileNav);
+
+        // Re-init Lucide icons for drawer
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => lucide.createIcons(), 100);
         }
     })();
     </script>

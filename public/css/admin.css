@@ -1173,10 +1173,62 @@
     white-space: nowrap;
 }
 
+/* ─── Admin Mobile Bar & Overlay ─── */
+.admin-mobile-bar {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--admin-border-light);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 300;
+}
+.admin-mobile-bar .sidebar-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--admin-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.admin-mobile-bar .sidebar-toggle-btn svg {
+    width: 26px;
+    height: 26px;
+}
+.admin-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 15, 10, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 400;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.admin-sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 1024px) {
+    .admin-mobile-bar {
+        display: flex;
+    }
+
+    .admin-dashboard-container {
+        flex-direction: column;
+    }
+
     .admin-sidebar {
         transform: translateX(-100%);
+        z-index: 500;
     }
 
     .admin-sidebar.open {
