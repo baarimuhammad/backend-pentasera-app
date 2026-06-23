@@ -82,19 +82,17 @@ class ProfileController extends Controller
 
         $user = auth()->user();
 
-        // Delete old avatar if exists
-        if ($user->avatar_url && Storage::disk('public')->exists($user->avatar_url)) {
-            Storage::disk('public')->delete($user->avatar_url);
-        }
+        // Upload to Cloudinary
+        $uploadedFileUrl = cloudinary()->upload($request->file('avatar')->getRealPath(), [
+            'folder' => 'pentasera/avatars'
+        ])->getSecurePath();
 
-        $path = $request->file('avatar')->store('avatars', 'public');
-
-        $user->avatar_url = $path;
+        $user->avatar_url = $uploadedFileUrl;
         $user->save();
 
         return $this->success([
-            'avatar_url' => $path,
-            'avatar_full_url' => rtrim(config('app.url'), '/') . '/storage/' . $path,
+            'avatar_url' => $uploadedFileUrl,
+            'avatar_full_url' => $uploadedFileUrl,
         ], 'Avatar berhasil diupload');
     }
 }

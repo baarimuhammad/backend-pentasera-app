@@ -94,8 +94,10 @@ class EventController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('event-banners', 'public');
-            $data['image_url'] = $path;
+            $uploadedFileUrl = cloudinary()->upload($request->file('image')->getRealPath(), [
+                'folder' => 'pentasera/event-banners'
+            ])->getSecurePath();
+            $data['image_url'] = $uploadedFileUrl;
         }
 
         $event = Event::create($data);
@@ -143,12 +145,10 @@ class EventController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($event->image_url) {
-                Storage::disk('public')->delete($event->image_url);
-            }
-            $path = $request->file('image')->store('event-banners', 'public');
-            $data['image_url'] = $path;
+            $uploadedFileUrl = cloudinary()->upload($request->file('image')->getRealPath(), [
+                'folder' => 'pentasera/event-banners'
+            ])->getSecurePath();
+            $data['image_url'] = $uploadedFileUrl;
         }
 
         $event->update($data);
@@ -185,13 +185,11 @@ class EventController extends Controller
     }
 
     if ($request->hasFile('image')) {
-        // Hapus gambar lama jika ada
-        if ($event->image_url) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($event->image_url);
-        }
-        // Simpan gambar baru
-        $path = $request->file('image')->store('event-banners', 'public');
-        $event->update(['image_url' => $path]);
+        // Simpan gambar baru ke Cloudinary
+        $uploadedFileUrl = cloudinary()->upload($request->file('image')->getRealPath(), [
+            'folder' => 'pentasera/event-banners'
+        ])->getSecurePath();
+        $event->update(['image_url' => $uploadedFileUrl]);
 
         return $this->success($event->fresh(), 'Gambar event berhasil diperbarui');
     }
