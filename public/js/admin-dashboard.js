@@ -131,7 +131,7 @@
                         : '-';
 
                     const thumbHtml = ev.image_src
-                        ? `<img class="event-thumb" src="/storage/${ev.image_src}" alt="${ev.nama_event}">`
+                        ? `<img class="event-thumb" src="${ev.image_src}" alt="${ev.nama_event}" onerror="this.src='/assets/hero-banner.jpg'">`
                         : `<div class="event-thumb-placeholder"><i data-lucide="image" class="w-5 h-5"></i></div>`;
 
                     return `
